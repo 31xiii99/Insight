@@ -1,0 +1,3747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Insight">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d0f14">
+<title>Insight</title>
+<style>
+:root{
+  --bg:#0d0f14;--surface:#161a23;--surface2:#1e2433;--border:#2a3045;
+  --accent:#4f8ef7;--accent2:#7c5cbf;--gold:#e8a94a;--green:#3ecf8e;
+  --red:#f75f5f;--text:#e8eaf0;--muted:#7a8299;
+  --mono:'SF Mono','Courier New',monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);overflow:hidden}
+#app{display:flex;flex-direction:column;height:100dvh}
+
+#topbar{padding:max(12px,env(safe-area-inset-top)) 14px 0;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.topbar-row1{display:flex;align-items:center;justify-content:space-between;padding-bottom:8px}
+#topbar h1{font-size:17px;font-weight:700;letter-spacing:-.3px}
+#topbar h1 span{color:var(--accent)}
+
+#shop-row{display:flex;align-items:center;gap:8px;padding:0 0 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+#shop-row::-webkit-scrollbar{display:none}
+.shop-pill{flex-shrink:0;height:32px;min-width:40px;border-radius:8px;font-size:12px;font-weight:800;letter-spacing:.5px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;padding:0 8px}
+.shop-pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.shop-pill.has-data{border-color:var(--accent);color:var(--accent)}
+.shop-pill.active.has-data{background:var(--accent);color:#fff}
+.shop-pill.pending-pred{box-shadow:0 0 0 2px var(--gold)}
+#add-shop-btn{flex-shrink:0;height:32px;width:32px;border-radius:8px;font-size:20px;border:1px dashed var(--border);background:none;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+#nav{display:flex;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.nav-btn{flex:1;padding:8px 0;font-size:9px;font-weight:600;letter-spacing:.3px;color:var(--muted);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;display:flex;flex-direction:column;align-items:center;gap:2px}
+.nav-btn .icon{font-size:17px;line-height:1}
+.nav-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+#content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px;padding-bottom:max(14px,env(safe-area-inset-bottom))}
+.panel{display:none}.panel.active{display:block}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:12px}
+.card-title{font-size:11px;font-weight:700;letter-spacing:.8px;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 16px;border-radius:10px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:opacity .15s,transform .1s;width:100%}
+.btn:active{transform:scale(.97);opacity:.85}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-success{background:var(--green);color:#0d1a12}
+.btn-danger{background:var(--red);color:#fff}
+.btn-gold{background:linear-gradient(135deg,#c8860a,#e8a94a);color:#1a0f00;font-weight:800}
+.btn-small{padding:6px 11px;font-size:12px;border-radius:8px;width:auto}
+.btn-row{display:flex;gap:8px}.btn-row .btn{flex:1}
+
+textarea,input[type=text],input[type=date]{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:15px;padding:11px;font-family:var(--sans);resize:none;outline:none;-webkit-appearance:none}
+input[type=date]{color-scheme:dark}
+textarea:focus,input:focus{border-color:var(--accent)}
+label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px;letter-spacing:.5px}
+.field{margin-bottom:11px}
+
+#img-preview{width:100%;border-radius:10px;margin-top:8px;display:none;max-height:160px;object-fit:cover}
+
+.tag-grid{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.tag{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:4px 9px;font-size:12px;font-family:var(--mono);font-weight:600}
+.tag.hit{border-color:var(--green);color:var(--green)}
+.tag.miss{border-color:var(--red);color:var(--red);opacity:.7}
+.tag.pending{border-color:var(--gold);color:var(--gold)}
+
+/* SHOP BANNER */
+.shop-banner{display:flex;align-items:center;gap:12px;background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.3);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+.shop-banner.no-shop{background:rgba(247,95,95,.08);border-color:rgba(247,95,95,.25)}
+.sb-code{font-size:28px;font-weight:900;font-family:var(--mono);color:var(--accent);min-width:48px;text-align:center;line-height:1}
+.sb-code.no-shop{font-size:24px;color:var(--red)}
+.sb-info{flex:1;min-width:0}
+.sb-label{font-size:10px;font-weight:700;letter-spacing:.8px;color:var(--muted);text-transform:uppercase}
+.sb-name{font-size:15px;font-weight:700;color:var(--text);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.sb-btn{font-size:11px;font-weight:600;color:var(--accent);background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.25);border-radius:8px;padding:5px 10px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+
+.entry-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:7px;overflow:hidden}
+.entry-item-body{display:flex;align-items:flex-start;gap:9px;padding:11px 13px}
+.entry-meta{flex:1;min-width:0}
+.entry-date{font-size:13px;font-weight:700;color:var(--accent);font-family:var(--mono)}
+.entry-codes{font-size:12px;font-family:var(--mono);font-weight:600;margin-top:3px;word-break:break-all;line-height:1.6}
+.entry-badge{font-size:9px;font-weight:700;letter-spacing:.5px;padding:2px 6px;border-radius:4px;background:var(--surface);margin-top:4px;display:inline-block}
+.source-ocr{color:var(--accent);border:1px solid var(--accent)}
+.source-text{color:var(--green);border:1px solid var(--green)}
+.del-btn{background:rgba(247,95,95,.12);border:none;border-top:1px solid var(--border);color:var(--red);font-size:13px;font-weight:700;cursor:pointer;width:100%;padding:10px;text-align:center;letter-spacing:.3px}
+.del-btn:active{background:rgba(247,95,95,.3)}
+
+/* CONFIRM MODAL */
+#confirm-modal .modal-sheet{text-align:center}
+#confirm-modal h2{font-size:16px;margin-bottom:8px}
+#confirm-modal p{font-size:13px;color:var(--muted);margin-bottom:18px}
+.confirm-btns{display:flex;gap:10px}
+.confirm-btns .btn{flex:1}
+
+.stat-row{display:flex;gap:8px;margin-bottom:10px}
+.stat-box{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center}
+.stat-val{font-size:20px;font-weight:800;font-family:var(--mono)}
+.stat-lbl{font-size:9px;color:var(--muted);font-weight:600;letter-spacing:.5px;margin-top:2px}
+
+.freq-row{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.freq-code{font-family:var(--mono);font-weight:700;font-size:13px;min-width:28px}
+.freq-bar-wrap{flex:1;height:9px;background:var(--surface2);border-radius:5px;overflow:hidden}
+.freq-bar{height:100%;border-radius:5px;transition:width .5s ease}
+.freq-count{font-size:11px;color:var(--muted);min-width:50px;text-align:right;font-family:var(--mono)}
+
+.top3-grid{display:flex;gap:8px;margin-bottom:12px}
+.top3-card{flex:1;border-radius:var(--radius);padding:12px 7px;text-align:center}
+.top3-card.rank1{background:linear-gradient(135deg,#1a1600,#2e2400);border:1px solid var(--gold)}
+.top3-card.rank2{background:linear-gradient(135deg,#101720,#192133);border:1px solid var(--accent)}
+.top3-card.rank3{background:linear-gradient(135deg,#15101a,#221530);border:1px solid var(--accent2)}
+.top3-rank{font-size:9px;font-weight:700;letter-spacing:1px;color:var(--muted)}
+.top3-code{font-size:30px;font-weight:900;font-family:var(--mono);margin:3px 0}
+.rank1 .top3-code{color:var(--gold)}.rank2 .top3-code{color:var(--accent)}.rank3 .top3-code{color:var(--accent2)}
+.top3-pct{font-size:11px;font-weight:700}
+.top3-sub{font-size:9px;color:var(--muted);margin-top:3px}
+.conf-bar{height:3px;border-radius:2px;margin-top:5px}
+.rank1 .conf-bar{background:var(--gold)}.rank2 .conf-bar{background:var(--accent)}.rank3 .conf-bar{background:var(--accent2)}
+
+.pred-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:9px}
+.pred-card.resolved-good{border-color:rgba(62,207,142,.4)}
+.pred-card.resolved-ok{border-color:rgba(232,169,74,.4)}
+.pred-card.resolved-bad{border-color:rgba(247,95,95,.25)}
+.pred-card.pred-pending{border-color:rgba(79,142,247,.4)}
+.pred-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.pred-date{font-size:11px;font-family:var(--mono);font-weight:700;color:var(--muted)}
+.pred-status{font-size:10px;font-weight:700;letter-spacing:.5px;padding:2px 8px;border-radius:20px}
+.status-pending{background:rgba(79,142,247,.15);color:var(--accent)}
+.status-hit{background:rgba(62,207,142,.15);color:var(--green)}
+.status-partial{background:rgba(232,169,74,.15);color:var(--gold)}
+.status-miss{background:rgba(247,95,95,.15);color:var(--red)}
+.pred-codes-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px}
+.pred-accuracy{font-size:12px;color:var(--muted);margin-top:5px}
+
+.acc-bar-row{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.acc-label{font-size:11px;font-family:var(--mono);color:var(--muted);min-width:72px}
+.acc-bar-wrap{flex:1;height:18px;background:var(--surface2);border-radius:5px;overflow:hidden}
+.acc-bar-fill{height:100%;border-radius:5px;display:flex;align-items:center;padding-left:7px;font-size:10px;font-weight:700;color:#fff;white-space:nowrap;transition:width .5s}
+
+.bias-row{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.bias-code{font-family:var(--mono);font-weight:700;font-size:13px;min-width:26px}
+.bias-bar-wrap{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.bias-bar{height:100%;border-radius:4px;transition:width .5s}
+.bias-val{font-size:11px;min-width:34px;text-align:right;font-family:var(--mono)}
+
+.bt-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)}
+.bt-row:last-child{border-bottom:none}
+.bt-label{font-size:12px;color:var(--muted)}
+.bt-val{font-size:13px;font-weight:700;font-family:var(--mono)}
+.bt-hit{color:var(--green)}.bt-miss{color:var(--red)}
+
+.spinner-wrap{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;color:var(--muted);font-size:13px}
+.spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.alert{padding:11px 13px;border-radius:9px;font-size:13px;margin-bottom:11px;line-height:1.5}
+.alert-info{background:rgba(79,142,247,.12);border:1px solid rgba(79,142,247,.3);color:var(--accent)}
+.alert-success{background:rgba(62,207,142,.12);border:1px solid rgba(62,207,142,.3);color:var(--green)}
+.alert-warn{background:rgba(232,169,74,.12);border:1px solid rgba(232,169,74,.3);color:var(--gold)}
+.alert-error{background:rgba(247,95,95,.12);border:1px solid rgba(247,95,95,.3);color:var(--red)}
+
+.insight-chip{display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 9px;font-size:11px;margin:3px}
+.chip-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+.timeline{position:relative;padding-left:18px}
+.timeline::before{content:'';position:absolute;left:5px;top:6px;bottom:6px;width:2px;background:var(--border);border-radius:1px}
+.tl-item{position:relative;margin-bottom:10px}
+.tl-item::before{content:'';position:absolute;left:-15px;top:4px;width:7px;height:7px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
+.tl-date{font-size:11px;font-family:var(--mono);font-weight:700;color:var(--accent)}
+.tl-codes{font-size:11px;font-family:var(--mono);color:var(--muted);word-break:break-all;margin-top:2px}
+
+.empty-state{text-align:center;padding:32px 18px;color:var(--muted)}
+.empty-state .es-icon{font-size:36px;margin-bottom:8px}
+.empty-state p{font-size:13px;line-height:1.6}
+
+#no-shop-msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;color:var(--muted);gap:10px;pointer-events:none;background:var(--bg)}
+#no-shop-msg .ns-icon{font-size:44px}
+#no-shop-msg p{font-size:14px;line-height:1.7}
+
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:999;align-items:flex-end;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+.modal-bg.open{display:flex}
+.modal-sheet{background:var(--surface);border-radius:20px 20px 0 0;padding:22px 18px;width:100%;max-width:500px}
+.modal-sheet h2{font-size:17px;font-weight:700;margin-bottom:5px}
+.modal-sheet p{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5}
+
+.section-head{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin:14px 0 7px}
+
+.resolve-code-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.resolve-code-row:last-child{border-bottom:none}
+.resolve-code-label{font-family:var(--mono);font-weight:700;font-size:15px}
+.resolve-toggle{display:flex;gap:6px}
+.rtog-btn{padding:5px 12px;border-radius:7px;font-size:12px;font-weight:700;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all .15s}
+.rtog-btn.hit{background:rgba(62,207,142,.2);border-color:var(--green);color:var(--green)}
+.rtog-btn.miss{background:rgba(247,95,95,.2);border-color:var(--red);color:var(--red)}
+/* CONFIDENCE */
+.conf-shop-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
+.conf-shop-card.grade-A{border-color:var(--green)}
+.conf-shop-card.grade-B{border-color:var(--accent)}
+.conf-shop-card.grade-C{border-color:var(--gold)}
+.conf-shop-card.grade-D{border-color:var(--red)}
+.conf-shop-card.grade-N{border-color:var(--border)}
+.conf-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.conf-code{font-family:var(--mono);font-weight:900;font-size:22px;min-width:42px}
+.conf-grade{font-size:28px;font-weight:900;font-family:var(--mono);min-width:36px;text-align:center}
+.grade-A .conf-grade{color:var(--green)}
+.grade-B .conf-grade{color:var(--accent)}
+.grade-C .conf-grade{color:var(--gold)}
+.grade-D .conf-grade{color:var(--red)}
+.grade-N .conf-grade{color:var(--muted)}
+.conf-shop-name{font-size:13px;font-weight:600;color:var(--text)}
+.conf-total{font-family:var(--mono);font-weight:800;font-size:20px;margin-left:auto}
+.conf-dim-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.conf-dim-label{font-size:11px;color:var(--muted);min-width:110px}
+.conf-dim-bar-wrap{flex:1;height:8px;background:var(--surface);border-radius:4px;overflow:hidden}
+.conf-dim-bar{height:100%;border-radius:4px;transition:width .5s}
+.conf-dim-val{font-size:11px;font-family:var(--mono);font-weight:700;min-width:32px;text-align:right}
+.conf-verdict{font-size:12px;color:var(--muted);margin-top:10px;padding-top:8px;border-top:1px solid var(--border);line-height:1.5}
+.conf-verdict strong{color:var(--text)}
+.legend-row{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.legend-row:last-child{border-bottom:none}
+.legend-dim{font-size:11px;font-weight:700;color:var(--accent);min-width:110px;padding-top:1px}
+.legend-desc{font-size:11px;color:var(--muted);line-height:1.5}
+
+/* GUIDE */
+.guide-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden}
+.guide-section-head{padding:13px 14px 11px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;-webkit-tap-highlight-color:transparent}
+.guide-section-head:active{background:var(--surface2)}
+.guide-h-left{display:flex;align-items:center;gap:10px}
+.guide-icon{font-size:20px;flex-shrink:0}
+.guide-title{font-size:14px;font-weight:700}
+.guide-chevron{font-size:12px;color:var(--muted);transition:transform .2s;flex-shrink:0}
+.guide-chevron.open{transform:rotate(180deg)}
+.guide-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border)}
+.guide-body.open{display:block}
+.guide-p{font-size:13px;color:var(--muted);line-height:1.7;margin-top:10px}
+.guide-p strong{color:var(--text)}
+.guide-p em{color:var(--accent);font-style:normal;font-weight:600}
+.guide-formula{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:11px 13px;margin:10px 0;font-family:var(--mono);font-size:12px;line-height:1.8}
+.guide-formula .f-line{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.guide-formula .f-signal{color:var(--text);font-weight:700}
+.guide-formula .f-weight{color:var(--gold);font-weight:700}
+.guide-formula .f-val{color:var(--green);font-weight:700;min-width:50px;text-align:right}
+.guide-formula .f-total{border-top:1px solid var(--border);margin-top:6px;padding-top:6px;color:var(--accent);font-weight:800}
+.guide-example{background:var(--surface2);border-radius:9px;padding:11px 13px;margin:10px 0;font-size:12px;line-height:1.7}
+.guide-example .ex-label{font-size:10px;font-weight:700;letter-spacing:.8px;color:var(--muted);text-transform:uppercase;margin-bottom:5px}
+.guide-callout{border-left:3px solid var(--accent);padding:8px 12px;margin:10px 0;font-size:12px;color:var(--muted);line-height:1.6;background:rgba(79,142,247,.06);border-radius:0 8px 8px 0}
+.guide-callout strong{color:var(--text)}
+.guide-grade-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.guide-grade-row:last-child{border-bottom:none}
+.guide-grade-letter{font-family:var(--mono);font-weight:900;font-size:18px;min-width:24px}
+.guide-grade-bar-wrap{flex:1;height:8px;background:var(--surface);border-radius:4px;overflow:hidden}
+.guide-grade-bar{height:100%;border-radius:4px}
+.guide-grade-desc{font-size:11px;color:var(--muted);min-width:90px;text-align:right}
+.guide-step{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+.guide-step-num{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.guide-step-body{flex:1;font-size:13px;color:var(--muted);line-height:1.6}
+.guide-step-body strong{color:var(--text)}
+.guide-shop-select{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
+.guide-shop-btn{padding:6px 12px;border-radius:8px;font-size:13px;font-weight:700;font-family:var(--mono);border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer}
+.guide-shop-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.guide-live-box{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:12px;margin-top:8px}
+.guide-live-label{font-size:10px;font-weight:700;letter-spacing:.8px;color:var(--accent);text-transform:uppercase;margin-bottom:7px}
+
+/* SCHEDULE BUTTONS */
+.sched-btn{flex:1;padding:8px 4px;border-radius:8px;font-size:12px;font-weight:700;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all .15s;text-align:center}
+.sched-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.day-btn{padding:7px 10px;border-radius:8px;font-size:12px;font-weight:700;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all .15s}
+.day-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* CONTINUITY */
+.gap-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.gap-item:last-child{border-bottom:none}
+.gap-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.gap-info{flex:1;font-size:12px}
+.gap-date{font-family:var(--mono);font-weight:700;color:var(--text)}
+.gap-detail{color:var(--muted);margin-top:1px}
+.next-expected{background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.3);border-radius:10px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:12px}
+.ne-icon{font-size:24px;flex-shrink:0}
+.ne-info{}
+.ne-label{font-size:10px;font-weight:700;letter-spacing:.8px;color:var(--muted);text-transform:uppercase}
+.ne-date{font-size:18px;font-weight:800;font-family:var(--mono);color:var(--accent);margin-top:2px}
+.ne-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+::-webkit-scrollbar{width:0}
+</style>
+</head>
+<body>
+<div id="app">
+
+<div id="topbar">
+  <div class="topbar-row1">
+    <h1>In<span>sight</span></h1>
+    <button style="font-size:11px;background:none;border:1px solid var(--border);color:var(--muted);padding:3px 9px;border-radius:20px;cursor:pointer" onclick="openApiModal()">⚙️ API Key</button>
+  </div>
+  <div id="shop-row">
+    <button id="add-shop-btn" onclick="openAddShopModal()">＋</button>
+  </div>
+</div>
+
+<div id="nav">
+  <button class="nav-btn active" onclick="showPanel('collect')" id="nav-collect"><span class="icon">📥</span>COLLECT</button>
+  <button class="nav-btn" onclick="showPanel('archive')" id="nav-archive"><span class="icon">🗄</span>ARCHIVE</button>
+  <button class="nav-btn" onclick="showPanel('analytics')" id="nav-analytics"><span class="icon">📊</span>ANALYZE</button>
+  <button class="nav-btn" onclick="showPanel('dashboard')" id="nav-dashboard"><span class="icon">🎯</span>PREDICT</button>
+  <button class="nav-btn" onclick="showPanel('track')" id="nav-track"><span class="icon">📈</span>TRACK</button>
+  <button class="nav-btn" onclick="showPanel('confidence')" id="nav-confidence"><span class="icon">🏅</span>SCORE</button>
+  <button class="nav-btn" onclick="showPanel('guide')" id="nav-guide"><span class="icon">📖</span>GUIDE</button>
+  <button class="nav-btn" onclick="showPanel('storage')" id="nav-storage"><span class="icon">💾</span>DATA</button>
+</div>
+
+<div id="content" style="position:relative">
+
+  <div id="no-shop-msg" style="display:none">
+    <div class="ns-icon">🏪</div>
+    <p>Tap <strong>＋</strong> to add a shop<br>then select it to begin.</p>
+  </div>
+
+  <!-- ═══════════════ COLLECT ═══════════════ -->
+  <div class="panel active" id="panel-collect">
+
+    <div id="collect-banner" class="shop-banner no-shop">
+      <div class="sb-code no-shop" id="sb-code">—</div>
+      <div class="sb-info">
+        <div class="sb-label">SAVING TO SHOP</div>
+        <div class="sb-name" id="sb-name">No shop selected</div>
+        <div class="sb-sub" id="sb-sub">Tap ＋ above to add a shop</div>
+      </div>
+      <button class="sb-btn" onclick="scrollShopRow()">Switch ↑</button>
+    </div>
+
+    <div class="alert alert-info" id="api-key-alert" style="display:none">
+      ⚠️ Set your Anthropic API key to enable AI Insight narratives.
+      <strong onclick="openApiModal()" style="cursor:pointer;text-decoration:underline"> Set key →</strong>
+    </div>
+
+    <div class="card">
+      <div class="card-title">✏️ ENTER REFILL CODES</div>
+      <div class="field">
+        <label>REFILL DATE</label>
+        <input type="date" id="text-date">
+      </div>
+      <div class="field">
+        <label>ITEM CODES 00–99 &nbsp;·&nbsp; Repeats recorded &nbsp;·&nbsp; Any separator</label>
+        <textarea id="text-input" rows="3" placeholder="12 45 07 12 83 07&#10;or: 12,45,07,12,83,07&#10;or: 12-45-07-12-83-07"></textarea>
+        <div class="tag-grid" id="text-tags"></div>
+      </div>
+      <button class="btn btn-success" onclick="saveTextEntry()">
+        💾 Save to <span id="text-shop-lbl" style="font-family:var(--mono);font-weight:900"></span>
+      </button>
+    </div>
+
+    <div style="font-size:11px;color:var(--muted);text-align:center;padding:4px 0 8px;line-height:1.6">
+      After saving, the result card shows prediction vs actual.<br>
+      A new prediction is saved automatically for the next refill.
+    </div>
+
+  </div>
+
+  <!-- ═══════════════ ARCHIVE ═══════════════ -->
+  <div class="panel" id="panel-archive">
+
+    <div id="arch-banner" class="shop-banner" style="margin-bottom:12px">
+      <div class="sb-code" id="arch-sb-code">—</div>
+      <div class="sb-info">
+        <div class="sb-label">ARCHIVE</div>
+        <div class="sb-name" id="arch-sb-name">No shop selected</div>
+        <div class="sb-sub" id="arch-sb-sub"></div>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-val" id="a-entries">0</div><div class="stat-lbl">REFILLS</div></div>
+      <div class="stat-box"><div class="stat-val" id="a-items">0</div><div class="stat-lbl">TOTAL ITEMS</div></div>
+      <div class="stat-box"><div class="stat-val" id="a-unique">0</div><div class="stat-lbl">UNIQUE CODES</div></div>
+    </div>
+
+    <div class="btn-row" style="margin-bottom:12px">
+      <button class="btn btn-secondary btn-small" onclick="exportShopData()">📤 Export JSON</button>
+      <button class="btn btn-danger btn-small" onclick="clearShopData()">🗑 Clear Entries</button>
+    </div>
+
+    <div id="archive-list"></div>
+  </div>
+
+  <!-- ═══════════════ ANALYTICS ═══════════════ -->
+  <div class="panel" id="panel-analytics">
+
+    <div id="ana-banner" class="shop-banner" style="margin-bottom:12px">
+      <div class="sb-code" id="ana-sb-code">—</div>
+      <div class="sb-info">
+        <div class="sb-label">ANALYTICS</div>
+        <div class="sb-name" id="ana-sb-name">No shop selected</div>
+        <div class="sb-sub" id="ana-sb-sub"></div>
+      </div>
+    </div>
+
+    <div id="analytics-empty" class="empty-state" style="display:none">
+      <div class="es-icon">📊</div>
+      <p>Add at least 2 refill entries<br>to run analytics.</p>
+    </div>
+
+    <div id="analytics-content" style="display:none">
+      <div class="card">
+        <div class="card-title">🧠 SIGNAL WEIGHTS — ADAPTED PER SHOP</div>
+        <div id="signal-weights-content"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔢 FREQUENCY — Total occurrences per code</div>
+        <div id="freq-chart"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔁 RECURRENCE PATTERNS</div>
+        <div id="pattern-insights"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔥 ACTIVE STREAKS — Consecutive refills</div>
+        <div id="streak-content"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🤝 CO-OCCURRENCE PAIRS</div>
+        <div id="cooccur-content"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">⏱ INTERVAL REGULARITY — Consistency of gaps</div>
+        <div id="interval-content"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📈 QUANTITY TREND — Growing or shrinking</div>
+        <div id="qtytrend-content"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📅 RECENT TIMELINE</div>
+        <div id="timeline-content"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📆 DATE CONTINUITY</div>
+        <div id="continuity-content"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🧪 BACKTEST — Manual accuracy check</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">
+          Holds out the most recent 25% of entries and measures how well the model would have predicted them.
+          Also runs automatically after any missed prediction.
+        </p>
+        <button class="btn btn-secondary" onclick="runBacktest()">▶ Run Backtest</button>
+        <div id="backtest-results" style="margin-top:12px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PREDICT ═══════════════ -->
+  <div class="panel" id="panel-dashboard">
+
+    <div id="dash-banner" class="shop-banner" style="margin-bottom:12px">
+      <div class="sb-code" id="dash-sb-code">—</div>
+      <div class="sb-info">
+        <div class="sb-label">PREDICTION</div>
+        <div class="sb-name" id="dash-sb-name">No shop selected</div>
+        <div class="sb-sub" id="dash-sb-sub"></div>
+      </div>
+    </div>
+
+    <div id="dashboard-empty" class="empty-state" style="display:none">
+      <div class="es-icon">🎯</div>
+      <p>Need at least 3 refill entries<br>to generate a prediction.</p>
+    </div>
+
+    <div id="dashboard-content" style="display:none">
+      <div id="next-expected-banner" style="display:none"></div>
+
+      <div class="card">
+        <div class="card-title">🎯 TOP 3 — NEXT REFILL</div>
+        <div id="top3-grid"></div>
+        <div id="top3-reasoning" style="font-size:12px;color:var(--muted);line-height:1.7;margin-top:8px"></div>
+        <div id="pred-saved-indicator" style="font-size:11px;color:var(--green);margin-top:8px;display:none">
+          ✅ Prediction saved — will be compared against the next refill automatically
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 FULL PROBABILITY RANKING</div>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:8px">
+          Score = relative signal strength. 100% = strongest code. Not a probability of occurrence.
+        </p>
+        <div id="full-ranking"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚡ AI NARRATIVE INSIGHT</div>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:10px">
+          Uses Claude to explain the patterns behind this prediction in plain language.
+        </p>
+        <div id="ai-insight-content">
+          <button class="btn btn-primary" onclick="generateAiInsight()">✨ Generate Insight</button>
+        </div>
+      </div>
+
+      <div id="last-updated" style="font-size:10px;color:var(--muted);text-align:center;margin-top:2px"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ TRACK ═══════════════ -->
+  <div class="panel" id="panel-track">
+
+    <div id="track-banner" class="shop-banner" style="margin-bottom:12px">
+      <div class="sb-code" id="track-sb-code">—</div>
+      <div class="sb-info">
+        <div class="sb-label">OUTCOME TRACKING</div>
+        <div class="sb-name" id="track-sb-name">No shop selected</div>
+        <div class="sb-sub" id="track-sb-sub"></div>
+      </div>
+    </div>
+
+    <div id="track-empty" class="empty-state" style="display:none">
+      <div class="es-icon">📈</div>
+      <p>No predictions yet.<br>Save 3+ refills — predictions are generated automatically.</p>
+    </div>
+
+    <div id="track-content" style="display:none">
+      <div class="card">
+        <div class="card-title">🎯 MODEL ACCURACY</div>
+        <div id="accuracy-summary"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🧠 LEARNED BIAS — Per code hit rate</div>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5">
+          Hit rate of past predictions per code. Above 50% = score boost. Below 50% = penalty.
+          Signal weights adapt separately — see Analytics.
+        </p>
+        <div id="bias-chart"></div>
+      </div>
+      <div class="section-head">⏳ PENDING — Awaiting next refill</div>
+      <div id="pending-list"></div>
+      <div class="section-head">✅ RESOLVED — Prediction history</div>
+      <div id="resolved-list"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ CONFIDENCE ═══════════════ -->
+  <div class="panel" id="panel-confidence">
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-title">🏅 SHOP CONFIDENCE SCORES</div>
+      <p style="font-size:12px;color:var(--muted);line-height:1.6">
+        All shops ranked by how reliable their predictions are.
+        Each shop is scored across 5 dimensions — data volume, pattern strength,
+        recency, streak quality, and prediction accuracy. Total 0–100.
+      </p>
+    </div>
+    <div id="confidence-list"></div>
+    <div class="card" style="margin-top:4px">
+      <div class="card-title">📐 HOW CONFIDENCE IS CALCULATED</div>
+      <div id="confidence-legend"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ GUIDE ═══════════════ -->
+  <div class="panel" id="panel-guide">
+    <div id="guide-content"></div>
+  </div>
+
+  <!-- ═══════════════ DATA ═══════════════ -->
+  <div class="panel" id="panel-storage">
+
+    <div class="card">
+      <div class="card-title">📱 STEP 1 — ADD TO HOME SCREEN</div>
+      <p style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:10px">
+        The most important step. When running from the Home Screen icon, Safari gives the app
+        <strong style="color:var(--text)">isolated, persistent storage</strong> that is never
+        cleared when you browse other sites or move the file.
+      </p>
+      <div id="pwa-status" style="margin-bottom:10px"></div>
+      <div style="background:var(--surface2);border-radius:10px;padding:12px;font-size:12px;color:var(--muted);line-height:2">
+        In Safari: tap <strong style="color:var(--text)">Share ⎙</strong>
+        → <strong style="color:var(--text)">Add to Home Screen</strong>
+        → <strong style="color:var(--text)">Add</strong><br>
+        Always open from the <strong style="color:var(--text)">Home Screen icon</strong>, not from Safari.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">☁️ STEP 2 — iCLOUD BACKUP</div>
+      <p style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:10px">
+        Back up after each session. One tap shares the JSON to
+        <strong style="color:var(--text)">Files → iCloud Drive</strong>.
+        Restore any time by tapping Import and picking the file.
+      </p>
+      <div id="icloud-status" style="margin-bottom:10px"></div>
+      <div class="btn-row" style="margin-bottom:8px">
+        <button class="btn btn-primary" onclick="saveToiCloud()">☁️ Save to iCloud</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">📂 Import / Restore</button>
+      </div>
+      <input type="file" id="import-file" accept=".json,application/json" style="display:none" onchange="importFromFile(this)">
+      <div id="import-result" style="margin-top:8px"></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">
+        Saved as <strong>insight-YYYY-MM-DD.json</strong>. Import merges without creating duplicates.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚡ AUTO-BACKUP REMINDER</div>
+      <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:10px">
+        Shows a one-tap backup prompt in Collect after each save.
+      </p>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <span style="font-size:13px;color:var(--text)">Remind me to back up after saving</span>
+        <button id="auto-backup-toggle" onclick="toggleAutoBackupReminder()"
+          style="padding:6px 20px;border-radius:20px;font-size:12px;font-weight:700;border:none;cursor:pointer;flex-shrink:0">
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔍 STORAGE INSPECTOR</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px">
+        Shows every key in this browser's storage. Useful for diagnosing data issues.
+      </p>
+      <button class="btn btn-secondary" onclick="runStorageInspect()">🔍 Scan Storage</button>
+      <div id="storage-results" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📊 CURRENT DATABASE</div>
+      <div id="db-summary"></div>
+    </div>
+
+  </div>
+
+</div><!-- /content -->
+</div><!-- /app -->
+
+<!-- MODALS -->
+<div class="modal-bg" id="api-modal">
+  <div class="modal-sheet">
+    <h2>🔑 Anthropic API Key</h2>
+    <p>Used for AI Narrative Insight in the Predict tab. Stored only on this device, never sent anywhere except Anthropic's API.</p>
+    <div class="field"><label>API KEY</label><input type="text" id="api-key-input" placeholder="sk-ant-api03-…" style="font-family:var(--mono);font-size:13px"></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('api-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveApiKey()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="add-shop-modal">
+  <div class="modal-sheet">
+    <h2>🏪 Add Shop</h2>
+    <p>Enter a code up to 3 characters (e.g. A, HP, HPG). Letters and numbers only.</p>
+    <div class="field">
+      <label>SHOP CODE</label>
+      <input type="text" id="new-shop-code" placeholder="e.g. HPG" maxlength="3"
+        style="font-family:var(--mono);font-size:28px;font-weight:900;letter-spacing:3px;text-transform:uppercase;text-align:center"
+        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+    </div>
+    <div class="field">
+      <label>DISPLAY NAME (optional)</label>
+      <input type="text" id="new-shop-name" placeholder="e.g. High Park Branch">
+    </div>
+    <div id="add-shop-err" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none"></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('add-shop-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAddShop()">Add Shop</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="shop-options-modal">
+  <div class="modal-sheet">
+    <h2 id="shop-opt-title">Shop Options</h2>
+    <div class="field">
+      <label>SHOP CODE (1–3 CHARS)</label>
+      <input type="text" id="opt-code" maxlength="3"
+        style="font-family:var(--mono);font-size:28px;font-weight:900;letter-spacing:3px;text-transform:uppercase;text-align:center"
+        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+    </div>
+    <div class="field">
+      <label>DISPLAY NAME (optional)</label>
+      <input type="text" id="opt-name" placeholder="e.g. High Park Branch">
+    </div>
+    <div class="field">
+      <label>REFILL SCHEDULE</label>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button type="button" class="sched-btn" data-sched="none">None</button>
+        <button type="button" class="sched-btn" data-sched="weekly">Weekly</button>
+        <button type="button" class="sched-btn" data-sched="twice">Twice a week</button>
+      </div>
+      <div id="sched-days-wrap" style="display:none">
+        <label style="margin-bottom:6px">REFILL DAY(S)</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap" id="sched-days">
+          <button type="button" class="day-btn" data-day="1">Mon</button>
+          <button type="button" class="day-btn" data-day="2">Tue</button>
+          <button type="button" class="day-btn" data-day="3">Wed</button>
+          <button type="button" class="day-btn" data-day="4">Thu</button>
+          <button type="button" class="day-btn" data-day="5">Fri</button>
+          <button type="button" class="day-btn" data-day="6">Sat</button>
+          <button type="button" class="day-btn" data-day="0">Sun</button>
+        </div>
+        <div id="sched-days-hint" style="font-size:11px;color:var(--muted);margin-top:5px"></div>
+      </div>
+      <div id="sched-tolerance-wrap" style="display:none">
+        <label style="margin-top:8px;margin-bottom:5px">GAP TOLERANCE (days either side)</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="number" id="opt-tolerance" min="0" max="5" value="1"
+            style="width:70px;font-family:var(--mono);font-size:18px;font-weight:700;text-align:center">
+          <span style="font-size:12px;color:var(--muted)">e.g. 1 = refill expected ±1 day of scheduled day</span>
+        </div>
+      </div>
+    </div>
+    <div id="shop-opt-err" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none"></div>
+    <button class="btn btn-primary" style="margin-bottom:8px" onclick="saveShopOptions()">💾 Save Changes</button>
+    <button class="btn btn-danger" onclick="deleteShop()">🗑 Delete Shop & All Data</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal('shop-options-modal')">Cancel</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="resolve-modal">
+  <div class="modal-sheet">
+    <h2>✅ Resolve Prediction</h2>
+    <p>Mark each code as Hit or Miss based on the actual refill received.</p>
+    <div class="field"><label>ACTUAL REFILL DATE</label><input type="date" id="resolve-date"></div>
+    <div id="resolve-codes-list" style="margin-bottom:14px"></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('resolve-modal')">Cancel</button>
+      <button class="btn btn-success" onclick="submitResolution()">✅ Save Outcome</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-bg" id="confirm-modal">
+  <div class="modal-sheet">
+    <h2 id="confirm-title">Are you sure?</h2>
+    <p id="confirm-msg"></p>
+    <div class="confirm-btns">
+      <button class="btn btn-secondary" id="confirm-cancel">Cancel</button>
+      <button class="btn btn-danger" id="confirm-ok">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STORAGE ──────────────────────────────
+var DB_KEY='inv_intel_v4', DB_BAK='inv_intel_bak', AK_KEY='inv_intel_apikey';
+
+function loadDB(){
+  try{
+    // Try current key
+    var d=JSON.parse(localStorage.getItem(DB_KEY));
+    if(d&&d.shops&&Object.keys(d.shops).length) return d;
+    // Try backup key
+    var bak=JSON.parse(localStorage.getItem(DB_BAK));
+    if(bak&&bak.shops&&Object.keys(bak.shops).length){
+      localStorage.setItem(DB_KEY,JSON.stringify(bak));
+      return bak;
+    }
+    // Try older versioned keys
+    var oldKeys=['inv_intel_v3','inv_intel_v2','inv_intel_v1'];
+    for(var i=0;i<oldKeys.length;i++){
+      try{
+        var old=JSON.parse(localStorage.getItem(oldKeys[i]));
+        if(old&&old.shops&&Object.keys(old.shops).length){
+          Object.keys(old.shops).forEach(function(c){
+            if(!old.shops[c].predictions) old.shops[c].predictions=[];
+          });
+          localStorage.setItem(DB_KEY,JSON.stringify(old));
+          localStorage.setItem(DB_BAK,JSON.stringify(old));
+          return old;
+        }
+      }catch(e2){}
+    }
+    return {shops:{}};
+  }catch(e){ return {shops:{}}; }
+}
+function saveDB(d){
+  var str=JSON.stringify(d);
+  localStorage.setItem(DB_KEY,str);
+  localStorage.setItem(DB_BAK,str); // always write backup simultaneously
+}
+function getApiKey(){ return localStorage.getItem(AK_KEY)||''; }
+
+var db={shops:{}}, activeShop=null;
+
+// ── SHOP HELPERS ──────────────────────────
+function shopData(c){
+  if(!db.shops[c]) db.shops[c]={name:'',entries:[],predictions:[]};
+  if(!db.shops[c].predictions) db.shops[c].predictions=[];
+  return db.shops[c];
+}
+function shopEntries(c){ return shopData(c).entries; }
+function shopPreds(c){ return shopData(c).predictions; }
+
+// ── NAVIGATION ────────────────────────────
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('panel-'+id).classList.add('active');
+  document.getElementById('nav-'+id).classList.add('active');
+  if(id==='archive')    renderArchive();
+  if(id==='analytics')  renderAnalytics();
+  if(id==='dashboard')  renderDashboard();
+  if(id==='track')      renderTrack();
+  if(id==='confidence') renderConfidence();
+  if(id==='guide')      renderGuide();
+  if(id==='storage')    renderStoragePanel();
+}
+function curPanel(){
+  var p=document.querySelector('.panel.active');
+  return p ? p.id.replace('panel-','') : 'collect';
+}
+
+// ── SHOP PILLS ────────────────────────────
+function renderShopPills(){
+  var row=document.getElementById('shop-row');
+  row.querySelectorAll('.shop-pill').forEach(function(e){e.remove();});
+  var addBtn=document.getElementById('add-shop-btn');
+  Object.keys(db.shops).sort().forEach(function(code){
+    var s=db.shops[code];
+    var hasPending=(s.predictions||[]).some(function(p){return p.status==='pending';});
+    var pill=document.createElement('button');
+    pill.type='button';
+    pill.className='shop-pill'+(s.entries.length?' has-data':'')+(activeShop===code?' active':'')+(hasPending?' pending-pred':'');
+    pill.textContent=code;
+    pill.setAttribute('data-shop',code);
+    row.insertBefore(pill,addBtn);
+  });
+}
+
+// ── SHOP SELECTION ────────────────────────
+function selectShop(code){
+  activeShop=code;
+  db=loadDB();
+  var old=document.getElementById('refill-result-alert');
+  if(old) old.remove();
+  var cw=document.getElementById('continuity-warn');
+  if(cw) cw.remove();
+  renderShopPills();
+  updateAllBanners();
+  var p=curPanel();
+  if(p==='archive')   renderArchive();
+  if(p==='analytics') renderAnalytics();
+  if(p==='dashboard') renderDashboard();
+  if(p==='track')     renderTrack();
+  document.getElementById('no-shop-msg').style.display='none';
+  document.getElementById('content').style.overflowY='auto';
+}
+
+function updateAllBanners(){
+  var code=activeShop||'';
+  var s=code&&db.shops[code];
+  var name=s&&s.name ? s.name : (code?'Shop '+code:'');
+  var ec=s?(s.entries||[]).length:0;
+  var sub=code?(ec?ec+' refill'+(ec===1?'':'s')+' recorded':'No entries yet'):'Select a shop above';
+
+  // Collect banner
+  var bEl=document.getElementById('collect-banner');
+  document.getElementById('sb-code').textContent=code||'—';
+  document.getElementById('sb-code').className='sb-code'+(code?'':' no-shop');
+  document.getElementById('sb-name').textContent=name||'No shop selected';
+  document.getElementById('sb-sub').textContent=sub;
+  bEl.className='shop-banner'+(code?'':' no-shop');
+  document.getElementById('text-shop-lbl').textContent=code?'Shop '+code:'';
+
+  // Archive banner
+  document.getElementById('arch-sb-code').textContent=code||'—';
+  document.getElementById('arch-sb-name').textContent=name||'No shop selected';
+  document.getElementById('arch-sb-sub').textContent=sub;
+
+  // Analytics banner
+  document.getElementById('ana-sb-code').textContent=code||'—';
+  document.getElementById('ana-sb-name').textContent=name||'No shop selected';
+  document.getElementById('ana-sb-sub').textContent=sub;
+
+  // Dashboard banner
+  document.getElementById('dash-sb-code').textContent=code||'—';
+  document.getElementById('dash-sb-name').textContent=name||'No shop selected';
+  document.getElementById('dash-sb-sub').textContent=sub;
+
+  // Track banner
+  document.getElementById('track-sb-code').textContent=code||'—';
+  document.getElementById('track-sb-name').textContent=name||'No shop selected';
+  document.getElementById('track-sb-sub').textContent=sub;
+}
+
+function scrollShopRow(){
+  document.getElementById('topbar').scrollIntoView({behavior:'smooth'});
+}
+
+// ── MODALS ────────────────────────────────
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openApiModal(){document.getElementById('api-key-input').value=getApiKey();openModal('api-modal');}
+function saveApiKey(){
+  localStorage.setItem(AK_KEY,document.getElementById('api-key-input').value.trim());
+  closeModal('api-modal');
+  document.getElementById('api-key-alert').style.display=getApiKey()?'none':'block';
+  showToast('API key saved');
+}
+
+// ── ADD SHOP ──────────────────────────────
+function openAddShopModal(){
+  document.getElementById('new-shop-code').value='';
+  document.getElementById('new-shop-name').value='';
+  document.getElementById('add-shop-err').style.display='none';
+  openModal('add-shop-modal');
+  setTimeout(function(){document.getElementById('new-shop-code').focus();},300);
+}
+function submitAddShop(){
+  var code=document.getElementById('new-shop-code').value.trim().toUpperCase();
+  var name=document.getElementById('new-shop-name').value.trim();
+  var err=document.getElementById('add-shop-err');
+  if(!code){err.textContent='Enter a shop code.';err.style.display='block';return;}
+  if(!/^[A-Z0-9]{1,3}$/.test(code)){err.textContent='1–3 letters/numbers only.';err.style.display='block';return;}
+  db=loadDB();
+  if(db.shops[code]){err.textContent='Shop "'+code+'" already exists.';err.style.display='block';return;}
+  db.shops[code]={name:name,entries:[],predictions:[]};
+  saveDB(db);
+  closeModal('add-shop-modal');
+  renderShopPills();
+  selectShop(code);
+  showToast('Shop '+code+' added');
+}
+
+// ── SHOP OPTIONS ──────────────────────────
+var schedState = { type:'none', days:[], tolerance:1 };
+
+function openShopOptions(code){
+  db=loadDB();
+  var s=db.shops[code]||{};
+  document.getElementById('shop-opt-title').textContent='Shop '+code+(s.name?' — '+s.name:'');
+  document.getElementById('opt-code').value=code;
+  document.getElementById('opt-name').value=s.name||'';
+  document.getElementById('shop-opt-err').style.display='none';
+  document.getElementById('shop-options-modal').dataset.orig=code;
+  // Load schedule
+  var sched=s.schedule||{type:'none',days:[],tolerance:1};
+  schedState={type:sched.type||'none',days:(sched.days||[]).slice(),tolerance:sched.tolerance||1};
+  document.getElementById('opt-tolerance').value=schedState.tolerance;
+  renderSchedButtons();
+  openModal('shop-options-modal');
+}
+
+function renderSchedButtons(){
+  document.querySelectorAll('.sched-btn').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-sched')===schedState.type);
+  });
+  var showDays = schedState.type==='weekly'||schedState.type==='twice';
+  document.getElementById('sched-days-wrap').style.display = showDays?'block':'none';
+  document.getElementById('sched-tolerance-wrap').style.display = showDays?'block':'none';
+  document.querySelectorAll('.day-btn').forEach(function(b){
+    var d=parseInt(b.getAttribute('data-day'),10);
+    b.classList.toggle('active', schedState.days.indexOf(d)>-1);
+  });
+  var hint = schedState.type==='weekly'
+    ? 'Select 1 day — refill expected every week on that day.'
+    : schedState.type==='twice'
+    ? 'Select 2 days — refill expected twice per week on those days.'
+    : '';
+  document.getElementById('sched-days-hint').textContent=hint;
+}
+
+function saveShopOptions(){
+  var orig=document.getElementById('shop-options-modal').dataset.orig;
+  var newCode=document.getElementById('opt-code').value.trim().toUpperCase();
+  var newName=document.getElementById('opt-name').value.trim();
+  var err=document.getElementById('shop-opt-err');
+  if(!newCode){err.textContent='Code cannot be empty.';err.style.display='block';return;}
+  if(!/^[A-Z0-9]{1,3}$/.test(newCode)){err.textContent='1–3 letters/numbers only.';err.style.display='block';return;}
+  // Validate schedule day selection
+  if(schedState.type==='weekly'&&schedState.days.length!==1){
+    err.textContent='Select exactly 1 day for weekly schedule.';err.style.display='block';return;
+  }
+  if(schedState.type==='twice'&&schedState.days.length!==2){
+    err.textContent='Select exactly 2 days for twice-weekly schedule.';err.style.display='block';return;
+  }
+  db=loadDB();
+  if(newCode!==orig){
+    if(db.shops[newCode]){err.textContent='"'+newCode+'" already exists.';err.style.display='block';return;}
+    db.shops[newCode]=JSON.parse(JSON.stringify(db.shops[orig]));
+    delete db.shops[orig];
+    if(activeShop===orig) activeShop=newCode;
+  }
+  db.shops[newCode].name=newName;
+  db.shops[newCode].schedule={
+    type:schedState.type,
+    days:schedState.days.slice(),
+    tolerance:parseInt(document.getElementById('opt-tolerance').value,10)||1
+  };
+  saveDB(db);
+  closeModal('shop-options-modal');
+  renderShopPills();
+  updateAllBanners();
+  showToast('Saved');
+}
+function deleteShop(){
+  var code=document.getElementById('shop-options-modal').dataset.orig;
+  appConfirm('Delete Shop '+code,'All entries and predictions will be permanently deleted.',function(){
+    db=loadDB();
+    delete db.shops[code];
+    saveDB(db);
+    if(activeShop===code){activeShop=null;}
+    closeModal('shop-options-modal');
+    renderShopPills();
+    updateAllBanners();
+    if(!activeShop){
+      document.getElementById('no-shop-msg').style.display='flex';
+      document.getElementById('content').style.overflow='hidden';
+    }
+    showToast('Shop deleted');
+  });
+}
+
+// ── HELPERS ───────────────────────────────
+function parseCodes(text){
+  var nums=text.match(/\b\d{1,2}\b/g)||[];
+  return nums.map(function(n){return n.padStart(2,'0');}).filter(function(c){return parseInt(c,10)<=99;});
+}
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function codesDisplay(codes){
+  var counts={};
+  codes.forEach(function(c){counts[c]=(counts[c]||0)+1;});
+  var seen={};
+  return codes.filter(function(c){if(seen[c])return false;seen[c]=true;return true;})
+    .map(function(c){return counts[c]>1?c+' x'+counts[c]:c;}).join('  ');
+}
+function renderTagGrid(id,codes){
+  var el=document.getElementById(id); el.innerHTML='';
+  var counts={};
+  codes.forEach(function(c){counts[c]=(counts[c]||0)+1;});
+  var seen={};
+  codes.forEach(function(c){
+    if(seen[c]) return; seen[c]=true;
+    var t=document.createElement('span');
+    t.className='tag';
+    t.textContent=counts[c]>1?c+' x'+counts[c]:c;
+    el.appendChild(t);
+  });
+}
+
+// ── SAVE ENTRIES ──────────────────────────
+
+// Canonical signature: sorted codes joined, so order doesn't matter but counts do
+// e.g. ["12","07","12"] → "07|12|12"
+function refillSig(codes){
+  return codes.slice().sort().join('|');
+}
+
+// Rule 1: same shop already has this exact refill (same date + same codes)
+function isDuplicateInShop(letter,date,codes){
+  var sig=refillSig(codes);
+  return shopEntries(letter).some(function(e){
+    return e.date===date && refillSig(e.codes)===sig;
+  });
+}
+
+// Rule 2: any other shop already has this exact refill (same date + same codes)
+function isDuplicateAcrossShops(excludeLetter,date,codes){
+  var sig=refillSig(codes);
+  var found=null;
+  Object.keys(db.shops).forEach(function(code){
+    if(code===excludeLetter) return;
+    (db.shops[code].entries||[]).forEach(function(e){
+      if(e.date===date && refillSig(e.codes)===sig) found=code;
+    });
+  });
+  return found; // returns the conflicting shop code, or null
+}
+
+function saveTextEntry(){
+  if(!activeShop){showToast('Select a shop first','warn');return;}
+  var codes=parseCodes(document.getElementById('text-input').value);
+  if(!codes.length){showToast('No valid codes found','warn');return;}
+  var date=document.getElementById('text-date').value||todayStr();
+  db=loadDB();
+  if(isDuplicateInShop(activeShop,date,codes)){
+    showToast('Duplicate — this refill is already saved for Shop '+activeShop,'warn');
+    return;
+  }
+  var clash=isDuplicateAcrossShops(activeShop,date,codes);
+  if(clash){
+    showToast('Duplicate — identical refill already exists in Shop '+clash,'warn');
+    return;
+  }
+  // Continuity warning (non-blocking)
+  showContinuityWarning(activeShop, date);
+  addEntry(activeShop,date,codes,'text');
+  document.getElementById('text-input').value='';
+  document.getElementById('text-tags').innerHTML='';
+  // Compare against prediction and show immediate result
+  var resolveResult=autoResolve(activeShop,date,codes);
+  showRefillResultAlert(resolveResult, codes, date);
+  showBackupReminder();
+  showToast('Saved to Shop '+activeShop);
+}
+
+function addEntry(letter,date,codes,source){
+  db=loadDB();
+  shopData(letter).entries.push({id:Date.now(),date:date,codes:codes,source:source});
+  shopData(letter).entries.sort(function(a,b){return a.date.localeCompare(b.date);});
+  saveDB(db);
+  autoSavePrediction(letter);
+  renderShopPills();
+  updateAllBanners();
+}
+
+// Auto-generate and store the current top-3 prediction after every refill entry.
+// Replaces any existing pending prediction — the latest data always produces the freshest forecast.
+function autoSavePrediction(letter){
+  db=loadDB();
+  var entries=shopEntries(letter);
+  if(entries.length<3) return;
+  var preds=shopPreds(letter);
+  var result=buildCombinedScore(entries,preds,letter);
+  var scores=result.scores;
+  var snapshots=result.snapshots;
+  var top3=Object.entries(scores).sort(function(a,b){return b[1]-a[1];}).slice(0,3);
+  if(!top3.length) return;
+  db.shops[letter].predictions=preds.filter(function(p){return p.status!=='pending';});
+  db.shops[letter].predictions.push({
+    id:Date.now(),
+    createdDate:todayStr(),
+    targetDate:null,
+    predictedCodes:top3.map(function(x){return x[0];}),
+    scores:top3.reduce(function(o,x){o[x[0]]=x[1];return o;},{}),
+    signalSnapshot: (function(){  // store signals for each top-3 code for weight update
+      var snap={};
+      top3.forEach(function(x){snap[x[0]]=snapshots[x[0]]||{};});
+      return snap;
+    })(),
+    weightsAtTime: Object.assign({},result.weights), // snapshot of weights used
+    status:'pending',
+    outcome:null,
+    actualDate:null,
+    actualCodes:null,
+    auto:true
+  });
+  saveDB(db);
+}
+
+// ── AUTO-RESOLVE ──────────────────────────
+function autoResolve(letter,actualDate,actualCodes){
+  db=loadDB();
+  var changed=false;
+  var worstStatus='hit';
+  var resolvedPreds=[];
+
+  shopPreds(letter).forEach(function(pred){
+    if(pred.status!=='pending') return;
+    // Auto predictions: resolve when any new refill arrives after the prediction was created
+    // Manual predictions: resolve when refill date >= target date
+    var shouldResolve = pred.auto
+      ? actualDate>pred.createdDate
+      : (pred.targetDate ? actualDate>=pred.targetDate : true);
+    if(!shouldResolve) return;
+
+    var outcome={};
+    pred.predictedCodes.forEach(function(c){
+      outcome[c]=actualCodes.includes(c)?'hit':'miss';
+    });
+    pred.status=resolveStatus(outcome);
+    pred.outcome=outcome;
+    pred.actualDate=actualDate;
+    pred.actualCodes=actualCodes;
+    resolvedPreds.push({
+      predictedCodes:pred.predictedCodes,
+      outcome:outcome,
+      status:pred.status
+    });
+    if(pred.status==='miss') worstStatus='miss';
+    else if(pred.status==='partial'&&worstStatus!=='miss') worstStatus='partial';
+    changed=true;
+  });
+
+  if(changed){
+    saveDB(db);
+    renderShopPills();
+    // Update weights for each resolved prediction
+    resolvedPreds.forEach(function(pred){
+      updateWeights(letter, pred);
+    });
+    if(worstStatus==='miss'||worstStatus==='partial'){
+      triggerAutoBacktest(letter, worstStatus);
+    }
+  }
+
+  return {
+    hadPrediction: resolvedPreds.length>0,
+    resolved: resolvedPreds,
+    worstStatus: changed ? worstStatus : null,
+    backtest: changed&&(worstStatus==='miss'||worstStatus==='partial')
+      ? ((loadDB().shops[letter]||{}).lastAutoBacktest||null)
+      : null
+  };
+}
+
+// ── REFILL RESULT ALERT ───────────────────
+function showRefillResultAlert(result, actualCodes, date){
+  // Remove any existing alert
+  var old=document.getElementById('refill-result-alert');
+  if(old) old.remove();
+
+  if(!result||!result.hadPrediction){
+    // No pending prediction — show a gentle nudge if there are enough entries
+    db=loadDB();
+    var entries=shopEntries(activeShop);
+    if(entries.length>=3){
+      var nudge=document.createElement('div');
+      nudge.id='refill-result-alert';
+      nudge.className='alert alert-info';
+      nudge.style.marginBottom='12px';
+      nudge.innerHTML='💡 No prediction was locked before this refill. Go to <strong>Predict</strong> and lock a prediction before the next one arrives.';
+      var firstCard=document.querySelector('#panel-collect .card');
+      if(firstCard) firstCard.parentNode.insertBefore(nudge, firstCard);
+    }
+    return;
+  }
+
+  // Build the result card
+  var pred=result.resolved[0]; // show first resolved prediction
+  var hits=pred.predictedCodes.filter(function(c){return pred.outcome[c]==='hit';});
+  var misses=pred.predictedCodes.filter(function(c){return pred.outcome[c]==='miss';});
+  var hitRate=Math.round(hits.length/pred.predictedCodes.length*100);
+
+  var statusIcon=pred.status==='hit'?'✅':pred.status==='partial'?'⚡':'❌';
+  var statusLabel=pred.status==='hit'?'All predicted codes appeared':pred.status==='partial'?'Some predicted codes appeared':'No predicted codes appeared';
+  var alertCls=pred.status==='hit'?'alert-success':pred.status==='partial'?'alert-warn':'alert-error';
+
+  var codesHtml='<div style="display:flex;flex-wrap:wrap;gap:5px;margin:8px 0">';
+  pred.predictedCodes.forEach(function(c){
+    var isHit=pred.outcome[c]==='hit';
+    codesHtml+='<span class="tag '+(isHit?'hit':'miss')+'" style="font-size:13px">'+c+' '+(isHit?'✓':'✗')+'</span>';
+  });
+  codesHtml+='</div>';
+
+  // Codes in actual refill not predicted
+  var surprise=actualCodes.filter(function(c){
+    return pred.predictedCodes.indexOf(c)===-1;
+  });
+  var uniqueSurprise=Array.from(new Set(surprise));
+  var surpriseHtml='';
+  if(uniqueSurprise.length){
+    surpriseHtml='<div style="font-size:11px;color:var(--muted);margin-top:4px">Also arrived (not predicted): '
+      +uniqueSurprise.map(function(c){return '<span style="font-family:var(--mono);font-weight:700">'+c+'</span>';}).join(' ')
+      +'</div>';
+  }
+
+  var btHtml='';
+  // Show backtest result if triggered
+  db=loadDB();
+  var abt=(db.shops[activeShop]||{}).lastAutoBacktest;
+  if(abt&&abt.result&&(pred.status==='miss'||pred.status==='partial')){
+    var r=abt.result;
+    var btColor=r.overallPct>=60?'var(--green)':r.overallPct>=40?'var(--gold)':'var(--red)';
+    var btMsg=r.overallPct>=60?'Model signal is still strong — this miss may be an outlier.'
+      :r.overallPct>=40?'Model has moderate accuracy. Consider adding more refill data.'
+      :'Model accuracy is low. Predictions need more historical data to improve.';
+    btHtml='<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.1)">'
+      +'<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">🧪 Auto-Backtest Result</div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center">'
+      +'<span style="font-size:12px;color:var(--muted)">Model accuracy on held-out data</span>'
+      +'<span style="font-family:var(--mono);font-weight:800;font-size:16px;color:'+btColor+'">'+r.overallPct+'%</span>'
+      +'</div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-top:3px">'+btMsg+'</div>'
+      +'</div>';
+  }
+
+  var alert=document.createElement('div');
+  alert.id='refill-result-alert';
+  alert.className='alert '+alertCls;
+  alert.style.marginBottom='12px';
+  alert.innerHTML=
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+    +'<strong style="font-size:14px">'+statusIcon+' '+statusLabel+'</strong>'
+    +'<span style="font-family:var(--mono);font-weight:800;font-size:16px">'+hits.length+'/'+pred.predictedCodes.length+'</span>'
+    +'</div>'
+    +'<div style="font-size:11px;opacity:.8;margin-bottom:2px">Refill date: '+date+' · Prediction hit rate: '+hitRate+'%</div>'
+    +codesHtml
+    +surpriseHtml
+    +btHtml;
+
+  var firstCard=document.querySelector('#panel-collect .card');
+  if(firstCard) firstCard.parentNode.insertBefore(alert, firstCard);
+}
+function resolveStatus(outcome){
+  var vals=Object.values(outcome);
+  var hits=vals.filter(function(v){return v==='hit';}).length;
+  if(hits===vals.length) return 'hit';
+  if(hits===0) return 'miss';
+  return 'partial';
+}
+
+// ── AUTO-BACKTEST ─────────────────────────
+function triggerAutoBacktest(letter, triggerStatus){
+  db=loadDB();
+  var entries=shopEntries(letter);
+  if(entries.length<4){
+    shopData(letter).lastAutoBacktest={
+      triggeredBy:triggerStatus, triggeredAt:todayStr(),
+      result:null,
+      note:'Not enough entries to backtest (need 4, have '+entries.length+').'
+    };
+    saveDB(db); return;
+  }
+  var preds=shopPreds(letter);
+  var holdN=Math.min(3,Math.max(1,Math.floor(entries.length*0.25)));
+  var train=entries.slice(0,entries.length-holdN);
+  var test=entries.slice(entries.length-holdN);
+  var scores=buildCombinedScore(train,preds,letter).scores;
+  var top5=Object.entries(scores).sort(function(a,b){return b[1]-a[1];}).slice(0,5).map(function(x){return x[0];});
+  var totalHits=0, totalSlots=0;
+  var holdouts=test.map(function(e){
+    var hits=top5.filter(function(c){return e.codes.includes(c);});
+    totalHits+=hits.length; totalSlots+=top5.length;
+    return {date:e.date,hits:hits.length,total:top5.length,matched:hits};
+  });
+  var pct=totalSlots>0?Math.round(totalHits/totalSlots*100):0;
+  var interp=pct>=60?'strong':pct>=40?'moderate':pct>=20?'weak':'very-weak';
+  shopData(letter).lastAutoBacktest={
+    triggeredBy:triggerStatus, triggeredAt:todayStr(),
+    result:{trainCount:train.length,holdoutCount:holdN,top5:top5,holdouts:holdouts,overallPct:pct,interpretation:interp},
+    note:null
+  };
+  saveDB(db);
+  if(curPanel()==='track'&&activeShop===letter) renderTrack();
+}
+
+// ── CONFIRM MODAL (replaces confirm() which Safari blocks) ──
+var confirmCallback=null;
+function appConfirm(title,msg,onOk){
+  document.getElementById('confirm-title').textContent=title;
+  document.getElementById('confirm-msg').textContent=msg;
+  confirmCallback=onOk;
+  openModal('confirm-modal');
+}
+// confirm buttons wired in DOMContentLoaded below
+function renderArchive(){
+  if(!activeShop) return;
+  db=loadDB();
+  var entries=shopEntries(activeShop);
+  var allCodes=entries.reduce(function(a,e){return a.concat(e.codes);},[]);
+  document.getElementById('a-entries').textContent=entries.length;
+  document.getElementById('a-items').textContent=allCodes.length;
+  document.getElementById('a-unique').textContent=new Set(allCodes).size;
+  var list=document.getElementById('archive-list');
+  if(!entries.length){
+    list.innerHTML='<div class="empty-state"><div class="es-icon">📂</div><p>No refill entries yet.</p></div>';
+    return;
+  }
+  list.innerHTML=entries.slice().reverse().map(function(e){
+    return '<div class="entry-item">'
+      +'<div class="entry-item-body">'
+      +'<div class="entry-meta">'
+      +'<div class="entry-date">📅 '+e.date+'</div>'
+      +'<div class="entry-codes">'+codesDisplay(e.codes)+'</div>'
+      +'<span class="entry-badge '+(e.source==='ocr'?'source-ocr':'source-text')+'">'
+      +(e.source==='ocr'?'📷 OCR':'✏️ TEXT')+' · '+e.codes.length+' item'+(e.codes.length!==1?'s':'')+'</span>'
+      +'</div>'
+      +'</div>'
+      +'<button class="del-btn" data-del-entry="'+e.id+'" type="button">🗑 Delete this entry</button>'
+      +'</div>';
+  }).join('');
+}
+function exportShopData(){
+  if(!activeShop) return;
+  db=loadDB();
+  var blob=new Blob([JSON.stringify({shop:activeShop,data:db.shops[activeShop]},null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download='insight-shop-'+activeShop+'-export.json'; a.click();
+}
+function clearShopData(){
+  if(!activeShop) return;
+  appConfirm('Clear Shop '+activeShop,'All refill entries will be deleted. Predictions are kept.',function(){
+    db=loadDB(); db.shops[activeShop].entries=[];
+    saveDB(db); renderArchive(); renderShopPills(); updateAllBanners();
+    showToast('Entries cleared');
+  });
+}
+
+// ── ANALYTICS ENGINE ─────────────────────
+
+function buildFreqMap(entries){
+  var f={};
+  entries.forEach(function(e){e.codes.forEach(function(c){f[c]=(f[c]||0)+1;});});
+  return f;
+}
+function buildAppearanceRate(entries){
+  var r={},n=entries.length;
+  entries.forEach(function(e){
+    var seen={};
+    e.codes.forEach(function(c){if(!seen[c]){seen[c]=true;r[c]=(r[c]||0)+1;}});
+  });
+  Object.keys(r).forEach(function(k){r[k]=r[k]/n;});
+  return r;
+}
+function buildAvgQty(entries){
+  var totals={},apps={};
+  entries.forEach(function(e){
+    var cnt={};
+    e.codes.forEach(function(c){cnt[c]=(cnt[c]||0)+1;});
+    Object.keys(cnt).forEach(function(c){totals[c]=(totals[c]||0)+cnt[c];apps[c]=(apps[c]||0)+1;});
+  });
+  var avg={};
+  Object.keys(totals).forEach(function(c){avg[c]=totals[c]/apps[c];});
+  return avg;
+}
+function buildWeightedScore(entries){
+  var s={},n=entries.length;
+  entries.forEach(function(e,i){
+    var w=(i+1)/n;
+    e.codes.forEach(function(c){s[c]=(s[c]||0)+w;});
+  });
+  return s;
+}
+function buildStreaks(entries){
+  var st={},rev=entries.slice().reverse();
+  for(var code=0;code<=99;code++){
+    var c=String(code).padStart(2,'0'),streak=0;
+    for(var i=0;i<rev.length;i++){if(rev[i].codes.includes(c))streak++;else break;}
+    if(streak>0)st[c]=streak;
+  }
+  return st;
+}
+
+// ── NEW SIGNAL 1: Co-occurrence ───────────
+// For each pair of codes that appear together, accumulate a shared score.
+// Returns {code: cooccurScore} — how strongly each code is pulled up by its partners.
+// Only activates if a partner code is already scoring highly (applied in buildCombinedScore).
+function buildCooccurrence(entries){
+  // pairCount[A][B] = number of entries where both A and B appeared
+  var pairCount={}, codeCount={};
+  entries.forEach(function(e){
+    var unique=Array.from(new Set(e.codes));
+    unique.forEach(function(c){ codeCount[c]=(codeCount[c]||0)+1; });
+    for(var i=0;i<unique.length;i++){
+      for(var j=i+1;j<unique.length;j++){
+        var a=unique[i],b=unique[j];
+        var key=a<b?a+'|'+b:b+'|'+a;
+        pairCount[key]=(pairCount[key]||0)+1;
+      }
+    }
+  });
+  // For each code, sum the pair rates with all its partners
+  // pairRate(A,B) = pairCount(A,B) / count(A)  → "given A appeared, how often did B also appear?"
+  var coScore={};
+  Object.keys(pairCount).forEach(function(key){
+    var parts=key.split('|'), a=parts[0], b=parts[1], n=pairCount[key];
+    var rateAB=codeCount[a]>0?n/codeCount[a]:0; // B given A
+    var rateBA=codeCount[b]>0?n/codeCount[b]:0; // A given B
+    coScore[b]=(coScore[b]||0)+rateAB; // b gets lifted by a
+    coScore[a]=(coScore[a]||0)+rateBA; // a gets lifted by b
+  });
+  return coScore; // unnormalised — normalised in buildCombinedScore
+}
+
+// ── NEW SIGNAL 2: Interval Regularity ────
+// Measures how consistent the gap is between a code's appearances.
+// Low variance = high regularity = high score.
+// Returns {code: regularityScore 0–1}
+function buildIntervalRegularity(entries){
+  var reg={};
+  var sorted=entries.slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+  var allCodes=Array.from(new Set(entries.reduce(function(a,e){return a.concat(e.codes);},[])));
+  allCodes.forEach(function(c){
+    var appearances=sorted.filter(function(e){return e.codes.includes(c);});
+    if(appearances.length<3){ reg[c]=0; return; } // need 3+ to measure regularity
+    var gaps=[];
+    for(var i=1;i<appearances.length;i++){
+      var d1=new Date(appearances[i-1].date+'T12:00:00');
+      var d2=new Date(appearances[i].date+'T12:00:00');
+      gaps.push(Math.round((d2-d1)/(1000*60*60*24)));
+    }
+    var mean=gaps.reduce(function(a,b){return a+b;},0)/gaps.length;
+    if(mean===0){ reg[c]=0; return; }
+    var variance=gaps.reduce(function(a,b){return a+Math.pow(b-mean,2);},0)/gaps.length;
+    var cv=Math.sqrt(variance)/mean; // coefficient of variation: 0=perfect, high=irregular
+    reg[c]=Math.max(0,1-cv); // invert: 1=perfectly regular, 0=chaotic
+  });
+  return reg;
+}
+
+// ── NEW SIGNAL 3: Day-of-week Pattern ─────
+// Learned from data — does this code tend to appear on specific days?
+// Returns {code: dowScore 0–1} where 1 = today's DOW is the code's strongest day
+function buildDowPattern(entries){
+  var dow={};
+  var today=new Date().getDay(); // 0=Sun … 6=Sat
+  entries.forEach(function(e){
+    var d=new Date(e.date+'T12:00:00').getDay();
+    var unique=Array.from(new Set(e.codes));
+    unique.forEach(function(c){
+      if(!dow[c]) dow[c]=new Array(7).fill(0);
+      dow[c][d]++;
+    });
+  });
+  var score={};
+  Object.keys(dow).forEach(function(c){
+    var counts=dow[c];
+    var total=counts.reduce(function(a,b){return a+b;},0);
+    if(total===0){ score[c]=0.5; return; }
+    var todayRate=counts[today]/total; // fraction of appearances on today's DOW
+    var expected=1/7; // uniform baseline
+    // How much stronger than random is today's DOW for this code?
+    score[c]=Math.min(1, todayRate/expected/7); // normalised 0–1
+  });
+  return score;
+}
+
+// ── NEW SIGNAL 4: Miss-streak Penalty ─────
+// Exponentially penalises codes that have been consecutively wrong in recent predictions.
+// Returns {code: penaltyFactor 0–1} where 1=no penalty, 0=maximum penalty
+function buildMissStreakPenalty(predictions){
+  var resolved=predictions.filter(function(p){return p.status!=='pending'&&p.outcome;});
+  if(!resolved.length) return {};
+  var penalty={};
+  // Walk backwards through resolved predictions (newest first)
+  var recent=resolved.slice().reverse();
+  var codeMissStreak={};
+  recent.forEach(function(p){
+    Object.keys(p.outcome).forEach(function(c){
+      if(codeMissStreak[c]===undefined) codeMissStreak[c]=0;
+      if(p.outcome[c]==='miss') codeMissStreak[c]++;
+      else codeMissStreak[c]=0; // reset on hit
+    });
+  });
+  Object.keys(codeMissStreak).forEach(function(c){
+    var streak=codeMissStreak[c];
+    // Each consecutive miss reduces score: 0 misses=1.0, 1=0.85, 2=0.70, 3+=0.50
+    penalty[c]=streak===0?1.0:streak===1?0.85:streak===2?0.70:0.50;
+  });
+  return penalty;
+}
+
+// ── NEW SIGNAL 5: Quantity Trend ──────────
+// Is this code's quantity per refill growing, flat, or shrinking?
+// Returns {code: trendMultiplier} where >1 = growing, 1 = flat, <1 = shrinking
+function buildQtyTrend(entries){
+  var trend={};
+  var allCodes=Array.from(new Set(entries.reduce(function(a,e){return a.concat(e.codes);},[])));
+  allCodes.forEach(function(c){
+    var appearances=entries.filter(function(e){return e.codes.includes(c);});
+    if(appearances.length<4){ trend[c]=1.0; return; } // need 4+ to detect trend
+    // Split into two halves and compare avg quantity
+    var half=Math.floor(appearances.length/2);
+    var earlier=appearances.slice(0,half);
+    var later=appearances.slice(half);
+    function avgQty(set){
+      var total=set.reduce(function(a,e){
+        return a+e.codes.filter(function(x){return x===c;}).length;
+      },0);
+      return total/set.length;
+    }
+    var qEarly=avgQty(earlier), qLate=avgQty(later);
+    if(qEarly===0) { trend[c]=1.0; return; }
+    var ratio=qLate/qEarly;
+    // Cap multiplier: max +20% boost or -20% reduction
+    trend[c]=Math.min(1.20, Math.max(0.80, ratio));
+  });
+  return trend;
+}
+
+// ── BUILD BIAS (with miss-streak integrated) ──
+function buildBias(predictions){
+  var bias={};
+  var resolved=predictions.filter(function(p){return p.status!=='pending'&&p.outcome;});
+  if(!resolved.length) return bias;
+  var stats={};
+  resolved.forEach(function(p){
+    Object.keys(p.outcome).forEach(function(code){
+      if(!stats[code])stats[code]={hits:0,total:0};
+      stats[code].total++;
+      if(p.outcome[code]==='hit')stats[code].hits++;
+    });
+  });
+  Object.keys(stats).forEach(function(code){bias[code]=stats[code].hits/stats[code].total;});
+  return bias;
+}
+
+// ── WEIGHT ADAPTATION ENGINE ──────────────
+// Default weights for the 7 additive signals
+var DEFAULT_WEIGHTS = {
+  freq:    0.20,
+  recency: 0.25,
+  streak:  0.15,
+  bias:    0.10,
+  cooccur: 0.12,
+  interval:0.08,
+  dow:     0.05
+};
+var SIGNAL_KEYS = ['freq','recency','streak','bias','cooccur','interval','dow'];
+var LEARNING_RATE = 0.03;  // step size per update
+var WEIGHT_MIN    = 0.02;  // floor — no signal goes completely dark
+var WEIGHT_MAX    = 0.50;  // ceiling — no single signal dominates
+
+function getWeights(letter){
+  db=loadDB();
+  var w = (db.shops[letter]&&db.shops[letter].weights) ? db.shops[letter].weights : null;
+  if(!w) return Object.assign({},DEFAULT_WEIGHTS);
+  // Fill any missing keys with defaults (forward-compat)
+  var out = Object.assign({},DEFAULT_WEIGHTS);
+  SIGNAL_KEYS.forEach(function(k){ if(w[k]!==undefined) out[k]=w[k]; });
+  return out;
+}
+
+function saveWeights(letter, w){
+  db=loadDB();
+  if(!db.shops[letter]) return;
+  db.shops[letter].weights = w;
+  saveDB(db);
+}
+
+function normaliseWeights(w){
+  var total = SIGNAL_KEYS.reduce(function(s,k){return s+(w[k]||0);},0);
+  if(total===0) return Object.assign({},DEFAULT_WEIGHTS);
+  var out={};
+  SIGNAL_KEYS.forEach(function(k){
+    out[k] = Math.min(WEIGHT_MAX, Math.max(WEIGHT_MIN, (w[k]||0)/total));
+  });
+  // Re-normalise after clamping
+  var total2 = SIGNAL_KEYS.reduce(function(s,k){return s+out[k];},0);
+  SIGNAL_KEYS.forEach(function(k){ out[k]=out[k]/total2; });
+  return out;
+}
+
+// Called after each resolved prediction.
+// For each predicted code: compute gradient and nudge weights.
+// Gradient: if code was a HIT, nudge weights toward signals that were HIGH for it.
+//           if code was a MISS, nudge weights away from signals that were HIGH for it.
+function updateWeights(letter, resolvedPred){
+  if(!resolvedPred||!resolvedPred.signalSnapshot||!resolvedPred.outcome) return;
+  db=loadDB();
+  var entries=shopEntries(letter);
+  if(entries.length<5) return; // too little data for weight updates to be meaningful
+
+  var w = getWeights(letter);
+  var snap = resolvedPred.signalSnapshot; // {code: {freq:0.8, recency:0.6, ...}}
+  var codes = resolvedPred.predictedCodes;
+
+  codes.forEach(function(c){
+    if(!snap[c]) return;
+    var signals = snap[c];
+    var isHit   = resolvedPred.outcome[c]==='hit' ? 1 : 0;
+    var target  = isHit; // 1 for hit, 0 for miss
+
+    // For each signal: if signal value is high and outcome is hit → reinforce
+    // if signal value is high and outcome is miss → penalise
+    // Gradient: d_loss/d_w_k = (predicted - target) * signal_k
+    // predicted ≈ 0.5 (neutral baseline, since we don't have a sigmoid output)
+    // We use a simplified perceptron-style rule:
+    // Δw_k = learning_rate * (target - 0.5) * signal_k
+    SIGNAL_KEYS.forEach(function(k){
+      var sigVal = signals[k]||0;
+      var delta = LEARNING_RATE * (target - 0.5) * sigVal;
+      w[k] = (w[k]||DEFAULT_WEIGHTS[k]) + delta;
+    });
+  });
+
+  w = normaliseWeights(w);
+  saveWeights(letter, w);
+}
+
+function buildCombinedScore(entries, predictions, letter){
+  var freq    = buildFreqMap(entries);
+  var rec     = buildWeightedScore(entries);
+  var str     = buildStreaks(entries);
+  var bias    = buildBias(predictions||[]);
+  var cooc    = buildCooccurrence(entries);
+  var intReg  = buildIntervalRegularity(entries);
+  var dow     = buildDowPattern(entries);
+  var qtrend  = buildQtyTrend(entries);
+  var missPen = buildMissStreakPenalty(predictions||[]);
+
+  var w = letter ? getWeights(letter) : Object.assign({},DEFAULT_WEIGHTS);
+  var all=Array.from(new Set(entries.reduce(function(a,e){return a.concat(e.codes);},[])));
+
+  var mF  = Math.max.apply(null,Object.values(freq).concat([1]));
+  var mR  = Math.max.apply(null,Object.values(rec).concat([1]));
+  var mS  = Math.max.apply(null,Object.values(str).concat([1]));
+  var mC  = Math.max.apply(null,Object.values(cooc).concat([1]));
+
+  var scores={}, snapshots={};
+  all.forEach(function(c){
+    var bVal  = bias[c]!==undefined ? bias[c] : 0.5;
+    var boost = Math.max(0,(bVal-0.5)*2);
+
+    var sig = {
+      freq:     (freq[c]||0)/mF,
+      recency:  (rec[c]||0)/mR,
+      streak:   (str[c]||0)/mS,
+      bias:     boost,
+      cooccur:  (cooc[c]||0)/mC,
+      interval: (intReg[c]||0),
+      dow:      (dow[c]||0)
+    };
+
+    var base =
+      sig.freq     * w.freq     +
+      sig.recency  * w.recency  +
+      sig.streak   * w.streak   +
+      sig.bias     * w.bias     +
+      sig.cooccur  * w.cooccur  +
+      sig.interval * w.interval +
+      sig.dow      * w.dow;
+
+    var qt = qtrend[c]||1.0;
+    var mp = missPen[c]!==undefined ? missPen[c] : 1.0;
+
+    scores[c]    = base * qt * mp;
+    snapshots[c] = sig;
+  });
+  return {scores:scores, snapshots:snapshots, weights:w};
+}
+
+// ── RENDER ANALYTICS ─────────────────────
+function renderAnalytics(){
+  if(!activeShop) return;
+  db=loadDB();
+  var entries=shopEntries(activeShop);
+  if(entries.length<2){
+    document.getElementById('analytics-empty').style.display='block';
+    document.getElementById('analytics-content').style.display='none';
+    return;
+  }
+  document.getElementById('analytics-empty').style.display='none';
+  document.getElementById('analytics-content').style.display='block';
+
+  var freq    = buildFreqMap(entries);
+  var rates   = buildAppearanceRate(entries);
+  var streaks = buildStreaks(entries);
+  var avgQ    = buildAvgQty(entries);
+  var cooc    = buildCooccurrence(entries);
+  var intReg  = buildIntervalRegularity(entries);
+  var qtrend  = buildQtyTrend(entries);
+  var preds   = shopPreds(activeShop);
+  var missPen = buildMissStreakPenalty(preds);
+
+  // Frequency chart
+  var sorted=Object.entries(freq).sort(function(a,b){return b[1]-a[1];}).slice(0,20);
+  var maxF=sorted[0][1];
+  document.getElementById('freq-chart').innerHTML=sorted.map(function(item){
+    var c=item[0],n=item[1];
+    var avg=avgQ[c]||1;
+    var avgStr=avg>1.05?' avg x'+avg.toFixed(1):'';
+    return '<div class="freq-row">'
+      +'<span class="freq-code">'+c+'</span>'
+      +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+((n/maxF)*100).toFixed(1)+'%;background:var(--accent)"></div></div>'
+      +'<span class="freq-count">'+n+avgStr+'</span></div>';
+  }).join('');
+
+  // Recurrence pattern chips
+  var chips=[];
+  Object.entries(rates).filter(function(x){return x[1]>0.5;}).sort(function(a,b){return b[1]-a[1];}).slice(0,8)
+    .forEach(function(x){chips.push('<span class="insight-chip"><span class="chip-dot" style="background:var(--green)"></span>'+x[0]+' — '+Math.round(x[1]*100)+'% of refills</span>');});
+  Object.entries(streaks).filter(function(x){return x[1]>=2;}).sort(function(a,b){return b[1]-a[1];}).slice(0,5)
+    .forEach(function(x){chips.push('<span class="insight-chip"><span class="chip-dot" style="background:var(--gold)"></span>'+x[0]+' — '+x[1]+'-refill streak 🔥</span>');});
+  // Miss-streak penalties visible
+  Object.entries(missPen).filter(function(x){return x[1]<0.85;}).sort(function(a,b){return a[1]-b[1];}).slice(0,4)
+    .forEach(function(x){chips.push('<span class="insight-chip"><span class="chip-dot" style="background:var(--red)"></span>'+x[0]+' — miss-streak penalty '+Math.round((1-x[1])*100)+'% ⬇</span>');});
+  document.getElementById('pattern-insights').innerHTML=chips.length?chips.join(''):'<span style="color:var(--muted);font-size:12px">Add more entries to reveal patterns.</span>';
+
+  // Streaks
+  var topStr=Object.entries(streaks).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
+  document.getElementById('streak-content').innerHTML=topStr.length
+    ?topStr.map(function(x){return '<div class="bt-row"><span class="bt-label">Code '+x[0]+'</span><span class="bt-val bt-hit">'+x[1]+' consecutive refills</span></div>';}).join('')
+    :'<p style="color:var(--muted);font-size:12px">No active streaks yet.</p>';
+
+  // Signal effectiveness / adapted weights
+  var w = getWeights(activeShop);
+  var resolvedCount = preds.filter(function(p){return p.status!=='pending';}).length;
+  var wEntries = SIGNAL_KEYS.map(function(k){return [k,w[k]];}).sort(function(a,b){return b[1]-a[1];});
+  var wMax = wEntries[0][1];
+  var signalLabels = {freq:'Frequency',recency:'Recency',streak:'Streak',bias:'Pred. Accuracy',cooccur:'Co-occurrence',interval:'Interval',dow:'Day-of-week'};
+  var wHtml = '<p style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5">'
+    +(resolvedCount<5
+      ? '⚙️ Weights are at defaults — will auto-adapt after '+Math.max(0,5-resolvedCount)+' more resolved prediction'+(5-resolvedCount===1?'':'s')+'.'
+      : '⚙️ Adapted from '+resolvedCount+' resolved predictions. Weights drift toward signals that proved most predictive for this shop.')
+    +'</p>';
+  wHtml += wEntries.map(function(x){
+    var key=x[0], val=x[1];
+    var def=DEFAULT_WEIGHTS[key];
+    var pct=Math.round(val*100);
+    var defPct=Math.round(def*100);
+    var diff=pct-defPct;
+    var diffStr=diff>0?'<span style="color:var(--green)">+'+diff+'%</span>':diff<0?'<span style="color:var(--red)">'+diff+'%</span>':'<span style="color:var(--muted)">0%</span>';
+    var col=val>def?'var(--green)':val<def*0.8?'var(--red)':'var(--accent)';
+    return '<div class="freq-row">'
+      +'<span class="freq-code" style="font-size:11px;min-width:90px;font-family:var(--sans)">'+signalLabels[key]+'</span>'
+      +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+(val/wMax*100).toFixed(0)+'%;background:'+col+'"></div></div>'
+      +'<span class="freq-count" style="color:'+col+';min-width:30px">'+pct+'%</span>'
+      +'<span style="font-size:10px;min-width:36px;text-align:right">'+diffStr+'</span>'
+      +'</div>';
+  }).join('');
+  document.getElementById('signal-weights-content').innerHTML=wHtml;
+  var coocSorted=Object.entries(cooc).sort(function(a,b){return b[1]-a[1];}).slice(0,12);
+  var maxC=coocSorted.length?coocSorted[0][1]:1;
+  if(coocSorted.length){
+    // Also build top pairs
+    var pairCount={};
+    entries.forEach(function(e){
+      var u=Array.from(new Set(e.codes));
+      for(var i=0;i<u.length;i++) for(var j=i+1;j<u.length;j++){
+        var key=u[i]<u[j]?u[i]+'+'+u[j]:u[j]+'+'+u[i];
+        pairCount[key]=(pairCount[key]||0)+1;
+      }
+    });
+    var topPairs=Object.entries(pairCount).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
+    var pairsHtml=topPairs.map(function(x){
+      var pct=Math.round(x[1]/entries.length*100);
+      return '<span class="insight-chip"><span class="chip-dot" style="background:var(--accent2)"></span>'+x[0]+' together '+pct+'% of refills</span>';
+    }).join('');
+    document.getElementById('cooccur-content').innerHTML=
+      '<p style="font-size:11px;color:var(--muted);margin-bottom:8px">Codes that tend to arrive together. If one is predicted, the other gets a boost.</p>'
+      +(pairsHtml||'<span style="font-size:12px;color:var(--muted)">Not enough data yet.</span>');
+  } else {
+    document.getElementById('cooccur-content').innerHTML='<p style="color:var(--muted);font-size:12px">Need more entries to detect co-occurrence patterns.</p>';
+  }
+
+  // Interval regularity
+  var intSorted=Object.entries(intReg).filter(function(x){return x[1]>0;}).sort(function(a,b){return b[1]-a[1];}).slice(0,12);
+  var maxI=intSorted.length?intSorted[0][1]:1;
+  document.getElementById('interval-content').innerHTML=intSorted.length
+    ?'<p style="font-size:11px;color:var(--muted);margin-bottom:8px">1.0 = perfectly regular gaps. Lower = unpredictable timing.</p>'
+    +intSorted.map(function(x){
+      var pct=(x[1]/1)*100;
+      var col=pct>=70?'var(--green)':pct>=40?'var(--gold)':'var(--red)';
+      return '<div class="freq-row"><span class="freq-code">'+x[0]+'</span>'
+        +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+pct.toFixed(0)+'%;background:'+col+'"></div></div>'
+        +'<span class="freq-count" style="color:'+col+'">'+pct.toFixed(0)+'%</span></div>';
+    }).join('')
+    :'<p style="color:var(--muted);font-size:12px">Need 3+ appearances per code to measure regularity.</p>';
+
+  // Quantity trend
+  var qtSorted=Object.entries(qtrend).filter(function(x){return x[1]!==1.0;}).sort(function(a,b){return b[1]-a[1];});
+  var growing=qtSorted.filter(function(x){return x[1]>1.0;});
+  var shrinking=qtSorted.filter(function(x){return x[1]<1.0;});
+  var qtHtml='<p style="font-size:11px;color:var(--muted);margin-bottom:8px">Compares recent vs earlier average quantity. Boosts (+20% max) or reduces (−20% max) scores.</p>';
+  if(growing.length){
+    qtHtml+='<div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:4px">📈 Growing quantity</div>';
+    qtHtml+=growing.slice(0,6).map(function(x){
+      return '<span class="insight-chip"><span class="chip-dot" style="background:var(--green)"></span>'+x[0]+' +'+((x[1]-1)*100).toFixed(0)+'%</span>';
+    }).join('');
+  }
+  if(shrinking.length){
+    qtHtml+='<div style="font-size:11px;font-weight:700;color:var(--red);margin:8px 0 4px">📉 Shrinking quantity</div>';
+    qtHtml+=shrinking.slice(0,6).map(function(x){
+      return '<span class="insight-chip"><span class="chip-dot" style="background:var(--red)"></span>'+x[0]+' '+((x[1]-1)*100).toFixed(0)+'%</span>';
+    }).join('');
+  }
+  if(!growing.length&&!shrinking.length) qtHtml+='<p style="color:var(--muted);font-size:12px">No quantity trends detected yet. Need 4+ appearances per code.</p>';
+  document.getElementById('qtytrend-content').innerHTML=qtHtml;
+  var recent=entries.slice().sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,8);
+  document.getElementById('timeline-content').innerHTML='<div class="timeline">'+recent.map(function(e){
+    return '<div class="tl-item"><div class="tl-date">'+e.date+'</div><div class="tl-codes">'+codesDisplay(e.codes)+'</div></div>';
+  }).join('')+'</div>';
+  renderContinuityCard();
+}
+
+function runBacktest(){
+  if(!activeShop) return;
+  db=loadDB();
+  var entries=shopEntries(activeShop);
+  if(entries.length<4){document.getElementById('backtest-results').innerHTML='<div class="alert alert-warn">Need at least 4 entries to backtest.</div>';return;}
+  var holdN=Math.min(3,Math.max(1,Math.floor(entries.length*0.25)));
+  var train=entries.slice(0,entries.length-holdN);
+  var test=entries.slice(entries.length-holdN);
+  var scores=buildCombinedScore(train,shopPreds(activeShop),activeShop).scores;
+  var top5=Object.entries(scores).sort(function(a,b){return b[1]-a[1];}).slice(0,5).map(function(x){return x[0];});
+  var hits=0,total=0;
+  var rows=test.map(function(e,i){
+    var h=top5.filter(function(c){return e.codes.includes(c);});
+    hits+=h.length; total+=top5.length;
+    var pct=(h.length/top5.length*100).toFixed(0);
+    return '<div class="bt-row"><span class="bt-label">'+e.date+' (holdout '+(i+1)+')</span>'
+      +'<span class="bt-val '+(h.length>0?'bt-hit':'bt-miss')+'">'+h.length+'/'+top5.length+' ('+pct+'%)</span></div>'
+      +'<div style="font-size:10px;color:var(--muted);padding:1px 0 7px">Matched: '+(h.length?h.join(', '):'none')+'</div>';
+  });
+  var overall=total>0?(hits/total*100).toFixed(1):0;
+  var cls=overall>50?'alert-success':overall>25?'alert-warn':'alert-error';
+  document.getElementById('backtest-results').innerHTML='<div class="alert '+cls+'">Overall: <strong>'+overall+'%</strong> hit rate — top-5 predictions, '+holdN+' held-out refills</div>'+rows.join('')+'<div style="font-size:10px;color:var(--muted);margin-top:5px">Trained on '+train.length+' entries</div>';
+}
+
+// ── DASHBOARD ─────────────────────────────
+function renderDashboard(){
+  if(!activeShop) return;
+  db=loadDB();
+  var entries=shopEntries(activeShop);
+  var preds=shopPreds(activeShop);
+  if(entries.length<3){
+    document.getElementById('dashboard-empty').style.display='block';
+    document.getElementById('dashboard-content').style.display='none';
+    return;
+  }
+  document.getElementById('dashboard-empty').style.display='none';
+  document.getElementById('dashboard-content').style.display='block';
+  var bcsResult=buildCombinedScore(entries,preds,activeShop);
+  var scores=bcsResult.scores;
+  var ranked=Object.entries(scores).sort(function(a,b){return b[1]-a[1];});
+  var top3=ranked.slice(0,3);
+  var maxS=ranked[0]?ranked[0][1]:1;
+  var freq=buildFreqMap(entries);
+  var rates=buildAppearanceRate(entries);
+  var streaks=buildStreaks(entries);
+  var bias=buildBias(preds);
+  var medals=['🥇','🥈','🥉'],rankCls=['rank1','rank2','rank3'];
+  document.getElementById('top3-grid').innerHTML=top3.map(function(x,i){
+    var code=x[0],score=x[1];
+    var pct=(score/maxS*100).toFixed(0);
+    var sub=[];
+    if(streaks[code]>=2)sub.push(streaks[code]+'-streak');
+    if(rates[code]>0.5)sub.push(Math.round(rates[code]*100)+'% freq');
+    if(bias[code]!==undefined)sub.push('bias '+Math.round(bias[code]*100)+'%');
+    return '<div class="top3-card '+rankCls[i]+'"><div class="top3-rank">'+medals[i]+' RANK '+(i+1)+'</div>'
+      +'<div class="top3-code">'+code+'</div><div class="top3-pct">'+pct+'% score</div>'
+      +'<div class="top3-sub">'+(sub[0]||(freq[code]||0)+' hits')+'</div>'
+      +'<div class="conf-bar" style="width:'+pct+'%"></div></div>';
+  }).join('');
+  document.getElementById('top3-reasoning').innerHTML=top3.map(function(x){
+    var c=x[0],parts=[];
+    if(streaks[c]>=2)parts.push(streaks[c]+'-entry streak');
+    if(rates[c]>0.5)parts.push(Math.round(rates[c]*100)+'% of refills');
+    parts.push((freq[c]||0)+' total hits');
+    if(bias[c]!==undefined)parts.push('pred hit rate '+Math.round(bias[c]*100)+'%');
+    return '<b>'+c+'</b>: '+parts.join(' · ');
+  }).join('<br>');
+  // Show auto-save indicator
+  var hasPending=preds.some(function(p){return p.status==='pending'&&p.auto;});
+  var indic=document.getElementById('pred-saved-indicator');
+  if(indic) indic.style.display=hasPending?'block':'none';
+  document.getElementById('full-ranking').innerHTML=ranked.slice(0,10).map(function(x,i){
+    var code=x[0],score=x[1];
+    var pct=(score/maxS*100).toFixed(1);
+    var color=i<3?'var(--gold)':i<6?'var(--accent)':'var(--muted)';
+    return '<div class="freq-row"><span class="freq-code" style="color:'+color+'">'+code+'</span>'
+      +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+pct+'%;background:'+color+'"></div></div>'
+      +'<span class="freq-count" style="color:'+color+'">'+pct+'%</span></div>';
+  }).join('');
+  document.getElementById('last-updated').textContent='Updated '+new Date().toLocaleTimeString();
+  document.getElementById('ai-insight-content').innerHTML='<button class="btn btn-primary" onclick="generateAiInsight()">✨ Generate AI Insight</button>';
+  renderNextExpectedBanner();
+}
+
+// ── TRACK ─────────────────────────────────
+function renderTrack(){
+  if(!activeShop) return;
+  db=loadDB();
+  var preds=shopPreds(activeShop);
+  var resolved=preds.filter(function(p){return p.status!=='pending';});
+  var pending=preds.filter(function(p){return p.status==='pending';});
+
+  if(!preds.length){
+    document.getElementById('track-empty').style.display='block';
+    document.getElementById('track-content').style.display='none';
+    return;
+  }
+  document.getElementById('track-empty').style.display='none';
+  document.getElementById('track-content').style.display='block';
+
+  // ── Auto-backtest banner ──
+  var abt = db.shops[activeShop].lastAutoBacktest;
+  var abtHtml = '';
+  if(abt){
+    var trigLabel = abt.triggeredBy==='miss' ? '❌ Miss' : '⚡ Partial';
+    if(!abt.result){
+      // not enough data
+      abtHtml = '<div class="alert alert-warn" style="margin-bottom:10px">'
+        +'<strong>🧪 Auto-backtest triggered after '+trigLabel+'</strong> on '+abt.triggeredAt+'<br>'
+        +abt.note
+        +'</div>';
+    } else {
+      var r = abt.result;
+      var pct = r.overallPct;
+      var interpText = pct>=60
+        ? 'Strong signal — model is working well despite the miss.'
+        : pct>=40 ? 'Moderate signal — some patterns detected but misses are expected.'
+        : pct>=20 ? 'Weak signal — consider adding more refill entries to improve accuracy.'
+        : 'Very weak signal — refill pattern may be highly variable. Collect more data.';
+      var alertCls = pct>=60?'alert-success':pct>=40?'alert-info':pct>=20?'alert-warn':'alert-error';
+      var holdoutRows = r.holdouts.map(function(h,i){
+        var hpct=Math.round(h.hits/h.total*100);
+        var hcol=hpct>=60?'var(--green)':hpct>=30?'var(--gold)':'var(--red)';
+        return '<div style="font-size:11px;font-family:var(--mono);display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05)">'
+          +'<span style="color:var(--muted)">Holdout '+(i+1)+' · '+h.date+'</span>'
+          +'<span style="color:'+hcol+'">'+h.hits+'/'+h.total+' ('+hpct+'%)</span>'
+          +'</div>';
+      }).join('');
+      abtHtml = '<div class="alert '+alertCls+'" style="margin-bottom:10px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+        +'<strong>🧪 Auto-backtest — triggered by '+trigLabel+'</strong>'
+        +'<span style="font-family:var(--mono);font-size:13px;font-weight:800">'+pct+'%</span>'
+        +'</div>'
+        +'<div style="font-size:11px;margin-bottom:6px">'+interpText+'</div>'
+        +'<div style="font-size:10px;color:var(--muted);margin-bottom:5px">'
+        +'Trained on '+r.trainCount+' entries · '+r.holdoutCount+' held out · '
+        +'Top-5: <span style="font-family:var(--mono)">'+r.top5.join(' ')+'</span>'
+        +'</div>'
+        +holdoutRows
+        +'<div style="font-size:10px;color:var(--muted);margin-top:6px">Run on '+abt.triggeredAt+'</div>'
+        +'</div>';
+    }
+  }
+
+  // Inject banner before accuracy summary
+  var trackContent = document.getElementById('track-content');
+  var accCard = trackContent.querySelector('.card');
+  if(accCard){
+    var existingBanner = document.getElementById('auto-backtest-banner');
+    if(existingBanner) existingBanner.remove();
+    if(abtHtml){
+      var bannerDiv = document.createElement('div');
+      bannerDiv.id = 'auto-backtest-banner';
+      bannerDiv.innerHTML = abtHtml;
+      trackContent.insertBefore(bannerDiv, accCard);
+    }
+  }
+  // ── end auto-backtest banner ──
+
+  renderAccuracySummary(resolved);
+  renderBiasChart(preds);
+  var pendEl=document.getElementById('pending-list');
+  pendEl.innerHTML=pending.length?pending.map(function(p){return predCardHTML(p,true);}).join('')
+    :'<p style="color:var(--muted);font-size:12px;padding:6px 0">No pending predictions.</p>';
+  var resEl=document.getElementById('resolved-list');
+  resEl.innerHTML=resolved.length?resolved.slice().reverse().map(function(p){return predCardHTML(p,false);}).join('')
+    :'<p style="color:var(--muted);font-size:12px;padding:6px 0">No resolved predictions yet.</p>';
+}
+function predCardHTML(pred,canResolve){
+  var sLabels={pending:'⏳ Pending',hit:'✅ All Hit',partial:'⚡ Partial',miss:'❌ Miss'};
+  var sCls={pending:'status-pending',hit:'status-hit',partial:'status-partial',miss:'status-miss'};
+  var cCls={pending:'pred-pending',hit:'resolved-good',partial:'resolved-ok',miss:'resolved-bad'};
+
+  var dateLabel=pred.auto?'🤖 Auto · '+pred.createdDate:'🔄 '+pred.createdDate;
+
+  // Score normalisation — find max score among predicted codes
+  var scores=pred.scores||{};
+  var maxScore=pred.predictedCodes.reduce(function(m,c){return Math.max(m,scores[c]||0);},0.001);
+
+  // Top-3 code rows with probability bar + outcome
+  var rankColors=['var(--gold)','var(--accent)','var(--accent2)'];
+  var medals=['🥇','🥈','🥉'];
+  var codesRows=pred.predictedCodes.map(function(c,i){
+    var scorePct=maxScore>0?Math.round((scores[c]||0)/maxScore*100):0;
+    var outcome=pred.outcome?pred.outcome[c]:null;
+    var outcomeIcon=outcome==='hit'?' ✓':outcome==='miss'?' ✗':'';
+    var outcomeCls=outcome==='hit'?' hit':outcome==='miss'?' miss':'';
+    var barColor=outcome==='hit'?'var(--green)':outcome==='miss'?'var(--red)':rankColors[i]||'var(--muted)';
+    return '<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">'
+      +'<span style="font-size:13px;min-width:20px">'+medals[i]+'</span>'
+      +'<span class="tag'+outcomeCls+'" style="font-size:13px;min-width:36px;text-align:center">'+c+outcomeIcon+'</span>'
+      +'<div class="freq-bar-wrap" style="height:8px">'
+      +'<div class="freq-bar" style="width:'+scorePct+'%;background:'+barColor+'"></div>'
+      +'</div>'
+      +'<span style="font-size:11px;font-family:var(--mono);font-weight:700;min-width:34px;color:'+barColor+'">'+scorePct+'%</span>'
+      +'</div>';
+  }).join('');
+
+  // Actual refill codes (show what actually arrived)
+  var actualRow='';
+  if(pred.actualCodes&&pred.actualCodes.length){
+    var actualDisplay=Array.from(new Set(pred.actualCodes));
+    actualRow='<div style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,.08)">'
+      +'<div style="font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--muted);margin-bottom:4px">ACTUAL REFILL CODES</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:4px">'
+      +actualDisplay.map(function(c){
+        var wasPredicted=pred.predictedCodes.indexOf(c)>-1;
+        return '<span class="tag'+(wasPredicted?' hit':'')+'" style="font-size:11px">'+c+(wasPredicted?' ✓':'')+'</span>';
+      }).join('')
+      +'</div>'
+      +'</div>';
+  }
+
+  // Hit summary line
+  var hitCount=pred.outcome?Object.values(pred.outcome).filter(function(v){return v==='hit';}).length:null;
+  var summaryLine='';
+  if(hitCount!==null){
+    var hitRate=Math.round(hitCount/pred.predictedCodes.length*100);
+    var sc=hitRate===100?'var(--green)':hitRate>=33?'var(--gold)':'var(--red)';
+    summaryLine='<div style="font-size:12px;margin-top:6px">'
+      +'Prediction accuracy: <strong style="color:'+sc+'">'+hitRate+'%</strong>'
+      +' ('+hitCount+'/'+pred.predictedCodes.length+' codes hit)'
+      +' · Refill date: <span style="font-family:var(--mono)">'+pred.actualDate+'</span>'
+      +'</div>';
+  }
+
+  var btns='';
+  if(canResolve) btns='<button class="btn btn-success btn-small" style="margin-top:8px" data-resolve-pred="'+pred.id+'" type="button">✅ Resolve</button> ';
+  btns+='<button class="btn btn-secondary btn-small" style="margin-top:6px;color:var(--red);border-color:var(--red)" data-del-pred="'+pred.id+'" type="button">🗑</button>';
+
+  return '<div class="pred-card '+cCls[pred.status]+'">'
+    +'<div class="pred-header" style="margin-bottom:8px">'
+    +'<span class="pred-date">'+dateLabel+'</span>'
+    +'<span class="pred-status '+sCls[pred.status]+'">'+sLabels[pred.status]+'</span>'
+    +'</div>'
+    +codesRows
+    +summaryLine
+    +actualRow
+    +btns
+    +'</div>';
+}
+function renderAccuracySummary(resolved){
+  var el=document.getElementById('accuracy-summary');
+  if(!resolved.length){
+    el.innerHTML='<p style="color:var(--muted);font-size:12px">No resolved predictions yet. Predictions are saved automatically — results will appear here after the next refill.</p>';
+    return;
+  }
+  var totalP=0,totalH=0,byS={hit:0,partial:0,miss:0};
+  resolved.forEach(function(p){
+    if(p.outcome){Object.values(p.outcome).forEach(function(v){totalP++;if(v==='hit')totalH++;});}
+    byS[p.status]=(byS[p.status]||0)+1;
+  });
+  var pct=totalP>0?Math.round(totalH/totalP*100):0;
+  var color=pct>=66?'var(--green)':pct>=33?'var(--gold)':'var(--red)';
+
+  // Summary stats
+  var statsHtml='<div class="stat-row" style="margin-bottom:10px">'
+    +'<div class="stat-box"><div class="stat-val" style="color:'+color+'">'+pct+'%</div><div class="stat-lbl">CODE HIT RATE</div></div>'
+    +'<div class="stat-box"><div class="stat-val" style="color:var(--green)">'+(byS.hit||0)+'</div><div class="stat-lbl">FULL HITS</div></div>'
+    +'<div class="stat-box"><div class="stat-val" style="color:var(--gold)">'+(byS.partial||0)+'</div><div class="stat-lbl">PARTIAL</div></div>'
+    +'<div class="stat-box"><div class="stat-val" style="color:var(--red)">'+(byS.miss||0)+'</div><div class="stat-lbl">MISSES</div></div>'
+    +'</div>';
+
+  // Per-prediction history table — newest first
+  var tableHeader='<div style="display:grid;grid-template-columns:90px 1fr 60px 60px;gap:4px;padding:5px 0;border-bottom:1px solid var(--border)">'
+    +'<span style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.5px">DATE</span>'
+    +'<span style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.5px">PREDICTED → ACTUAL</span>'
+    +'<span style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-align:center">SCORES</span>'
+    +'<span style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-align:right">HIT%</span>'
+    +'</div>';
+
+  var tableRows=resolved.slice().reverse().map(function(p){
+    if(!p.outcome) return '';
+    var hits=Object.values(p.outcome).filter(function(v){return v==='hit';}).length;
+    var hitRate=Math.round(hits/p.predictedCodes.length*100);
+    var rc=hitRate===100?'var(--green)':hitRate>=33?'var(--gold)':'var(--red)';
+    var scores=p.scores||{};
+    var maxS=p.predictedCodes.reduce(function(m,c){return Math.max(m,scores[c]||0);},0.001);
+
+    // Predicted codes with score % and hit/miss
+    var codeStr=p.predictedCodes.map(function(c){
+      var isHit=p.outcome[c]==='hit';
+      var sp=Math.round((scores[c]||0)/maxS*100);
+      return '<span style="font-family:var(--mono);font-size:11px;font-weight:700;color:'+(isHit?'var(--green)':'var(--red)')+'">'+c+'</span>'
+        +'<span style="font-size:9px;color:var(--muted)">'+sp+'%</span>';
+    }).join('<span style="color:var(--border);margin:0 2px">·</span>');
+
+    // Actual codes (surprise codes in muted)
+    var actualUniq=Array.from(new Set(p.actualCodes||[]));
+    var actualStr=actualUniq.map(function(c){
+      var wasPred=p.predictedCodes.indexOf(c)>-1;
+      return '<span style="font-family:var(--mono);font-size:11px;color:'+(wasPred?'var(--green)':'var(--muted)')+'">'+c+'</span>';
+    }).join(' ');
+
+    return '<div style="display:grid;grid-template-columns:90px 1fr 60px 60px;gap:4px;padding:6px 0;border-bottom:1px solid var(--border);align-items:start">'
+      +'<span style="font-family:var(--mono);font-size:11px;color:var(--muted)">'+(p.actualDate||p.createdDate)+'</span>'
+      +'<div><div style="margin-bottom:2px">'+codeStr+'</div>'
+      +(actualStr?'<div>→ '+actualStr+'</div>':'')
+      +'</div>'
+      +'<span></span>'
+      +'<span style="font-family:var(--mono);font-weight:800;font-size:13px;color:'+rc+';text-align:right">'+hitRate+'%</span>'
+      +'</div>';
+  }).join('');
+
+  // Rolling accuracy trend (sparkline as bars)
+  var last8=resolved.slice(-8);
+  var trendHtml='<div style="margin-top:10px">'
+    +'<div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.5px;margin-bottom:5px">ACCURACY TREND (last '+last8.length+')</div>'
+    +'<div style="display:flex;align-items:flex-end;gap:3px;height:32px">'
+    +last8.map(function(p){
+      if(!p.outcome) return '';
+      var h=Object.values(p.outcome).filter(function(v){return v==='hit';}).length;
+      var t=p.predictedCodes.length;
+      var pc=Math.round(h/t*100);
+      var col=pc===100?'var(--green)':pc>=33?'var(--gold)':'var(--red)';
+      var barH=Math.max(4,Math.round(pc/100*28));
+      return '<div title="'+( p.actualDate||p.createdDate)+': '+pc+'%"'
+        +' style="flex:1;height:'+barH+'px;background:'+col+';border-radius:2px 2px 0 0;cursor:default"></div>';
+    }).join('')
+    +'</div>'
+    +'</div>';
+
+  el.innerHTML=statsHtml
+    +'<div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px">Prediction History</div>'
+    +tableHeader+tableRows
+    +trendHtml;
+}
+function renderBiasChart(preds){
+  var bias=buildBias(preds);
+  var el=document.getElementById('bias-chart');
+  var entries=Object.entries(bias).sort(function(a,b){return b[1]-a[1];}).slice(0,12);
+  if(!entries.length){el.innerHTML='<p style="color:var(--muted);font-size:12px">Resolve predictions to build bias data.</p>';return;}
+  el.innerHTML=entries.map(function(x){
+    var c=x[0],b=x[1],pct=Math.round(b*100);
+    var color=pct>=66?'var(--green)':pct>=40?'var(--gold)':'var(--red)';
+    var inf=pct>50?'+boost':pct<50?'−reduce':'neutral';
+    return '<div class="bias-row"><span class="bias-code">'+c+'</span>'
+      +'<div class="bias-bar-wrap"><div class="bias-bar" style="width:'+pct+'%;background:'+color+'"></div></div>'
+      +'<span class="bias-val" style="color:'+color+'">'+pct+'%</span>'
+      +'<span style="font-size:9px;color:'+color+';min-width:48px">'+inf+'</span></div>';
+  }).join('');
+}
+
+// ── RESOLVE MODAL ─────────────────────────
+var resolveId=null, resolveState={};
+function openResolveModal(predId){
+  if(!activeShop) return;
+  db=loadDB();
+  var pred=shopPreds(activeShop).find(function(p){return p.id===predId;});
+  if(!pred) return;
+  resolveId=predId; resolveState={};
+  pred.predictedCodes.forEach(function(c){resolveState[c]='miss';});
+  document.getElementById('resolve-date').value=todayStr();
+  document.getElementById('resolve-codes-list').innerHTML=pred.predictedCodes.map(function(c){
+    return '<div class="resolve-code-row"><span class="resolve-code-label">'+c+'</span>'
+      +'<div class="resolve-toggle">'
+      +'<button class="rtog-btn miss" id="rmiss-'+c+'" data-resolve-code="'+c+'" data-resolve-val="miss">&#x2717; Miss</button>'
+      +'<button class="rtog-btn" id="rhit-'+c+'" data-resolve-code="'+c+'" data-resolve-val="hit">&#x2713; Hit</button>'
+      +'</div></div>';
+  }).join('');
+  openModal('resolve-modal');
+}
+function setResolve(code,val){
+  resolveState[code]=val;
+  document.getElementById('rhit-'+code).className='rtog-btn'+(val==='hit'?' hit':'');
+  document.getElementById('rmiss-'+code).className='rtog-btn'+(val==='miss'?' miss':'');
+}
+function submitResolution(){
+  if(!activeShop||resolveId===null) return;
+  var actualDate=document.getElementById('resolve-date').value||todayStr();
+  db=loadDB();
+  var pred=shopPreds(activeShop).find(function(p){return p.id===resolveId;});
+  if(!pred){closeModal('resolve-modal');return;}
+  pred.outcome=Object.assign({},resolveState);
+  pred.status=resolveStatus(resolveState);
+  pred.actualDate=actualDate;
+  pred.actualCodes=Object.keys(resolveState).filter(function(c){return resolveState[c]==='hit';});
+  saveDB(db);
+  // Update weights from this resolved prediction
+  updateWeights(activeShop, pred);
+  closeModal('resolve-modal'); renderShopPills();
+  if(pred.status==='miss'||pred.status==='partial'){
+    triggerAutoBacktest(activeShop, pred.status);
+    showToast('Resolved: '+pred.status+' — backtest triggered');
+  } else {
+    showToast('Resolved: hit ✓');
+  }
+  renderTrack();
+}
+// ── AI INSIGHT ────────────────────────────
+async function generateAiInsight(){
+  if(!activeShop) return;
+  var apiKey=getApiKey(); if(!apiKey){openApiModal();return;}
+  db=loadDB();
+  var entries=shopEntries(activeShop),preds=shopPreds(activeShop);
+  if(entries.length<3){showToast('Need 3+ entries','warn');return;}
+  var scores=buildCombinedScore(entries,preds,activeShop).scores;
+  var freq=buildFreqMap(entries),rates=buildAppearanceRate(entries),streaks=buildStreaks(entries),bias=buildBias(preds);
+  var top5=Object.entries(scores).sort(function(a,b){return b[1]-a[1];}).slice(0,5).map(function(x){return x[0];});
+  var resolved=preds.filter(function(p){return p.status!=='pending';});
+  var tH=resolved.reduce(function(a,p){return a+(p.outcome?Object.values(p.outcome).filter(function(v){return v==='hit';}).length:0);},0);
+  var tP=resolved.reduce(function(a,p){return a+(p.predictedCodes?p.predictedCodes.length:0);},0);
+  var payload={shop:activeShop,name:db.shops[activeShop].name||'',totalRefills:entries.length,
+    recentRefills:entries.slice(-4).map(function(e){return {date:e.date,codes:e.codes};}),
+    topFreq:Object.entries(freq).sort(function(a,b){return b[1]-a[1];}).slice(0,8).map(function(x){return {code:x[0],count:x[1]};}),
+    streaks:Object.entries(streaks).sort(function(a,b){return b[1]-a[1];}).slice(0,5).map(function(x){return {code:x[0],streak:x[1]};}),
+    bias:Object.entries(bias).sort(function(a,b){return b[1]-a[1];}).slice(0,6).map(function(x){return {code:x[0],hitRate:Math.round(x[1]*100)+'%'};}),
+    accuracy:tP>0?Math.round(tH/tP*100)+'%':'n/a',top5:top5};
+  var box=document.getElementById('ai-insight-content');
+  box.innerHTML='<div class="spinner-wrap"><div class="spinner"></div>Generating…</div>';
+  try{
+    var resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:420,messages:[{role:'user',content:
+        'You are an inventory analyst. Write a concise 3-4 sentence insight about this shop\'s refill patterns, prediction accuracy, bias corrections, and why the top codes are predicted next. Cite numbers. Be direct.\n\n'+JSON.stringify(payload)
+      }]})});
+    var data=await resp.json();
+    if(data.error)throw new Error(data.error.message);
+    var text=data.content.map(function(c){return c.text||'';}).join('');
+    box.innerHTML='<div style="font-size:13px;line-height:1.75;color:var(--text)">'+text+'</div>'
+      +'<button class="btn btn-secondary" style="margin-top:10px" onclick="generateAiInsight()">↻ Regenerate</button>';
+  }catch(e){
+    box.innerHTML='<div class="alert alert-error">Error: '+e.message+'</div>'
+      +'<button class="btn btn-primary" onclick="generateAiInsight()">Retry</button>';
+  }
+}
+
+// ── GUIDE ─────────────────────────────────
+var guideShop = null;
+
+function renderGuide(){
+  db = loadDB();
+  var shops = Object.keys(db.shops).sort();
+  if(!guideShop || !db.shops[guideShop]){
+    guideShop = activeShop || (shops.find(function(c){ return (db.shops[c].entries||[]).length>=3; })) || shops[0] || null;
+  }
+  var container = document.getElementById('guide-content');
+  if(!container) return;
+
+  var shopSel = shops.length
+    ? '<div class="guide-shop-select">'
+      + shops.map(function(c){
+          return '<button class="guide-shop-btn'+(guideShop===c?' active':'')+'" data-guide-shop="'+c+'">'+c+'</button>';
+        }).join('')+'</div>'
+    : '';
+
+  var sections = [
+    buildGuideOverview(),
+    buildGuidePrediction(),
+    buildGuideSignals(),
+    buildGuideWeightAdaptation(),
+    buildGuideOutcome(),
+    buildGuideBacktest(),
+    buildGuideConfidence(),
+    buildGuideWorkflow()
+  ];
+
+  container.innerHTML =
+    '<div class="card" style="margin-bottom:12px">'
+    +'<div class="card-title">📖 INSIGHT — HOW IT WORKS</div>'
+    +'<p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:10px">'
+    +'Every section below is live — it uses real data from the selected shop. Tap any section to expand.'
+    +'</p>'
+    +(shops.length ? '<p style="font-size:11px;color:var(--muted);margin-bottom:4px">SHOWING DATA FOR SHOP</p>'+shopSel : '<p style="font-size:12px;color:var(--muted)">Add a shop using ＋ above to see live data.</p>')
+    +'</div>'
+    + sections.join('');
+
+  var firstBody = container.querySelector('.guide-body');
+  var firstChev = container.querySelector('.guide-chevron');
+  if(firstBody) firstBody.classList.add('open');
+  if(firstChev) firstChev.classList.add('open');
+}
+
+// ── SECTION: OVERVIEW ──
+function buildGuideOverview(){
+  var tabsHtml = [
+    ['📥 COLLECT','Enter refill codes with a date. Duplicates are blocked across all shops.'],
+    ['🗄 ARCHIVE','Full history per shop — all refills, dates, code counts. Export any time.'],
+    ['📊 ANALYZE','9 signal charts, continuity check, backtesting. Runs after 2+ entries.'],
+    ['🎯 PREDICT','Top-3 prediction with probability scores. Auto-saved after every refill.'],
+    ['📈 TRACK','Prediction vs actual history. Model accuracy, bias chart, weight adaptation log.'],
+    ['🏅 CONFIDENCE','All shops ranked A–E by data quality, patterns, recency, and accuracy.'],
+    ['📖 GUIDE','This page.'],
+    ['🔍 DATA','iCloud backup, import/restore, Google Drive sync, storage inspector.']
+  ].map(function(t){
+    return '<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)">'
+      +'<span style="font-size:11px;font-weight:700;font-family:var(--mono);color:var(--accent);min-width:80px">'+t[0]+'</span>'
+      +'<span style="font-size:11px;color:var(--muted);line-height:1.5">'+t[1]+'</span>'
+      +'</div>';
+  }).join('');
+
+  return guideSection('🗺','App Overview — All 8 Tabs',
+    '<p class="guide-p">Insight predicts which item codes (00–99) are most likely to appear in the next refill, based on the history of previous refills for each shop. It learns automatically from every resolved prediction.</p>'
+    +tabsHtml
+    +'<div class="guide-callout" style="margin-top:10px"><strong>Key principle:</strong> predictions are automatic. Every time you save a refill, the app generates a new top-3 prediction for that shop, stores it, and compares it against the next refill when it arrives. No manual steps needed.</div>'
+  );
+}
+
+// ── SECTION: PREDICTION ──
+function buildGuidePrediction(){
+  db = loadDB();
+  var shop    = guideShop && db.shops[guideShop];
+  var entries = shop ? (shop.entries||[]) : [];
+  var preds   = shop ? (shop.predictions||[]) : [];
+  var liveHtml = '';
+
+  if(entries.length >= 3){
+    var result  = buildCombinedScore(entries, preds, guideShop);
+    var scores  = result.scores;
+    var snaps   = result.snapshots;
+    var w       = result.weights;
+    var ranked  = Object.entries(scores).sort(function(a,b){return b[1]-a[1];});
+    var maxS    = ranked[0] ? ranked[0][1] : 1;
+    var top3    = ranked.slice(0,3);
+
+    liveHtml = '<div class="guide-live-box"><div class="guide-live-label">Live — Shop '+guideShop+' current top-3</div>';
+    top3.forEach(function(x,i){
+      var c=x[0], score=x[1];
+      var pct=(score/maxS*100).toFixed(0);
+      var sig=snaps[c]||{};
+      var medals=['🥇','🥈','🥉'];
+      var col=i===0?'var(--gold)':i===1?'var(--accent)':'var(--accent2)';
+      liveHtml += '<div style="margin-bottom:8px;padding:8px;background:var(--surface);border-radius:8px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">'
+        +'<span style="font-family:var(--mono);font-weight:900;font-size:18px;color:'+col+'">'+medals[i]+' '+c+'</span>'
+        +'<span style="font-family:var(--mono);font-weight:800;color:'+col+'">'+pct+'%</span>'
+        +'</div>'
+        + Object.keys(sig).filter(function(k){return sig[k]>0.01;}).map(function(k){
+            var sv=sig[k], wv=w[k]||0;
+            var contrib=(sv*wv*100).toFixed(1);
+            return '<div style="font-size:10px;color:var(--muted);display:flex;justify-content:space-between">'
+              +'<span>'+k+'</span><span style="font-family:var(--mono)">'+contrib+'</span></div>';
+          }).join('')
+        +'</div>';
+    });
+    liveHtml += '</div>';
+  } else {
+    liveHtml = '<div class="guide-callout">Add 3+ entries to Shop '+(guideShop||'—')+' to see a live prediction breakdown.</div>';
+  }
+
+  return guideSection('🎯','Prediction — How Top 3 Are Chosen',
+    '<p class="guide-p">Every code seen in this shop\'s history gets a <strong>combined score</strong> from 9 signals. The top-3 scores become the prediction, shown as a percentage relative to the highest-scoring code.</p>'
+    +'<div class="guide-example">'
+    +'<div class="ex-label">Score formula</div>'
+    +'<div style="font-size:12px;color:var(--muted);line-height:1.8">'
+    +'score = (freq × w₁) + (recency × w₂) + (streak × w₃) + (bias × w₄)<br>'
+    +'      + (co-occur × w₅) + (interval × w₆) + (dow × w₇)<br>'
+    +'      × qty-trend-multiplier × miss-streak-penalty<br><br>'
+    +'<strong style="color:var(--text)">w₁…w₇</strong> are <em>per-shop adapted weights</em> that start at defaults<br>and drift automatically based on which signals prove predictive.'
+    +'</div></div>'
+    +'<p class="guide-p"><strong>Score % meaning:</strong> code 07 at 100% and code 12 at 74% means code 12\'s combined signal strength is 74% of code 07\'s — not that it will appear 74% of the time. These are relative ranks, not probabilities.</p>'
+    +'<div class="guide-callout"><strong>Automatic:</strong> a fresh prediction is generated and stored every time you save a refill. When the next refill arrives, the app immediately compares and shows the result in Collect — no tab switching needed.</div>'
+    + liveHtml
+  );
+}
+
+// ── SECTION: ALL 9 SIGNALS ──
+function buildGuideSignals(){
+  db = loadDB();
+  var shop    = guideShop && db.shops[guideShop];
+  var entries = shop ? (shop.entries||[]) : [];
+  var preds   = shop ? (shop.predictions||[]) : [];
+
+  var signals = [
+    {key:'freq',    icon:'🔢', name:'Frequency',         weight:'0.20→adapted',
+     what:'Total times the code appeared across all refills — including repeats within a single batch.',
+     when:'Active from first entry. Stabilises after 8–10 refills.'},
+    {key:'recency', icon:'⏰', name:'Recency',            weight:'0.25→adapted',
+     what:'Same as frequency but recent refills count more. The newest entry has weight 1.0, the oldest near 0.',
+     when:'Most important early signal. Captures momentum. Active from 2+ entries.'},
+    {key:'streak',  icon:'🔥', name:'Streak',             weight:'0.15→adapted',
+     what:'How many consecutive recent refills contained this code without a gap. A gap of 1 resets it to zero.',
+     when:'Active from 2+ entries. A 3+ consecutive streak is a strong near-term indicator.'},
+    {key:'bias',    icon:'🎯', name:'Prediction Accuracy',weight:'0.10→adapted',
+     what:'Rolling hit rate of past predictions for this code. Hit = code was predicted and arrived. Miss = predicted but didn\'t arrive.',
+     when:'Active after first resolved prediction. Fully meaningful after 5+ resolutions.'},
+    {key:'cooccur', icon:'🤝', name:'Co-occurrence',      weight:'0.12→adapted',
+     what:'How often this code arrives together with other high-scoring codes. If code 07 and 34 appear together 80% of the time and 07 is predicted, 34 gets a lift.',
+     when:'Active from 3+ entries. More reliable with 10+ entries.'},
+    {key:'interval',icon:'⏱', name:'Interval Regularity',weight:'0.08→adapted',
+     what:'How consistent the gaps between this code\'s appearances are. A code appearing every 7 days exactly scores 1.0. Random timing scores near 0.',
+     when:'Needs 3+ appearances. Most useful for shop-scheduled weekly items.'},
+    {key:'dow',     icon:'📅', name:'Day-of-week',        weight:'0.05→adapted',
+     what:'Learned from data — does this code tend to appear on specific days? If code 12 shows up mostly on Mondays and today is Monday, it gets a boost.',
+     when:'Meaningful after 8+ entries spanning multiple weeks.'},
+    {key:'qtytrend',icon:'📈', name:'Quantity Trend',     weight:'×multiplier',
+     what:'Compares average quantity per refill in the first half vs second half of history. Growing quantity = ×1.20 max boost. Shrinking = ×0.80 max reduction.',
+     when:'Active after 4+ appearances per code. Applied as a multiplier, not an additive term.'},
+    {key:'misspenty',icon:'⚠️',name:'Miss-streak Penalty',weight:'×multiplier',
+     what:'Exponentially penalises codes that keep getting predicted but not arriving. 1 consecutive miss = −15%, 2 = −30%, 3+ = −50%. Resets on any hit.',
+     when:'Active as soon as predictions are resolved. Applied last, after all other signals.'}
+  ];
+
+  var liveHtml = '';
+  if(entries.length >= 2){
+    var w = getWeights(guideShop);
+    liveHtml = '<div class="guide-live-box"><div class="guide-live-label">Live adapted weights — Shop '+guideShop+'</div>'
+      + SIGNAL_KEYS.map(function(k){
+          var val = w[k], def = DEFAULT_WEIGHTS[k];
+          var pct = Math.round(val*100), defPct = Math.round(def*100);
+          var diff = pct-defPct;
+          var col = diff>2?'var(--green)':diff<-2?'var(--red)':'var(--muted)';
+          var arrow = diff>2?'▲':diff<-2?'▼':'=';
+          return '<div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">'
+            +'<span style="font-size:11px;min-width:80px;color:var(--muted)">'
+            +{freq:'Frequency',recency:'Recency',streak:'Streak',bias:'Accuracy',cooccur:'Co-occur',interval:'Interval',dow:'Day-of-wk'}[k]
+            +'</span>'
+            +'<div class="freq-bar-wrap" style="height:7px"><div class="freq-bar" style="width:'+(val/0.50*100).toFixed(0)+'%;background:'+col+'"></div></div>'
+            +'<span style="font-size:11px;font-family:var(--mono);min-width:28px;color:'+col+'">'+pct+'%</span>'
+            +'<span style="font-size:10px;color:'+col+'">'+arrow+' '+(diff===0?'default':(diff>0?'+':'')+diff+'%')+'</span>'
+            +'</div>';
+        }).join('')
+      +'</div>';
+  }
+
+  var sigHtml = signals.map(function(s){
+    return '<div style="padding:8px 0;border-bottom:1px solid var(--border)">'
+      +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">'
+      +'<span style="font-size:16px">'+s.icon+'</span>'
+      +'<strong style="font-size:13px;color:var(--text)">'+s.name+'</strong>'
+      +'<span style="font-size:10px;font-family:var(--mono);color:var(--gold);margin-left:auto">'+s.weight+'</span>'
+      +'</div>'
+      +'<p style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:3px">'+s.what+'</p>'
+      +'<p style="font-size:11px;color:var(--accent);line-height:1.4"><em>When it matters: </em>'+s.when+'</p>'
+      +'</div>';
+  }).join('');
+
+  return guideSection('📊','All 9 Signals — What Each One Measures',
+    '<p class="guide-p">The model combines 7 additive signals (weights sum to 1.0) and 2 multiplicative modifiers. Each signal is normalised 0–1 before weighting.</p>'
+    +sigHtml
+    + liveHtml
+  );
+}
+
+// ── SECTION: WEIGHT ADAPTATION ──
+function buildGuideWeightAdaptation(){
+  db = loadDB();
+  var shop    = guideShop && db.shops[guideShop];
+  var preds   = shop ? (shop.predictions||[]) : [];
+  var resolved= preds.filter(function(p){return p.status!=='pending'&&p.outcome;});
+  var entries = shop ? (shop.entries||[]) : [];
+
+  var liveHtml = '';
+  if(resolved.length > 0){
+    var w = getWeights(guideShop);
+    // Show last 3 resolved with what changed
+    var recent = resolved.slice(-3).reverse();
+    liveHtml = '<div class="guide-live-box"><div class="guide-live-label">Live — last '+recent.length+' weight update'+(recent.length>1?'s':'')+' — Shop '+guideShop+'</div>'
+      +recent.map(function(p){
+        var hits=Object.values(p.outcome).filter(function(v){return v==='hit';}).length;
+        var total=p.predictedCodes.length;
+        var hitRate=Math.round(hits/total*100);
+        var col=hitRate===100?'var(--green)':hitRate>0?'var(--gold)':'var(--red)';
+        return '<div style="padding:6px 0;border-bottom:1px solid var(--border)">'
+          +'<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">'
+          +'<span style="font-family:var(--mono);color:var(--muted)">'+(p.actualDate||p.createdDate)+'</span>'
+          +'<span style="color:'+col+';font-weight:700">'+hitRate+'% hit rate</span>'
+          +'</div>'
+          +'<div style="font-size:11px;color:var(--muted)">'
+          +'Predicted: '+p.predictedCodes.map(function(c){
+            var r=p.outcome[c];
+            return '<span style="font-family:var(--mono);color:'+(r==='hit'?'var(--green)':'var(--red)')+'">'+c+'</span>';
+          }).join(' ')
+          +'</div></div>';
+      }).join('')
+      +'<div style="font-size:11px;color:var(--muted);margin-top:8px">'
+      +'Current top weights: '
+      +SIGNAL_KEYS.slice().sort(function(a,b){return w[b]-w[a];}).slice(0,3)
+        .map(function(k){return '<strong style="color:var(--accent)">'+k+'</strong> '+Math.round(w[k]*100)+'%';}).join(' · ')
+      +'</div>'
+      +'</div>';
+  } else {
+    var needed = Math.max(0, 3 - entries.length);
+    liveHtml = '<div class="guide-callout">'
+      +(entries.length < 3
+        ? 'Add '+(3-entries.length)+' more entr'+(3-entries.length===1?'y':'ies')+' to enable predictions and weight adaptation.'
+        : 'Weight adaptation activates after the first refill is saved and compared to a prediction. The model is using default weights until then.')
+      +'</div>';
+  }
+
+  return guideSection('🧠','Automatic Fine-tuning — How the Model Learns',
+    '<p class="guide-p">The signal weights are not fixed. Every time a prediction is resolved (a new refill is compared against what was predicted), the model adjusts the weights for that specific shop using a simplified gradient descent rule.</p>'
+
+    +'<div class="guide-example"><div class="ex-label">How one update works</div>'
+    +'<div style="font-size:12px;color:var(--muted);line-height:1.8">'
+    +'1. At prediction time, signal values for each code are <strong style="color:var(--text)">frozen</strong> alongside the prediction (e.g. code 07: streak=0.9, freq=0.7, cooccur=0.3).<br>'
+    +'2. Next refill arrives. Code 07 appeared → <strong style="color:var(--green)">HIT</strong>.<br>'
+    +'3. Update rule: <em>Δweight = 0.03 × (1 − 0.5) × signal_value</em><br>'
+    +'   → streak weight nudged up by 0.03×0.5×0.9 = <strong style="color:var(--green)">+0.014</strong><br>'
+    +'   → cooccur weight nudged up by 0.03×0.5×0.3 = <strong style="color:var(--green)">+0.005</strong><br>'
+    +'4. If code 34 was predicted but <strong style="color:var(--red)">MISSED</strong>:<br>'
+    +'   → all its high signals get nudged <em>down</em> by the same rule.<br>'
+    +'5. Weights are renormalised to sum to 1.0 and each clamped 2%–50%.'
+    +'</div></div>'
+
+    +'<p class="guide-p"><strong>Learning rate is 0.03 per update</strong> — small enough that one outlier refill doesn\'t destabilise the model, but large enough that a consistent pattern shifts the weights meaningfully after 10–15 predictions.</p>'
+    +'<p class="guide-p"><strong>What happens over time:</strong> a shop where codes arrive on consistent days will see the day-of-week weight climb. A shop with very regular intervals will see interval regularity dominate. A shop where co-occurrence is the strongest pattern will weight that highest. Each shop develops its own fingerprint.</p>'
+    +'<div class="guide-callout"><strong>No data = default weights.</strong> Until at least one prediction is resolved, all shops use the same starting weights. After 10+ resolved predictions the adapted weights for that shop become meaningfully different from the defaults — this is when the model starts truly outperforming a generic baseline.</div>'
+    + liveHtml
+  );
+}
+
+// ── SECTION: OUTCOME ──
+function buildGuideOutcome(){
+  db = loadDB();
+  var shop    = guideShop && db.shops[guideShop];
+  var preds   = shop ? (shop.predictions||[]) : [];
+  var resolved= preds.filter(function(p){return p.status!=='pending'&&p.outcome;});
+  var pending = preds.filter(function(p){return p.status==='pending';});
+  var liveHtml = '';
+
+  if(preds.length){
+    var tH=0,tP=0;
+    resolved.forEach(function(p){
+      tP+=p.predictedCodes.length;
+      tH+=Object.values(p.outcome).filter(function(v){return v==='hit';}).length;
+    });
+    var rate=tP>0?Math.round(tH/tP*100):null;
+    liveHtml='<div class="guide-live-box"><div class="guide-live-label">Live — Shop '+guideShop+' prediction record</div>'
+      +'<div style="font-size:12px;color:var(--muted);line-height:1.8">'
+      +'Total predictions: <strong style="color:var(--text)">'+preds.length+'</strong><br>'
+      +'Resolved: <strong style="color:var(--text)">'+resolved.length+'</strong> · Pending: <strong style="color:var(--gold)">'+pending.length+'</strong><br>'
+      +(rate!==null?'Code hit rate: <strong style="color:'+(rate>=50?'var(--green)':rate>=25?'var(--gold)':'var(--red)')+'">'+rate+'%</strong>':'No resolved predictions yet.')
+      +'</div>'
+      +(resolved.length?'<div style="margin-top:8px">'+resolved.slice(-3).reverse().map(function(p){
+        var h=Object.values(p.outcome).filter(function(v){return v==='hit';}).length;
+        var t=p.predictedCodes.length;
+        var pct=Math.round(h/t*100);
+        var col=pct===100?'var(--green)':pct>0?'var(--gold)':'var(--red)';
+        return '<div style="display:flex;justify-content:space-between;font-size:11px;font-family:var(--mono);padding:3px 0;border-bottom:1px solid var(--border)">'
+          +'<span style="color:var(--muted)">'+(p.actualDate||p.createdDate)+'</span>'
+          +'<span>'+p.predictedCodes.join(' ')+'</span>'
+          +'<span style="color:'+col+'">'+h+'/'+t+'</span>'
+          +'</div>';
+      }).join('')+'</div>':'')
+      +'</div>';
+  } else {
+    liveHtml='<div class="guide-callout">No predictions yet for Shop '+(guideShop||'—')+'. Add 3+ entries and save a refill to generate the first automatic prediction.</div>';
+  }
+
+  return guideSection('🔒','Prediction Outcome — Automatic Comparison',
+    '<p class="guide-p">Every time you save a refill in Collect, two things happen at once:</p>'
+    +'<div style="margin:8px 0">'
+    +'<div class="guide-step"><div class="guide-step-num">1</div><div class="guide-step-body">'
+    +'<strong>Compare against pending prediction</strong> — the app checks if a prediction was stored for this shop. If yes, it marks each predicted code as ✓ Hit or ✗ Miss based on what actually arrived.'
+    +'</div></div>'
+    +'<div class="guide-step"><div class="guide-step-num">2</div><div class="guide-step-body">'
+    +'<strong>Show result immediately in Collect</strong> — a green/amber/red alert appears showing which codes hit, which missed, any surprise codes that arrived, and the hit rate percentage. No tab switching required.'
+    +'</div></div>'
+    +'<div class="guide-step"><div class="guide-step-num">3</div><div class="guide-step-body">'
+    +'<strong>Update the model</strong> — signal weights are nudged based on the outcome (see Fine-tuning section). If it was a miss or partial, backtesting runs automatically.'
+    +'</div></div>'
+    +'<div class="guide-step"><div class="guide-step-num">4</div><div class="guide-step-body">'
+    +'<strong>Save next prediction</strong> — a fresh top-3 prediction is generated using the updated model and stored, ready to be compared against the next refill.'
+    +'</div></div>'
+    +'</div>'
+    +'<div class="guide-callout"><strong>Result types:</strong> ✅ All Hit = all 3 codes appeared · ⚡ Partial = some hit, some missed · ❌ Miss = none appeared. Miss and Partial both trigger auto-backtest to diagnose model accuracy.</div>'
+    + liveHtml
+  );
+}
+
+// ── SECTION: BACKTESTING ──
+function buildGuideBacktest(){
+  db = loadDB();
+  var shop    = guideShop && db.shops[guideShop];
+  var entries = shop ? (shop.entries||[]) : [];
+  var preds   = shop ? (shop.predictions||[]) : [];
+  var liveHtml = '';
+
+  if(entries.length >= 4){
+    var holdN=Math.min(3,Math.max(1,Math.floor(entries.length*0.25)));
+    var train=entries.slice(0,entries.length-holdN);
+    var test=entries.slice(entries.length-holdN);
+    var scores=buildCombinedScore(train,preds,guideShop).scores;
+    var top5=Object.entries(scores).sort(function(a,b){return b[1]-a[1];}).slice(0,5).map(function(x){return x[0];});
+    var totalHits=0,totalSlots=0;
+    var rows=test.map(function(e,i){
+      var hits=top5.filter(function(c){return e.codes.includes(c);});
+      totalHits+=hits.length; totalSlots+=top5.length;
+      var pct=Math.round(hits.length/top5.length*100);
+      var col=pct>=60?'var(--green)':pct>=30?'var(--gold)':'var(--red)';
+      return '<div style="padding:5px 0;border-bottom:1px solid var(--border)">'
+        +'<div style="display:flex;justify-content:space-between;font-size:11px;font-family:var(--mono)">'
+        +'<span style="color:var(--muted)">Holdout '+(i+1)+' · '+e.date+'</span>'
+        +'<span style="color:'+col+'">'+hits.length+'/'+top5.length+' ('+pct+'%)</span>'
+        +'</div>'
+        +'<div style="font-size:10px;color:var(--muted);margin-top:1px">Matched: '+(hits.length?hits.join(' '):'none')+'</div>'
+        +'</div>';
+    }).join('');
+    var overall=Math.round(totalHits/totalSlots*100);
+    var oCls=overall>=60?'alert-success':overall>=30?'alert-warn':'alert-error';
+    var interp=overall>=60?'Strong — predictions are trustworthy.':overall>=40?'Moderate — useful signal, some noise.':overall>=20?'Weak — add more entries.':'Very weak — pattern unclear.';
+    liveHtml='<div class="guide-live-box"><div class="guide-live-label">Live backtest — Shop '+guideShop+' ('+train.length+' train, '+holdN+' holdout)</div>'
+      +'<div class="alert '+oCls+'" style="margin-bottom:8px"><strong>'+overall+'%</strong> — '+interp+'</div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-bottom:6px">Top-5 predicted: <span style="font-family:var(--mono);color:var(--accent)">'+top5.join(' ')+'</span></div>'
+      +rows+'</div>';
+  } else {
+    var needed=Math.max(0,4-entries.length);
+    liveHtml='<div class="guide-callout">Need '+(needed>0?needed+' more entr'+(needed===1?'y':'ies'):'4+ entries')+' to run a live backtest for Shop '+(guideShop||'—')+'.</div>';
+  }
+
+  return guideSection('🧪','Backtesting — Testing the Model on Past Data',
+    '<p class="guide-p"><strong>When does it run?</strong> Two ways: manually via ▶ Run Backtest in Analyze, or <em>automatically</em> whenever a prediction resolves as Miss or Partial.</p>'
+    +'<div class="guide-callout"><strong>Minimum 4 entries.</strong> Below that, the split into training and test sets is meaningless.</div>'
+    +'<p class="guide-p"><strong>What it does:</strong> holds out the most recent 25% of entries (capped at 3), trains the model on the rest, generates top-5 predicted codes, then checks how many appeared in each held-out entry.</p>'
+    +'<div class="guide-example"><div class="ex-label">Reading the percentage</div>'
+    +'<div style="font-size:12px;color:var(--muted);line-height:1.8">'
+    +'<span style="color:var(--green)">≥ 60%</span> — strong signal. Trust the top-3.<br>'
+    +'<span style="color:var(--accent)">40–59%</span> — good. Use as a guide.<br>'
+    +'<span style="color:var(--gold)">25–39%</span> — moderate. More data will help.<br>'
+    +'<span style="color:var(--red)">&lt; 25%</span> — weak. Pattern unclear or insufficient data.'
+    +'</div></div>'
+    +'<div class="guide-callout"><strong>Backtest vs live accuracy:</strong> backtest uses historical data; the Track tab shows real forward-looking accuracy. If backtest is high but Track accuracy is low, the shop\'s pattern may have recently shifted.</div>'
+    + liveHtml
+  );
+}
+
+// ── SECTION: CONFIDENCE ──
+function buildGuideConfidence(){
+  db = loadDB();
+  var shop    = guideShop && db.shops[guideShop];
+  var liveHtml= '';
+
+  if(shop){
+    var r = calcShopConfidence(guideShop);
+    if(r){
+      var gradeColors={A:'var(--green)',B:'var(--accent)',C:'var(--gold)',D:'var(--red)',N:'var(--muted)'};
+      var col=gradeColors[r.grade];
+      liveHtml='<div class="guide-live-box"><div class="guide-live-label">Live confidence — Shop '+guideShop+'</div>'
+        +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">'
+        +'<span style="font-size:42px;font-weight:900;font-family:var(--mono);color:'+col+'">'+r.grade+'</span>'
+        +'<div><div style="font-size:26px;font-weight:900;font-family:var(--mono);color:'+col+'">'+r.total+'<span style="font-size:14px;color:var(--muted)">/100</span></div>'
+        +'<div style="font-size:11px;color:var(--muted);margin-top:2px">'+r.verdict+'</div></div>'
+        +'</div>'
+        +Object.entries(r.dims).map(function(x){
+          var dim=x[0],d=x[1];
+          var pct=(d.score/d.max*100).toFixed(0);
+          var bc=pct>=80?'var(--green)':pct>=50?'var(--accent)':pct>=30?'var(--gold)':'var(--red)';
+          return '<div class="conf-dim-row">'
+            +'<span class="conf-dim-label" style="font-size:10px">'+dim+'</span>'
+            +'<div class="conf-dim-bar-wrap"><div class="conf-dim-bar" style="width:'+pct+'%;background:'+bc+'"></div></div>'
+            +'<span class="conf-dim-val" style="color:'+bc+'">'+d.score+'/'+d.max+'</span>'
+            +'</div>'
+            +'<div style="font-size:10px;color:var(--muted);margin:-2px 0 5px 118px">'+d.detail+'</div>';
+        }).join('')
+        +'</div>';
+    }
+  } else {
+    liveHtml='<div class="guide-callout">Select a shop to see its live confidence score.</div>';
+  }
+
+  return guideSection('🏅','Confidence Score — How Reliable Is the Prediction?',
+    '<p class="guide-p">Confidence is separate from the prediction score. A code can have a high prediction score while the shop still has low confidence — because there isn\'t enough data history. Confidence measures the <strong>quality of the data and model</strong>, not the prediction itself.</p>'
+    +'<div style="margin:8px 0">'
+    +[['Data Volume','0–20','How many refill entries exist. Full score at 20+.'],
+      ['Pattern Strength','0–20','How concentrated the top-5 codes are. High = predictable shop.'],
+      ['Recency','0–20','Days since the last entry. Data older than 90 days scores near zero.'],
+      ['Streak Quality','0–20','Best active consecutive streak. 5+ refills scores full points.'],
+      ['Pred. Accuracy','0–20','Hit rate from resolved predictions. Zero until first resolution.']
+    ].map(function(d){
+      return '<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">'
+        +'<span style="font-size:11px;font-weight:700;color:var(--accent);min-width:110px">'+d[0]+'</span>'
+        +'<span style="font-size:10px;color:var(--gold);min-width:32px">'+d[1]+'</span>'
+        +'<span style="font-size:11px;color:var(--muted);line-height:1.5">'+d[2]+'</span>'
+        +'</div>';
+    }).join('')
+    +'</div>'
+    +'<p class="guide-p">Grades: <strong style="color:var(--green)">A ≥80</strong> · <strong style="color:var(--accent)">B ≥60</strong> · <strong style="color:var(--gold)">C ≥40</strong> · <strong style="color:var(--red)">D ≥20</strong> · <strong style="color:var(--muted)">N &lt;20</strong></p>'
+    +'<div class="guide-callout"><strong>Pred. Accuracy starts at zero for every shop</strong> and only grows once predictions are resolved. This is intentional — the model earns its confidence score through verified outcomes, not just by having data.</div>'
+    + liveHtml
+  );
+}
+
+// ── SECTION: WORKFLOW ──
+function buildGuideWorkflow(){
+  var milestones = [
+    ['var(--red)',   '3–5 entries',                          'Predictions available. Treat as rough indicators only.'],
+    ['var(--gold)',  '6–9 entries',                          'Backtest gives meaningful signal. Frequency and recency patterns visible.'],
+    ['var(--accent)','10–14 entries',                        'Model reasonably calibrated. Co-occurrence and interval regularity activate.'],
+    ['var(--green)', '15+ entries',                          'All additive signals stable.'],
+    ['var(--green)', '15+ entries + 5 resolved predictions', 'Weight adaptation active. Model is personalised to this shop.'],
+    ['var(--green)', '20+ entries + 10 resolved predictions','Optimal. Full confidence. Model outperforms generic baseline.']
+  ];
+
+  return guideSection('🔄','Full Workflow — From First Entry to Self-tuning Model',
+    '<p class="guide-p">The cycle is: collect → predict → collect next refill → compare → adapt weights → repeat. Each cycle makes the model sharper.</p>'
+    +'<div style="margin:10px 0">'
+    +'<div class="guide-step"><div class="guide-step-num">1</div><div class="guide-step-body">'
+    +'<strong>Add a shop</strong> — tap ＋, enter 1–3 character code (e.g. ST, HPG), optional name. Long-press to set refill schedule (weekly/twice-weekly) and tolerance days.'
+    +'</div></div>'
+    +'<div class="guide-step"><div class="guide-step-num">2</div><div class="guide-step-body">'
+    +'<strong>Collect refills</strong> — enter codes in Collect tab with the refill date. Codes can repeat (07 07 12 = code 07 appeared twice). Duplicate refills are blocked per shop and across shops.'
+    +'</div></div>'
+    +'<div class="guide-step"><div class="guide-step-num">3</div><div class="guide-step-body">'
+    +'<strong>Prediction auto-saves</strong> — after every save (from the 3rd entry onwards), the app generates a fresh top-3 and stores it. Nothing to tap.'
+    +'</div></div>'
+    +'<div class="guide-step"><div class="guide-step-num">4</div><div class="guide-step-body">'
+    +'<strong>Next refill arrives → enter it</strong> — the app immediately compares it against the stored prediction and shows a result card in Collect: hit/partial/miss, per-code breakdown, and if wrong, the auto-backtest result inline.'
+    +'</div></div>'
+    +'<div class="guide-step"><div class="guide-step-num">5</div><div class="guide-step-body">'
+    +'<strong>Model updates automatically</strong> — weights shift, bias scores update, miss-streak penalties adjust. The next prediction already uses the updated model.'
+    +'</div></div>'
+    +'<div class="guide-step"><div class="guide-step-num">6</div><div class="guide-step-body">'
+    +'<strong>Back up</strong> — tap DATA tab → Save to iCloud Drive after each session. Export is a single JSON file. Restore any time with one tap.'
+    +'</div></div>'
+    +'</div>'
+    +'<p class="guide-p"><strong>Reliability milestones:</strong></p>'
+    +'<div class="guide-example"><div class="ex-label">When to trust the predictions</div>'
+    +milestones.map(function(m){
+      return '<div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">'
+        +'<span style="font-size:11px;color:'+m[0]+';min-width:180px;line-height:1.5">'+m[1]+'</span>'
+        +'<span style="font-size:11px;color:var(--muted);line-height:1.5">'+m[2]+'</span>'
+        +'</div>';
+    }).join('')
+    +'</div>'
+    +'<div class="guide-callout">Check the <strong>🏅 Confidence tab</strong> any time to see all shops ranked — it tells you which shops have reliable predictions and which ones still need more data.</div>'
+  );
+}
+
+function guideSection(icon, title, bodyHtml){
+  var id = 'gs-'+Math.random().toString(36).slice(2,7);
+  return '<div class="guide-section">'
+    +'<div class="guide-section-head" data-guide-toggle="'+id+'">'
+    +'<div class="guide-h-left"><span class="guide-icon">'+icon+'</span><span class="guide-title">'+title+'</span></div>'
+    +'<span class="guide-chevron" id="chev-'+id+'">▼</span>'
+    +'</div>'
+    +'<div class="guide-body" id="'+id+'">'+bodyHtml+'</div>'
+    +'</div>';
+}
+// ── CONFIDENCE ENGINE ─────────────────────
+/*
+  5 dimensions, each 0–20 pts → total 0–100
+  1. Data Volume     (0–20): how many refill entries exist
+  2. Pattern Strength(0–20): concentration of top-5 codes vs all codes
+  3. Recency         (0–20): how recently the last entry was added
+  4. Streak Quality  (0–20): presence and length of active streaks
+  5. Prediction Accuracy(0–20): resolved prediction hit rate (0 if no predictions yet)
+*/
+function calcShopConfidence(shopCode){
+  db=loadDB();
+  var s=db.shops[shopCode];
+  if(!s) return null;
+  var entries=s.entries||[];
+  var preds=s.predictions||[];
+  var result={code:shopCode,name:s.name||'',dims:{},total:0,grade:'N',verdict:'',top3:[]};
+
+  // ── DIM 1: Data Volume (0–20) ──
+  // <3=0, 3=4, 5=8, 10=14, 15=18, 20+=20
+  var n=entries.length;
+  var volScore = n===0?0 : n<3?2 : n<5?6 : n<10?10 : n<15?14 : n<20?17 : 20;
+  result.dims['Data Volume']={score:volScore,max:20,detail:n+' refill'+(n!==1?'s':'')};
+
+  // ── DIM 2: Pattern Strength (0–20) ──
+  // How dominant are the top-5 codes? top5_occurrences / total_occurrences
+  var patScore=0, patDetail='insufficient data';
+  if(n>=2){
+    var freq=buildFreqMap(entries);
+    var sortedF=Object.values(freq).sort(function(a,b){return b-a;});
+    var totalOcc=sortedF.reduce(function(a,b){return a+b;},0);
+    var top5Occ=sortedF.slice(0,5).reduce(function(a,b){return a+b;},0);
+    var concentration=totalOcc>0?top5Occ/totalOcc:0;
+    patScore=Math.round(concentration*20);
+    patDetail=Math.round(concentration*100)+'% of items in top-5 codes';
+  }
+  result.dims['Pattern Strength']={score:patScore,max:20,detail:patDetail};
+
+  // ── DIM 3: Recency (0–20) ──
+  // Days since last entry: 0d=20, 7d=18, 14d=15, 30d=10, 60d=5, 90d+=2, no data=0
+  var recScore=0, recDetail='no entries';
+  if(n>0){
+    var sorted=entries.slice().sort(function(a,b){return b.date.localeCompare(a.date);});
+    var lastDate=new Date(sorted[0].date);
+    var today=new Date(todayStr());
+    var days=Math.round((today-lastDate)/(1000*60*60*24));
+    recScore=days===0?20:days<=7?18:days<=14?15:days<=30?10:days<=60?5:days<=90?2:0;
+    recDetail='last entry '+days+'d ago ('+sorted[0].date+')';
+  }
+  result.dims['Recency']={score:recScore,max:20,detail:recDetail};
+
+  // ── DIM 4: Streak Quality (0–20) ──
+  // Best active streak: 0=0, 1=4, 2=8, 3=12, 4=15, 5+=20
+  var strScore=0, strDetail='no active streaks';
+  if(n>=2){
+    var streaks=buildStreaks(entries);
+    var bestStreak=Object.values(streaks).length?Math.max.apply(null,Object.values(streaks)):0;
+    var bestCode=Object.keys(streaks).find(function(k){return streaks[k]===bestStreak;})||'';
+    strScore=bestStreak===0?0:bestStreak===1?4:bestStreak===2?8:bestStreak===3?12:bestStreak===4?15:20;
+    strDetail=bestStreak>0?'best streak: code '+bestCode+' × '+bestStreak+' refills':'no streaks';
+  }
+  result.dims['Streak Quality']={score:strScore,max:20,detail:strDetail};
+
+  // ── DIM 5: Prediction Accuracy (0–20) ──
+  // Based on resolved prediction hit rate; 0 if no resolved predictions
+  var accScore=0, accDetail='no resolved predictions yet';
+  var resolved=preds.filter(function(p){return p.status!=='pending'&&p.outcome;});
+  if(resolved.length>0){
+    var tH=resolved.reduce(function(a,p){
+      return a+Object.values(p.outcome).filter(function(v){return v==='hit';}).length;
+    },0);
+    var tP=resolved.reduce(function(a,p){return a+p.predictedCodes.length;},0);
+    var rate=tP>0?tH/tP:0;
+    accScore=Math.round(rate*20);
+    accDetail=Math.round(rate*100)+'% hit rate ('+resolved.length+' resolved)';
+  }
+  result.dims['Pred. Accuracy']={score:accScore,max:20,detail:accDetail};
+
+  // ── TOTAL & GRADE ──
+  var total=Object.values(result.dims).reduce(function(a,d){return a+d.score;},0);
+  result.total=total;
+  result.grade=total>=80?'A':total>=60?'B':total>=40?'C':total>=20?'D':'N';
+
+  // ── TOP 3 CODES ──
+  if(n>=3){
+    var scores=buildCombinedScore(entries,preds,shopCode).scores;
+    result.top3=Object.entries(scores).sort(function(a,b){return b[1]-a[1];}).slice(0,3).map(function(x){return x[0];});
+  }
+
+  // ── VERDICT ──
+  var weak=Object.entries(result.dims).filter(function(x){return x[1].score<x[1].max*0.4;}).map(function(x){return x[0];});
+  var strong=Object.entries(result.dims).filter(function(x){return x[1].score>=x[1].max*0.8;}).map(function(x){return x[0];});
+  var v='';
+  if(total>=80) v='Strong signal across all dimensions. Predictions are highly reliable.';
+  else if(total>=60) v='Good signal. '+(weak.length?'Weakest area: '+weak[0]+'.':'');
+  else if(total>=40) v='Moderate signal. '+(weak.length?'Improve: '+weak.slice(0,2).join(' and ')+'.':'');
+  else if(total>=20) v='Weak signal. Need more data'+(weak.length?' — especially: '+weak[0]:'')+ '.';
+  else v='Insufficient data to make confident predictions. Add more refill entries.';
+  result.verdict=v;
+
+  return result;
+}
+
+function renderConfidence(){
+  db=loadDB();
+  var shops=Object.keys(db.shops).sort();
+  var list=document.getElementById('confidence-list');
+
+  if(!shops.length){
+    list.innerHTML='<div class="empty-state"><div class="es-icon">🏅</div><p>No shops added yet.</p></div>';
+    renderConfidenceLegend();
+    return;
+  }
+
+  // Compute all, sort by score desc
+  var results=shops.map(function(c){return calcShopConfidence(c);}).filter(Boolean);
+  results.sort(function(a,b){return b.total-a.total;});
+
+  var gradeColors={A:'var(--green)',B:'var(--accent)',C:'var(--gold)',D:'var(--red)',N:'var(--muted)'};
+
+  list.innerHTML=results.map(function(r,rank){
+    var color=gradeColors[r.grade];
+    var dimsHtml=Object.entries(r.dims).map(function(x){
+      var dim=x[0],d=x[1];
+      var pct=(d.score/d.max*100).toFixed(0);
+      var barColor=pct>=80?'var(--green)':pct>=50?'var(--accent)':pct>=30?'var(--gold)':'var(--red)';
+      return '<div class="conf-dim-row">'
+        +'<span class="conf-dim-label">'+dim+'</span>'
+        +'<div class="conf-dim-bar-wrap"><div class="conf-dim-bar" style="width:'+pct+'%;background:'+barColor+'"></div></div>'
+        +'<span class="conf-dim-val" style="color:'+barColor+'">'+d.score+'/'+d.max+'</span>'
+        +'</div>'
+        +'<div style="font-size:10px;color:var(--muted);margin:-3px 0 6px 118px">'+d.detail+'</div>';
+    }).join('');
+
+    var top3Html=r.top3.length
+      ?'<div style="margin-top:8px;font-size:11px;color:var(--muted)">Top predicted: '
+        +r.top3.map(function(c){return '<span style="font-family:var(--mono);font-weight:700;color:var(--text)">'+c+'</span>';}).join(' · ')+'</div>'
+      :'';
+
+    return '<div class="conf-shop-card grade-'+r.grade+'">'
+      +'<div class="conf-header">'
+      +'<span class="conf-grade">'+(rank===0?'🥇':rank===1?'🥈':rank===2?'🥉':r.grade)+'</span>'
+      +'<div style="flex:1">'
+      +'<div class="conf-shop-name" style="font-family:var(--mono);font-weight:900;font-size:18px;color:'+color+'">'+r.code+(r.name?' <span style="font-size:13px;font-weight:600;color:var(--text)">— '+r.name+'</span>':'')+'</div>'
+      +'<div style="font-size:10px;color:var(--muted);margin-top:2px">Grade <strong style="color:'+color+'">'+r.grade+'</strong> · Confidence <strong style="color:'+color+'">'+r.total+'/100</strong></div>'
+      +'</div>'
+      +'</div>'
+      +dimsHtml
+      +top3Html
+      +'<div class="conf-verdict">'+r.verdict+'</div>'
+      +'</div>';
+  }).join('');
+
+  renderConfidenceLegend();
+}
+
+function renderConfidenceLegend(){
+  var dims=[
+    ['Data Volume','Points for number of refill entries. More history = more reliable signal. Full score at 20+ entries.'],
+    ['Pattern Strength','How concentrated the top-5 codes are vs all codes seen. High = a small set of codes dominate refills.'],
+    ['Recency','How recently data was collected. Data older than 90 days scores near zero.'],
+    ['Streak Quality','Presence and length of consecutive-refill streaks. Active streaks are the strongest short-term signal.'],
+    ['Pred. Accuracy','Hit rate of past locked predictions. Only activates once predictions are resolved in Track.']
+  ];
+  document.getElementById('confidence-legend').innerHTML=
+    '<div style="margin-bottom:8px;font-size:11px;color:var(--muted)">Each dimension is scored 0–20. Total 0–100.<br>A ≥80 · B ≥60 · C ≥40 · D ≥20 · N &lt;20</div>'
+    +dims.map(function(d){
+      return '<div class="legend-row"><span class="legend-dim">'+d[0]+'</span><span class="legend-desc">'+d[1]+'</span></div>';
+    }).join('');
+}
+
+// ── STORAGE INSPECTOR & RECOVERY ──────────
+function runStorageInspect(){
+  var out = document.getElementById('storage-results');
+  if(!out) return;
+  var html = '';
+
+  // Scan ALL localStorage keys
+  var allKeys = [];
+  try{
+    for(var i=0;i<localStorage.length;i++){
+      allKeys.push(localStorage.key(i));
+    }
+  }catch(e){
+    out.innerHTML='<div class="alert alert-error">Cannot read localStorage: '+e.message+'</div>';
+    return;
+  }
+
+  if(!allKeys.length){
+    out.innerHTML='<div class="alert alert-warn">localStorage is completely empty. Your data may have been cleared by Safari, or this is a fresh install.</div>';
+    return;
+  }
+
+  // Categorise keys
+  var knownKeys = ['inv_intel_v4','inv_intel_v3','inv_intel_v2','inv_intel_v1','inv_intel_apikey'];
+  var invKeys = [], otherKeys = [];
+  allKeys.forEach(function(k){
+    if(knownKeys.indexOf(k)>-1) invKeys.push(k);
+    else otherKeys.push(k);
+  });
+
+  html += '<div class="card"><div class="card-title">ALL STORAGE KEYS ('+allKeys.length+' total)</div>';
+
+  // Known inventory keys
+  if(invKeys.length){
+    html += '<div class="section-head">INSIGHT KEYS</div>';
+    invKeys.forEach(function(k){
+      try{
+        var raw = localStorage.getItem(k);
+        var parsed = JSON.parse(raw);
+        var shopCount = parsed&&parsed.shops ? Object.keys(parsed.shops).length : 0;
+        var entryCount = 0;
+        if(parsed&&parsed.shops){
+          Object.values(parsed.shops).forEach(function(s){ entryCount+=(s.entries||[]).length; });
+        }
+        // Old format: had 'batches' array
+        var batchCount = parsed&&parsed.batches ? parsed.batches.length : 0;
+        var sizeKb = (raw.length/1024).toFixed(1);
+        var isCurrent = k===DB_KEY;
+        html += '<div class="entry-item" style="flex-direction:column;gap:6px">'
+          +'<div style="display:flex;justify-content:space-between;align-items:center">'
+          +'<span style="font-family:var(--mono);font-weight:800;font-size:14px;color:'+(isCurrent?'var(--green)':'var(--accent)')+'">'+k+(isCurrent?' ← ACTIVE':'')+'</span>'
+          +'<span style="font-size:11px;color:var(--muted)">'+sizeKb+' KB</span>'
+          +'</div>'
+          +'<div style="font-size:12px;color:var(--muted)">'
+          +(shopCount?shopCount+' shop'+(shopCount!==1?'s':'')+', '+entryCount+' entries':batchCount?batchCount+' batches (old format)':'empty or unrecognised format')
+          +'</div>';
+        if(!isCurrent && (shopCount>0||batchCount>0)){
+          html += '<button class="btn btn-primary btn-small" style="margin-top:4px" data-recover-key="'+k+'">⬆ Recover & Import This Data</button>';
+        }
+        html += '</div>';
+      }catch(e){
+        html += '<div class="entry-item"><span style="font-family:var(--mono)">'+k+'</span><span style="color:var(--red);font-size:11px">parse error</span></div>';
+      }
+    });
+  }
+
+  // Unknown keys
+  if(otherKeys.length){
+    html += '<div class="section-head">OTHER KEYS</div>';
+    otherKeys.forEach(function(k){
+      var raw = localStorage.getItem(k)||'';
+      html += '<div style="font-size:11px;font-family:var(--mono);color:var(--muted);padding:4px 0;border-bottom:1px solid var(--border)">'
+        +k+' <span style="color:var(--border)">('+raw.length+' chars)</span></div>';
+    });
+  }
+
+  html += '</div>';
+
+  // Current DB summary
+  html += '<div class="card"><div class="card-title">CURRENT ACTIVE DATA</div>';
+  db = loadDB();
+  var shops = Object.keys(db.shops);
+  if(shops.length){
+    shops.forEach(function(code){
+      var s = db.shops[code];
+      var ec = (s.entries||[]).length;
+      var pc = (s.predictions||[]).length;
+      html += '<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">'
+        +'<span style="font-family:var(--mono);font-weight:800;color:var(--accent)">'+code+'</span>'
+        +(s.name?' <span style="color:var(--muted)">'+s.name+'</span>':'')
+        +' — <strong>'+ec+'</strong> entr'+(ec!==1?'ies':'y')
+        +', <strong>'+pc+'</strong> prediction'+(pc!==1?'s':'')
+        +'</div>';
+    });
+  } else {
+    html += '<p style="color:var(--red);font-size:13px">No shops found in active database.</p>';
+  }
+  html += '</div>';
+
+  out.innerHTML = html;
+
+  // Wire recover buttons
+  out.querySelectorAll('[data-recover-key]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      recoverFromKey(this.getAttribute('data-recover-key'));
+    });
+  });
+}
+
+
+function recoverFromKey(key){
+  try{
+    var raw=localStorage.getItem(key);
+    var parsed=JSON.parse(raw);
+    if(!parsed||!parsed.shops||!Object.keys(parsed.shops).length){
+      showToast('No shops found in that key','warn'); return;
+    }
+    Object.keys(parsed.shops).forEach(function(c){
+      if(!parsed.shops[c].predictions) parsed.shops[c].predictions=[];
+    });
+    db=loadDB();
+    var imported=0;
+    Object.keys(parsed.shops).forEach(function(code){
+      if(!db.shops[code]){
+        db.shops[code]=parsed.shops[code];
+        imported+=(parsed.shops[code].entries||[]).length;
+      } else {
+        var existingSigs=new Set(db.shops[code].entries.map(function(e){
+          return e.date+'|'+refillSig(e.codes);
+        }));
+        (parsed.shops[code].entries||[]).forEach(function(e){
+          var sig=e.date+'|'+refillSig(e.codes);
+          if(!existingSigs.has(sig)){
+            db.shops[code].entries.push(e);
+            db.shops[code].entries.sort(function(a,b){return a.date.localeCompare(b.date);});
+            imported++;
+          }
+        });
+      }
+    });
+    saveDB(db);
+    renderShopPills();
+    updateAllBanners();
+    renderDbSummary();
+    var firstShop=Object.keys(parsed.shops)[0];
+    if(firstShop) selectShop(firstShop);
+    runStorageInspect();
+    showToast('Recovered — '+imported+' items imported');
+  }catch(e){
+    showToast('Recovery failed: '+e.message,'error');
+  }
+}
+function exportFullBackup(){
+  db=loadDB();
+  var blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  a.download='insight-backup-'+todayStr()+'.json';
+  a.click();
+  showToast('Backup exported');
+}
+
+function importFromFile(input){
+  var file=input.files[0];
+  if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var result=document.getElementById('import-result');
+    try{
+      var parsed=JSON.parse(ev.target.result);
+      var imported={shops:{}};
+      // Full backup format
+      if(parsed.shops){
+        imported=parsed;
+        Object.keys(imported.shops).forEach(function(c){
+          if(!imported.shops[c].predictions) imported.shops[c].predictions=[];
+        });
+      }
+      // Single shop export format
+      else if(parsed.shop&&parsed.data){
+        imported.shops[parsed.shop]=parsed.data;
+        if(!imported.shops[parsed.shop].predictions) imported.shops[parsed.shop].predictions=[];
+      }
+      else{
+        result.innerHTML='<div class="alert alert-error">Unrecognised file format.</div>';
+        return;
+      }
+      var shopList=Object.keys(imported.shops);
+      if(!shopList.length){
+        result.innerHTML='<div class="alert alert-warn">No shops found in file.</div>';
+        return;
+      }
+      // Merge without overwriting
+      db=loadDB();
+      var totalEntries=0, newShops=0;
+      shopList.forEach(function(code){
+        if(!db.shops[code]){
+          db.shops[code]=imported.shops[code];
+          newShops++;
+          totalEntries+=(imported.shops[code].entries||[]).length;
+        } else {
+          var existingSigs=new Set(db.shops[code].entries.map(function(e){
+            return e.date+'|'+refillSig(e.codes);
+          }));
+          (imported.shops[code].entries||[]).forEach(function(e){
+            var sig=e.date+'|'+refillSig(e.codes);
+            if(!existingSigs.has(sig)){
+              db.shops[code].entries.push(e);
+              db.shops[code].entries.sort(function(a,b){return a.date.localeCompare(b.date);});
+              totalEntries++;
+            }
+          });
+        }
+      });
+      saveDB(db);
+      renderShopPills();
+      updateAllBanners();
+      renderDbSummary();
+      var firstShop=shopList[0];
+      if(firstShop) selectShop(firstShop);
+      result.innerHTML='<div class="alert alert-success">✅ Imported '+shopList.length+' shop'+(shopList.length!==1?'s':'')+', '+totalEntries+' entries.</div>';
+      input.value='';
+    }catch(e){
+      document.getElementById('import-result').innerHTML='<div class="alert alert-error">Failed to read file: '+e.message+'</div>';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function renderStoragePanel(){
+  renderPWAStatus();
+  renderAutoBackupToggle();
+  renderDbSummary();
+}
+
+function renderDbSummary(){
+  var el=document.getElementById('db-summary');
+  if(!el) return;
+  db=loadDB();
+  var shops=Object.keys(db.shops).sort();
+  if(!shops.length){
+    el.innerHTML='<p style="color:var(--muted);font-size:13px">No data yet. Add shops in Collect.</p>';
+    return;
+  }
+  var totalEntries=0, totalPreds=0;
+  var rows=shops.map(function(code){
+    var s=db.shops[code];
+    var ec=(s.entries||[]).length;
+    var pc=(s.predictions||[]).length;
+    totalEntries+=ec; totalPreds+=pc;
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">'
+      +'<div><span style="font-family:var(--mono);font-weight:800;color:var(--accent);font-size:15px">'+code+'</span>'
+      +(s.name?' <span style="font-size:12px;color:var(--muted)">'+s.name+'</span>':'')+'</div>'
+      +'<div style="text-align:right;font-size:12px;color:var(--muted)">'
+      +'<strong style="color:var(--text)">'+ec+'</strong> entr'+(ec!==1?'ies':'y')
+      +' · <strong style="color:var(--text)">'+pc+'</strong> pred'+(pc!==1?'s':'')
+      +'</div>'
+      +'</div>';
+  }).join('');
+  el.innerHTML=rows
+    +'<div style="padding:8px 0;font-size:12px;color:var(--muted)">'
+    +'Total: <strong style="color:var(--text)">'+shops.length+' shops</strong>'
+    +' · <strong style="color:var(--text)">'+totalEntries+' entries</strong>'
+    +' · <strong style="color:var(--text)">'+totalPreds+' predictions</strong>'
+    +'</div>';
+}
+
+function runStorageInspect(){
+  var out=document.getElementById('storage-results');
+  if(!out) return;
+  var allKeys=[];
+  try{
+    for(var i=0;i<localStorage.length;i++) allKeys.push(localStorage.key(i));
+  }catch(e){
+    out.innerHTML='<div class="alert alert-error">Cannot read localStorage: '+e.message+'</div>';
+    return;
+  }
+  if(!allKeys.length){
+    out.innerHTML='<div class="alert alert-warn">localStorage is completely empty. No data stored in this browser for this file location.</div>';
+    return;
+  }
+  var knownKeys=[DB_KEY,DB_BAK,'inv_intel_v3','inv_intel_v2','inv_intel_v1',AK_KEY];
+  var html='';
+  allKeys.sort().forEach(function(k){
+    var raw=localStorage.getItem(k)||'';
+    var isKnown=knownKeys.indexOf(k)>-1;
+    var info='';
+    if(isKnown&&k!==AK_KEY){
+      try{
+        var p=JSON.parse(raw);
+        if(p&&p.shops){
+          var sc=Object.keys(p.shops).length;
+          var ec=Object.values(p.shops).reduce(function(a,s){return a+(s.entries||[]).length;},0);
+          info=sc+' shops, '+ec+' entries';
+        } else if(p&&p.batches){
+          info=p.batches.length+' batches (old format)';
+        }
+      }catch(e2){ info='parse error'; }
+    }
+    var isCurrent=k===DB_KEY||k===DB_BAK;
+    html+='<div style="padding:6px 0;border-bottom:1px solid var(--border)">'
+      +'<div style="display:flex;justify-content:space-between">'
+      +'<span style="font-family:var(--mono);font-size:12px;font-weight:700;color:'+(isCurrent?'var(--green)':isKnown?'var(--accent)':'var(--muted)')+'">'+k+'</span>'
+      +'<span style="font-size:10px;color:var(--muted)">'+(raw.length/1024).toFixed(1)+' KB</span>'
+      +'</div>'
+      +(info?'<div style="font-size:11px;color:var(--muted);margin-top:2px">'+info+'</div>':'')
+      +'</div>';
+  });
+  out.innerHTML=html||'<p style="color:var(--muted);font-size:12px">No recognisable data keys found.</p>';
+}
+
+// ── CONTINUITY ENGINE ─────────────────────
+
+var DAY_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var DAY_NAMES_FULL=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+// Get schedule for shop, returns null if none set
+function getSchedule(letter){
+  db=loadDB();
+  var s=db.shops[letter];
+  if(!s||!s.schedule||s.schedule.type==='none') return null;
+  return s.schedule; // {type:'weekly'|'twice', days:[0-6,...], tolerance:1}
+}
+
+// Given a date string, get all expected refill dates from first entry to today+14
+function getExpectedDates(schedule, fromDate, toDate){
+  if(!schedule||schedule.type==='none') return [];
+  var days=schedule.days.slice().sort(function(a,b){return a-b;});
+  var tol=schedule.tolerance||1;
+  var expected=[];
+  var cur=new Date(fromDate+'T12:00:00');
+  var end=new Date(toDate+'T12:00:00');
+  end.setDate(end.getDate()+14); // look 2 weeks ahead
+  while(cur<=end){
+    var dow=cur.getDay();
+    if(days.indexOf(dow)>-1){
+      expected.push({
+        date: cur.toISOString().slice(0,10),
+        dow: dow,
+        tolerance: tol
+      });
+    }
+    cur.setDate(cur.getDate()+1);
+  }
+  return expected;
+}
+
+// Check if an actual entry satisfies an expected date (within tolerance)
+function entryCoversExpected(entryDate, expectedDate, tolerance){
+  var e=new Date(entryDate+'T12:00:00');
+  var x=new Date(expectedDate+'T12:00:00');
+  var diffDays=Math.round(Math.abs(e-x)/(1000*60*60*24));
+  return diffDays<=tolerance;
+}
+
+// Full continuity analysis: returns {gaps, covered, total, nextExpected, missedDates}
+function analyzeContinuity(letter){
+  var sched=getSchedule(letter);
+  if(!sched) return null;
+  db=loadDB();
+  var entries=(db.shops[letter].entries||[]).slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+  if(!entries.length) return null;
+
+  var fromDate=entries[0].date;
+  var today=todayStr();
+  var expected=getExpectedDates(sched, fromDate, today);
+  // Only check up to today (not future)
+  var pastExpected=expected.filter(function(x){return x.date<=today;});
+  var futureExpected=expected.filter(function(x){return x.date>today;});
+
+  var gaps=[], covered=0;
+  pastExpected.forEach(function(x){
+    // Find any entry within tolerance of this expected date
+    var hit=entries.some(function(e){
+      return entryCoversExpected(e.date, x.date, x.tolerance);
+    });
+    if(hit){
+      covered++;
+    } else {
+      // Calculate how many days ago this was
+      var xd=new Date(x.date+'T12:00:00');
+      var td=new Date(today+'T12:00:00');
+      var daysAgo=Math.round((td-xd)/(1000*60*60*24));
+      gaps.push({date:x.date, dow:x.dow, daysAgo:daysAgo});
+    }
+  });
+
+  return {
+    gaps: gaps,
+    covered: covered,
+    total: pastExpected.length,
+    nextExpected: futureExpected.length ? futureExpected[0] : null,
+    coverageRate: pastExpected.length>0 ? Math.round(covered/pastExpected.length*100) : 100
+  };
+}
+
+// Check if a date being entered skips over expected dates
+function checkDateContinuity(letter, newDate){
+  var sched=getSchedule(letter);
+  if(!sched) return null;
+  db=loadDB();
+  var entries=(db.shops[letter].entries||[]).slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+  if(!entries.length) return null;
+
+  var lastDate=entries[entries.length-1].date;
+  if(newDate<=lastDate) return null; // not a future entry
+
+  // Find expected dates between lastDate+1 and newDate-1
+  var afterLast=new Date(lastDate+'T12:00:00');
+  afterLast.setDate(afterLast.getDate()+1);
+  var afterLastStr=afterLast.toISOString().slice(0,10);
+  var beforeNew=new Date(newDate+'T12:00:00');
+  beforeNew.setDate(beforeNew.getDate()-1);
+  var beforeNewStr=beforeNew.toISOString().slice(0,10);
+  if(afterLastStr>beforeNewStr) return null;
+
+  var expected=getExpectedDates(sched, afterLastStr, beforeNewStr)
+    .filter(function(x){return x.date<=beforeNewStr;});
+  var tol=sched.tolerance||1;
+
+  // Any expected date that has no entry within tolerance and isn't covered by newDate
+  var skipped=expected.filter(function(x){
+    var coveredByNew=entryCoversExpected(newDate, x.date, tol);
+    return !coveredByNew;
+  });
+
+  return skipped.length ? skipped : null;
+}
+
+function renderContinuityCard(){
+  var el=document.getElementById('continuity-content');
+  if(!el) return;
+  var sched=getSchedule(activeShop);
+  if(!sched){
+    el.innerHTML='<p style="font-size:12px;color:var(--muted)">No schedule set. Long-press the shop pill → set a refill schedule to enable continuity checking.</p>';
+    return;
+  }
+  var result=analyzeContinuity(activeShop);
+  if(!result){
+    el.innerHTML='<p style="font-size:12px;color:var(--muted)">Add refill entries to start continuity tracking.</p>';
+    return;
+  }
+  var coverColor=result.coverageRate>=90?'var(--green)':result.coverageRate>=70?'var(--gold)':'var(--red)';
+  var schedDesc=sched.type==='weekly'
+    ? 'Weekly on '+DAY_NAMES[sched.days[0]]
+    : 'Twice weekly on '+sched.days.map(function(d){return DAY_NAMES[d];}).join(' & ');
+  var html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+    +'<div><div style="font-size:12px;color:var(--muted)">Schedule: <strong style="color:var(--text)">'+schedDesc+'</strong></div>'
+    +'<div style="font-size:11px;color:var(--muted);margin-top:2px">Tolerance: ±'+sched.tolerance+' day'+(sched.tolerance!==1?'s':'')+'</div></div>'
+    +'<div style="text-align:right"><div style="font-size:24px;font-weight:900;font-family:var(--mono);color:'+coverColor+'">'+result.coverageRate+'%</div>'
+    +'<div style="font-size:10px;color:var(--muted)">coverage</div></div>'
+    +'</div>'
+    +'<div style="font-size:12px;color:var(--muted);margin-bottom:8px">'+result.covered+' of '+result.total+' expected refills recorded</div>';
+
+  if(result.gaps.length){
+    html+='<div style="font-size:11px;font-weight:700;letter-spacing:.5px;color:var(--red);text-transform:uppercase;margin-bottom:6px">⚠️ Gaps Detected ('+result.gaps.length+')</div>';
+    html+=result.gaps.slice(0,10).map(function(g){
+      var label=g.daysAgo===0?'today':g.daysAgo===1?'yesterday':g.daysAgo+' days ago';
+      return '<div class="gap-item">'
+        +'<div class="gap-dot" style="background:var(--red)"></div>'
+        +'<div class="gap-info"><div class="gap-date">'+g.date+' ('+DAY_NAMES[g.dow]+')</div>'
+        +'<div class="gap-detail">Expected refill — '+label+' — not recorded</div></div>'
+        +'</div>';
+    }).join('');
+    if(result.gaps.length>10){
+      html+='<div style="font-size:11px;color:var(--muted);margin-top:4px">…and '+(result.gaps.length-10)+' more gaps</div>';
+    }
+  } else {
+    html+='<div class="alert alert-success" style="margin-top:4px">✅ All expected refills recorded. No gaps.</div>';
+  }
+  el.innerHTML=html;
+}
+
+function renderNextExpectedBanner(){
+  var el=document.getElementById('next-expected-banner');
+  if(!el) return;
+  var sched=getSchedule(activeShop);
+  if(!sched){el.style.display='none';return;}
+  var result=analyzeContinuity(activeShop);
+  if(!result||!result.nextExpected){el.style.display='none';return;}
+
+  var nx=result.nextExpected;
+  var nxDate=new Date(nx.date+'T12:00:00');
+  var today=new Date(todayStr()+'T12:00:00');
+  var daysUntil=Math.round((nxDate-today)/(1000*60*60*24));
+  var whenStr=daysUntil===0?'today':daysUntil===1?'tomorrow':'in '+daysUntil+' days';
+
+  var missAlert='';
+  if(result.gaps.length){
+    missAlert='<div class="alert alert-warn" style="margin-bottom:12px">⚠️ '+result.gaps.length+' gap'+(result.gaps.length>1?'s':'')+' detected — '
+      +result.gaps.length+' expected refill'+(result.gaps.length>1?'s were':' was')+' not recorded. Check Analytics → Continuity.</div>';
+  }
+
+  el.style.display='block';
+  el.innerHTML=missAlert+'<div class="next-expected">'
+    +'<div class="ne-icon">📅</div>'
+    +'<div class="ne-info">'
+    +'<div class="ne-label">NEXT EXPECTED REFILL</div>'
+    +'<div class="ne-date">'+nx.date+' ('+DAY_NAMES_FULL[nx.dow]+')</div>'
+    +'<div class="ne-sub">'+whenStr+' · ±'+sched.tolerance+' day tolerance</div>'
+    +'</div></div>';
+}
+
+function showContinuityWarning(letter, newDate){
+  var skipped=checkDateContinuity(letter, newDate);
+  if(!skipped||!skipped.length) return false;
+  // Show inline warning in collect panel
+  var existing=document.getElementById('continuity-warn');
+  if(existing) existing.remove();
+  var warn=document.createElement('div');
+  warn.id='continuity-warn';
+  warn.className='alert alert-warn';
+  warn.style.marginBottom='10px';
+  warn.innerHTML='⚠️ This date skips <strong>'+skipped.length+' scheduled refill'+(skipped.length>1?'s':'')+' </strong>('
+    +skipped.map(function(x){return x.date+'('+DAY_NAMES[x.dow]+')';}).join(', ')
+    +'). Continue saving anyway — the gap will be flagged in Analytics.';
+  var card=document.querySelector('#panel-collect .card');
+  if(card) card.parentNode.insertBefore(warn,card);
+  return true;
+}
+
+// ── iCLOUD / SHARE SHEET SAVE ─────────────
+var AUTO_BAK_KEY='inv_intel_autobik';
+
+function saveToiCloud(){
+  db=loadDB();
+  var json=JSON.stringify(db,null,2);
+  var filename='insight-'+todayStr()+'.json';
+  var blob=new Blob([json],{type:'application/json'});
+
+  // Try Web Share API (iOS 15+ supports sharing files)
+  if(navigator.canShare&&navigator.canShare({files:[new File([blob],filename,{type:'application/json'})]})){
+    var file=new File([blob],filename,{type:'application/json'});
+    navigator.share({files:[file],title:'Insight Backup',text:'Insight backup '+todayStr()})
+      .then(function(){
+        var el=document.getElementById('icloud-status');
+        if(el) el.innerHTML='<div class="alert alert-success">✅ Shared — save to iCloud Drive in the Files sheet.</div>';
+      })
+      .catch(function(e){
+        if(e.name!=='AbortError') fallbackDownload(blob, filename);
+      });
+  } else {
+    fallbackDownload(blob, filename);
+  }
+}
+
+function fallbackDownload(blob, filename){
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download=filename; a.click();
+  var el=document.getElementById('icloud-status');
+  if(el) el.innerHTML='<div class="alert alert-info">📥 File downloaded — move it to iCloud Drive in the Files app.</div>';
+}
+
+function exportFullBackup(){ saveToiCloud(); } // alias
+
+// Auto-backup reminder
+function isAutoBackupOn(){
+  return localStorage.getItem(AUTO_BAK_KEY)!=='off';
+}
+function toggleAutoBackupReminder(){
+  var on=isAutoBackupOn();
+  localStorage.setItem(AUTO_BAK_KEY, on?'off':'on');
+  renderAutoBackupToggle();
+}
+function renderAutoBackupToggle(){
+  var btn=document.getElementById('auto-backup-toggle');
+  if(!btn) return;
+  var on=isAutoBackupOn();
+  btn.textContent=on?'ON':'OFF';
+  btn.style.background=on?'var(--green)':'var(--surface2)';
+  btn.style.color=on?'#0d1a12':'var(--muted)';
+  btn.style.border=on?'none':'1px solid var(--border)';
+}
+function showBackupReminder(){
+  if(!isAutoBackupOn()) return;
+  var old=document.getElementById('backup-reminder');
+  if(old) old.remove();
+  var div=document.createElement('div');
+  div.id='backup-reminder';
+  div.className='alert alert-info';
+  div.style.marginBottom='12px';
+  div.innerHTML='☁️ Don\'t forget to back up. '
+    +'<strong onclick="saveToiCloud();this.parentElement.parentElement.remove()" '
+    +'style="cursor:pointer;text-decoration:underline">Save to iCloud now →</strong>'
+    +' <span onclick="this.parentElement.remove()" style="float:right;cursor:pointer;opacity:.6">✕</span>';
+  var firstCard=document.querySelector('#panel-collect .card');
+  if(firstCard) firstCard.parentNode.insertBefore(div, firstCard);
+}
+
+// PWA detection
+function isPWA(){
+  return window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches;
+}
+function renderPWAStatus(){
+  var el=document.getElementById('pwa-status');
+  if(!el) return;
+  if(isPWA()){
+    el.innerHTML='<div class="alert alert-success">✅ Running as Home Screen app — storage is protected.</div>';
+  } else {
+    el.innerHTML='<div class="alert alert-warn">⚠️ Running in Safari browser. <strong>Add to Home Screen</strong> to protect your data from being cleared.</div>';
+  }
+}
+// ── TOAST ──────────────────────────────────
+function showToast(msg,type){
+  type=type||'success';
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:calc(72px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);'
+    +'background:'+(type==='error'?'var(--red)':type==='warn'?'var(--gold)':'var(--green)')+';'
+    +'color:'+(type==='warn'?'#1a0f00':'#fff')+';padding:9px 18px;border-radius:20px;'
+    +'font-size:13px;font-weight:600;z-index:9999;white-space:nowrap;'
+    +'box-shadow:0 4px 20px rgba(0,0,0,.5);pointer-events:none;';
+  t.textContent=msg; document.body.appendChild(t); setTimeout(function(){t.remove();},2400);
+}
+
+// ── INIT ──────────────────────────────────
+window.addEventListener('DOMContentLoaded',function(){
+  // Initialise db from localStorage (deferred from top-level to ensure DOM is ready)
+  db = loadDB();
+  renderAutoBackupToggle();
+  document.getElementById('confirm-ok').addEventListener('click',function(){
+    closeModal('confirm-modal');
+    if(confirmCallback){ confirmCallback(); }
+    confirmCallback=null;
+  });
+  document.getElementById('confirm-cancel').addEventListener('click',function(){
+    closeModal('confirm-modal');
+    confirmCallback=null;
+  });
+
+  // Wire schedule type buttons
+  document.querySelectorAll('.sched-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      schedState.type=this.getAttribute('data-sched');
+      if(schedState.type==='none') schedState.days=[];
+      if(schedState.type==='weekly'&&schedState.days.length>1) schedState.days=schedState.days.slice(0,1);
+      renderSchedButtons();
+    });
+  });
+
+  // Wire day buttons
+  document.querySelectorAll('.day-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var d=parseInt(this.getAttribute('data-day'),10);
+      var idx=schedState.days.indexOf(d);
+      if(idx>-1){
+        schedState.days.splice(idx,1);
+      } else {
+        var max=schedState.type==='twice'?2:1;
+        if(schedState.days.length<max) schedState.days.push(d);
+        else schedState.days=[d]; // replace if at max
+      }
+      renderSchedButtons();
+    });
+  });
+
+  document.getElementById('api-key-alert').style.display=getApiKey()?'none':'block';
+  document.getElementById('text-date').value=todayStr();
+
+  document.getElementById('text-input').addEventListener('input',function(){
+    renderTagGrid('text-tags',parseCodes(this.value));
+  });
+
+  // Delegated shop-row handler — set up once, survives re-renders
+  var lpTimer=null,lpCode=null,lpFired=false;
+  var row=document.getElementById('shop-row');
+
+  row.addEventListener('touchstart',function(e){
+    var pill=e.target.closest('[data-shop]'); if(!pill) return;
+    lpCode=pill.getAttribute('data-shop'); lpFired=false;
+    lpTimer=setTimeout(function(){lpFired=true;openShopOptions(lpCode);},650);
+  },{passive:true});
+
+  row.addEventListener('touchend',function(e){
+    clearTimeout(lpTimer); if(lpFired) return;
+    var pill=e.target.closest('[data-shop]'); if(!pill) return;
+    e.preventDefault();
+    selectShop(pill.getAttribute('data-shop'));
+  },{passive:false});
+
+  row.addEventListener('touchmove',function(){clearTimeout(lpTimer);lpFired=false;},{passive:true});
+
+  row.addEventListener('click',function(e){
+    var pill=e.target.closest('[data-shop]'); if(!pill) return;
+    selectShop(pill.getAttribute('data-shop'));
+  });
+
+  // Delegated handler for resolve modal toggle buttons
+  document.getElementById('resolve-codes-list').addEventListener('click',function(e){
+    var btn=e.target;
+    if(btn.hasAttribute('data-resolve-code')){
+      setResolve(btn.getAttribute('data-resolve-code'), btn.getAttribute('data-resolve-val'));
+    }
+  });
+  function attachListDelegation(containerId){
+    var el=document.getElementById(containerId);
+    function handleAction(target){
+      var delEntry=target.closest('[data-del-entry]');
+      if(delEntry){
+        var id=parseInt(delEntry.getAttribute('data-del-entry'),10);
+        appConfirm('Delete Entry','This refill entry will be permanently removed.',function(){
+          db=loadDB();
+          if(activeShop&&db.shops[activeShop]){
+            db.shops[activeShop].entries=db.shops[activeShop].entries.filter(function(e){return e.id!==id;});
+            saveDB(db); renderArchive(); renderShopPills(); updateAllBanners();
+            showToast('Entry deleted');
+          }
+        });
+        return;
+      }
+      var resPred=target.closest('[data-resolve-pred]');
+      if(resPred){
+        openResolveModal(parseInt(resPred.getAttribute('data-resolve-pred'),10));
+        return;
+      }
+      var delPred=target.closest('[data-del-pred]');
+      if(delPred){
+        var pid=parseInt(delPred.getAttribute('data-del-pred'),10);
+        appConfirm('Delete Prediction','This prediction record will be permanently removed.',function(){
+          db=loadDB();
+          if(activeShop&&db.shops[activeShop]){
+            db.shops[activeShop].predictions=db.shops[activeShop].predictions.filter(function(p){return p.id!==pid;});
+            saveDB(db); renderTrack(); renderShopPills();
+            showToast('Prediction deleted');
+          }
+        });
+        return;
+      }
+    }
+    var tMoved=false;
+    el.addEventListener('touchstart',function(){tMoved=false;},{passive:true});
+    el.addEventListener('touchmove',function(){tMoved=true;},{passive:true});
+    el.addEventListener('touchend',function(e){
+      if(tMoved) return;
+      var t=e.target;
+      for(var i=0;i<4;i++){
+        if(!t||t===el) break;
+        if(t.hasAttribute&&(t.hasAttribute('data-del-entry')||t.hasAttribute('data-resolve-pred')||t.hasAttribute('data-del-pred'))){
+          e.preventDefault();
+          handleAction(t);
+          return;
+        }
+        t=t.parentElement;
+      }
+    },{passive:false});
+    el.addEventListener('click',function(e){handleAction(e.target);});
+  }
+  attachListDelegation('archive-list');
+  attachListDelegation('track-content');
+
+  // ── Guide accordion & shop selector ──
+  var guideEl = document.getElementById('guide-content');
+  guideEl.addEventListener('click', function(e){
+    // Shop selector
+    var shopBtn = e.target.closest('[data-guide-shop]');
+    if(shopBtn){
+      guideShop = shopBtn.getAttribute('data-guide-shop');
+      renderGuide();
+      return;
+    }
+    // Section toggle
+    var head = e.target.closest('[data-guide-toggle]');
+    if(head){
+      var id = head.getAttribute('data-guide-toggle');
+      var body = document.getElementById(id);
+      var chev = document.getElementById('chev-'+id);
+      if(body){ body.classList.toggle('open'); }
+      if(chev){ chev.classList.toggle('open'); }
+    }
+  });
+  // ── end guide ──
+
+  renderShopPills();
+  updateAllBanners();
+  var shops=Object.keys(db.shops).sort();
+  if(shops.length){
+    selectShop(shops[0]);
+  } else {
+    document.getElementById('no-shop-msg').style.display='flex';
+    document.getElementById('content').style.overflow='hidden';
+  }
+});
+</script>
+</body>
+</html>
