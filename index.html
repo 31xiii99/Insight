@@ -469,6 +469,18 @@ label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bot
         <div id="qtytrend-content"></div>
       </div>
       <div class="card">
+        <div class="card-title">🔄 CYCLE DETECTION — N-refill patterns</div>
+        <div id="cycle-content"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">⏰ OVERDUE — High-frequency codes absent recently</div>
+        <div id="overdue-content"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔗 TIGHT PAIRS — Near-certain co-occurrences ≥80%</div>
+        <div id="tight-cooccur-content"></div>
+      </div>
+      <div class="card">
         <div class="card-title">📅 RECENT TIMELINE</div>
         <div id="timeline-content"></div>
       </div>
@@ -1245,8 +1257,13 @@ function autoResolve(letter,actualDate,actualCodes){
 
     var outcome={};
     pred.predictedCodes.forEach(function(c){
-      outcome[c]=actualCodes.includes(c)?'hit':'miss';
+      // Slot coverage: count how many times predicted code appears in actual refill
+      var slots=actualCodes.filter(function(x){return x===c;}).length;
+      outcome[c]=slots>0?'hit':'miss';
     });
+    // Also store slot coverage metadata
+    pred.slotsCovered=actualCodes.filter(function(c){return pred.predictedCodes.indexOf(c)>-1;}).length;
+    pred.totalSlots=actualCodes.length;
     pred.status=resolveStatus(outcome);
     pred.outcome=outcome;
     pred.actualDate=actualDate;
@@ -1502,22 +1519,25 @@ function buildWeightedScore(entries){
   });
   return s;
 }
+
+// Streak now measures quantity-weighted consecutive appearances
+// A refill where code appears 3x contributes more than one where it appears 1x
 function buildStreaks(entries){
   var st={},rev=entries.slice().reverse();
   for(var code=0;code<=99;code++){
     var c=String(code).padStart(2,'0'),streak=0;
-    for(var i=0;i<rev.length;i++){if(rev[i].codes.includes(c))streak++;else break;}
+    for(var i=0;i<rev.length;i++){
+      var cnt=rev[i].codes.filter(function(x){return x===c;}).length;
+      if(cnt>0) streak+=1+(cnt-1)*0.5; // bonus for repeats within a refill
+      else break;
+    }
     if(streak>0)st[c]=streak;
   }
   return st;
 }
 
-// ── NEW SIGNAL 1: Co-occurrence ───────────
-// For each pair of codes that appear together, accumulate a shared score.
-// Returns {code: cooccurScore} — how strongly each code is pulled up by its partners.
-// Only activates if a partner code is already scoring highly (applied in buildCombinedScore).
+// ── SIGNAL: Co-occurrence ─────────────────
 function buildCooccurrence(entries){
-  // pairCount[A][B] = number of entries where both A and B appeared
   var pairCount={}, codeCount={};
   entries.forEach(function(e){
     var unique=Array.from(new Set(e.codes));
@@ -1530,30 +1550,56 @@ function buildCooccurrence(entries){
       }
     }
   });
-  // For each code, sum the pair rates with all its partners
-  // pairRate(A,B) = pairCount(A,B) / count(A)  → "given A appeared, how often did B also appear?"
   var coScore={};
   Object.keys(pairCount).forEach(function(key){
     var parts=key.split('|'), a=parts[0], b=parts[1], n=pairCount[key];
-    var rateAB=codeCount[a]>0?n/codeCount[a]:0; // B given A
-    var rateBA=codeCount[b]>0?n/codeCount[b]:0; // A given B
-    coScore[b]=(coScore[b]||0)+rateAB; // b gets lifted by a
-    coScore[a]=(coScore[a]||0)+rateBA; // a gets lifted by b
+    var rateAB=codeCount[a]>0?n/codeCount[a]:0;
+    var rateBA=codeCount[b]>0?n/codeCount[b]:0;
+    coScore[b]=(coScore[b]||0)+rateAB;
+    coScore[a]=(coScore[a]||0)+rateBA;
   });
-  return coScore; // unnormalised — normalised in buildCombinedScore
+  return coScore;
 }
 
-// ── NEW SIGNAL 2: Interval Regularity ────
-// Measures how consistent the gap is between a code's appearances.
-// Low variance = high regularity = high score.
-// Returns {code: regularityScore 0–1}
+// ── SIGNAL: Tight Co-occurrence ───────────
+// Detects near-certain pairs (appearing together 80%+ of the time)
+// These are treated as a prediction unit — if one is predicted the other gets a major boost
+// Returns {code: tightScore 0-1}
+function buildTightCooccurrence(entries){
+  var pairCount={}, codeCount={};
+  entries.forEach(function(e){
+    var unique=Array.from(new Set(e.codes));
+    unique.forEach(function(c){ codeCount[c]=(codeCount[c]||0)+1; });
+    for(var i=0;i<unique.length;i++){
+      for(var j=i+1;j<unique.length;j++){
+        var a=unique[i],b=unique[j];
+        var key=a<b?a+'|'+b:b+'|'+a;
+        pairCount[key]=(pairCount[key]||0)+1;
+      }
+    }
+  });
+  var tightScore={};
+  Object.keys(pairCount).forEach(function(key){
+    var parts=key.split('|'), a=parts[0], b=parts[1], n=pairCount[key];
+    var rateAB=codeCount[a]>0?n/codeCount[a]:0;
+    var rateBA=codeCount[b]>0?n/codeCount[b]:0;
+    // Only count tight pairs (80%+ co-appearance rate both ways)
+    if(rateAB>=0.80 && rateBA>=0.80){
+      tightScore[a]=(tightScore[a]||0)+rateBA;
+      tightScore[b]=(tightScore[b]||0)+rateAB;
+    }
+  });
+  return tightScore;
+}
+
+// ── SIGNAL: Interval Regularity ──────────
 function buildIntervalRegularity(entries){
   var reg={};
   var sorted=entries.slice().sort(function(a,b){return a.date.localeCompare(b.date);});
   var allCodes=Array.from(new Set(entries.reduce(function(a,e){return a.concat(e.codes);},[])));
   allCodes.forEach(function(c){
     var appearances=sorted.filter(function(e){return e.codes.includes(c);});
-    if(appearances.length<3){ reg[c]=0; return; } // need 3+ to measure regularity
+    if(appearances.length<3){ reg[c]=0; return; }
     var gaps=[];
     for(var i=1;i<appearances.length;i++){
       var d1=new Date(appearances[i-1].date+'T12:00:00');
@@ -1563,18 +1609,16 @@ function buildIntervalRegularity(entries){
     var mean=gaps.reduce(function(a,b){return a+b;},0)/gaps.length;
     if(mean===0){ reg[c]=0; return; }
     var variance=gaps.reduce(function(a,b){return a+Math.pow(b-mean,2);},0)/gaps.length;
-    var cv=Math.sqrt(variance)/mean; // coefficient of variation: 0=perfect, high=irregular
-    reg[c]=Math.max(0,1-cv); // invert: 1=perfectly regular, 0=chaotic
+    var cv=Math.sqrt(variance)/mean;
+    reg[c]=Math.max(0,1-cv);
   });
   return reg;
 }
 
-// ── NEW SIGNAL 3: Day-of-week Pattern ─────
-// Learned from data — does this code tend to appear on specific days?
-// Returns {code: dowScore 0–1} where 1 = today's DOW is the code's strongest day
+// ── SIGNAL: Day-of-week Pattern ───────────
 function buildDowPattern(entries){
   var dow={};
-  var today=new Date().getDay(); // 0=Sun … 6=Sat
+  var today=new Date().getDay();
   entries.forEach(function(e){
     var d=new Date(e.date+'T12:00:00').getDay();
     var unique=Array.from(new Set(e.codes));
@@ -1588,68 +1632,137 @@ function buildDowPattern(entries){
     var counts=dow[c];
     var total=counts.reduce(function(a,b){return a+b;},0);
     if(total===0){ score[c]=0.5; return; }
-    var todayRate=counts[today]/total; // fraction of appearances on today's DOW
-    var expected=1/7; // uniform baseline
-    // How much stronger than random is today's DOW for this code?
-    score[c]=Math.min(1, todayRate/expected/7); // normalised 0–1
+    var todayRate=counts[today]/total;
+    var expected=1/7;
+    score[c]=Math.min(1, todayRate/expected/7);
   });
   return score;
 }
 
-// ── NEW SIGNAL 4: Miss-streak Penalty ─────
-// Exponentially penalises codes that have been consecutively wrong in recent predictions.
-// Returns {code: penaltyFactor 0–1} where 1=no penalty, 0=maximum penalty
+// ── SIGNAL: Cycle Detection ───────────────
+// Detects codes that appear on an N-refill cycle (every 2nd, 3rd, etc.)
+// A code on a 2-refill cycle absent last time gets a strong boost
+// Returns {code: cycleScore 0-1}
+function buildCycleScore(entries){
+  var sorted=entries.slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+  var n=sorted.length;
+  var allCodes=Array.from(new Set(entries.reduce(function(a,e){return a.concat(e.codes);},[])));
+  var cycleScore={};
+
+  allCodes.forEach(function(c){
+    // Build binary presence sequence
+    var seq=sorted.map(function(e){return e.codes.indexOf(c)>-1?1:0;});
+    if(seq.length<6){ cycleScore[c]=0; return; }
+
+    // Test cycles of period 2, 3, 4
+    var bestScore=0;
+    [2,3,4].forEach(function(period){
+      // Score = how well does this period predict the sequence?
+      var correct=0, total=0;
+      for(var i=period;i<seq.length;i++){
+        // Predict: same as i-period
+        var pred=seq[i-period];
+        if(pred===seq[i]) correct++;
+        total++;
+      }
+      var accuracy=total>0?correct/total:0;
+      // Baseline: just always predicting 1 (appears) or 0
+      var baselineAccuracy=Math.max(
+        seq.filter(function(v){return v===1;}).length/seq.length,
+        seq.filter(function(v){return v===0;}).length/seq.length
+      );
+      var lift=accuracy-baselineAccuracy;
+      if(lift>bestScore) bestScore=lift;
+    });
+
+    // Was this code absent in the last entry?
+    var lastAbsent=seq[seq.length-1]===0;
+    // Boost if on a cycle AND currently absent (due/overdue)
+    cycleScore[c]=lastAbsent ? bestScore : bestScore*0.3;
+  });
+  return cycleScore;
+}
+
+// ── SIGNAL: Overdue ───────────────────────
+// For codes with high historical frequency, measures how many refills
+// they've been absent relative to their expected interval
+// A high-frequency code that's been absent longer than usual is overdue → boost
+// Returns {code: overdueScore 0-1}
+function buildOverdueScore(entries){
+  var sorted=entries.slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+  var n=sorted.length;
+  var allCodes=Array.from(new Set(entries.reduce(function(a,e){return a.concat(e.codes);},[])));
+  var overdue={};
+
+  allCodes.forEach(function(c){
+    var appearances=sorted.filter(function(e){return e.codes.indexOf(c)>-1;});
+    if(appearances.length<3){ overdue[c]=0; return; }
+
+    // Expected interval in refills (not days)
+    var appRate=appearances.length/n; // fraction of refills where it appears
+    if(appRate<0.3){ overdue[c]=0; return; } // only track frequent codes
+
+    var expectedInterval=1/appRate; // avg refills between appearances
+
+    // Count how many refills since last appearance
+    var refillsSinceLast=0;
+    for(var i=sorted.length-1;i>=0;i--){
+      if(sorted[i].codes.indexOf(c)>-1) break;
+      refillsSinceLast++;
+    }
+
+    // Overdue ratio: how many times the expected interval has elapsed
+    var overdueRatio=refillsSinceLast/expectedInterval;
+    // Score: 0 if not overdue, rising to 1 if 2x overdue
+    overdue[c]=Math.min(1, Math.max(0, overdueRatio-0.5)*2);
+  });
+  return overdue;
+}
+
+// ── SIGNAL: Miss-streak Penalty ──────────
 function buildMissStreakPenalty(predictions){
   var resolved=predictions.filter(function(p){return p.status!=='pending'&&p.outcome;});
   if(!resolved.length) return {};
   var penalty={};
-  // Walk backwards through resolved predictions (newest first)
   var recent=resolved.slice().reverse();
   var codeMissStreak={};
   recent.forEach(function(p){
     Object.keys(p.outcome).forEach(function(c){
       if(codeMissStreak[c]===undefined) codeMissStreak[c]=0;
       if(p.outcome[c]==='miss') codeMissStreak[c]++;
-      else codeMissStreak[c]=0; // reset on hit
+      else codeMissStreak[c]=0;
     });
   });
   Object.keys(codeMissStreak).forEach(function(c){
     var streak=codeMissStreak[c];
-    // Each consecutive miss reduces score: 0 misses=1.0, 1=0.85, 2=0.70, 3+=0.50
     penalty[c]=streak===0?1.0:streak===1?0.85:streak===2?0.70:0.50;
   });
   return penalty;
 }
 
-// ── NEW SIGNAL 5: Quantity Trend ──────────
-// Is this code's quantity per refill growing, flat, or shrinking?
-// Returns {code: trendMultiplier} where >1 = growing, 1 = flat, <1 = shrinking
+// ── SIGNAL: Quantity Trend ────────────────
 function buildQtyTrend(entries){
   var trend={};
   var allCodes=Array.from(new Set(entries.reduce(function(a,e){return a.concat(e.codes);},[])));
   allCodes.forEach(function(c){
     var appearances=entries.filter(function(e){return e.codes.includes(c);});
-    if(appearances.length<4){ trend[c]=1.0; return; } // need 4+ to detect trend
-    // Split into two halves and compare avg quantity
+    if(appearances.length<4){ trend[c]=1.0; return; }
     var half=Math.floor(appearances.length/2);
     var earlier=appearances.slice(0,half);
     var later=appearances.slice(half);
     function avgQty(set){
-      var total=set.reduce(function(a,e){
-        return a+e.codes.filter(function(x){return x===c;}).length;
-      },0);
+      var total=set.reduce(function(a,e){return a+e.codes.filter(function(x){return x===c;}).length;},0);
       return total/set.length;
     }
     var qEarly=avgQty(earlier), qLate=avgQty(later);
     if(qEarly===0) { trend[c]=1.0; return; }
-    var ratio=qLate/qEarly;
-    // Cap multiplier: max +20% boost or -20% reduction
-    trend[c]=Math.min(1.20, Math.max(0.80, ratio));
+    trend[c]=Math.min(1.20, Math.max(0.80, qLate/qEarly));
   });
   return trend;
 }
 
-// ── BUILD BIAS (with miss-streak integrated) ──
+// ── BUILD BIAS ────────────────────────────
+// Now uses slot-coverage outcome: hit rate weighted by how many slots were covered
 function buildBias(predictions){
   var bias={};
   var resolved=predictions.filter(function(p){return p.status!=='pending'&&p.outcome;});
@@ -1667,20 +1780,21 @@ function buildBias(predictions){
 }
 
 // ── WEIGHT ADAPTATION ENGINE ──────────────
-// Default weights for the 7 additive signals
 var DEFAULT_WEIGHTS = {
-  freq:    0.20,
-  recency: 0.25,
-  streak:  0.15,
-  bias:    0.10,
-  cooccur: 0.12,
-  interval:0.08,
-  dow:     0.05
+  freq:     0.18,
+  recency:  0.20,
+  streak:   0.12,
+  bias:     0.10,
+  cooccur:  0.10,
+  interval: 0.06,
+  dow:      0.04,
+  cycle:    0.10,
+  overdue:  0.10
 };
-var SIGNAL_KEYS = ['freq','recency','streak','bias','cooccur','interval','dow'];
-var LEARNING_RATE = 0.03;  // step size per update
-var WEIGHT_MIN    = 0.02;  // floor — no signal goes completely dark
-var WEIGHT_MAX    = 0.50;  // ceiling — no single signal dominates
+var SIGNAL_KEYS = ['freq','recency','streak','bias','cooccur','interval','dow','cycle','overdue'];
+var LEARNING_RATE = 0.03;
+var WEIGHT_MIN    = 0.02;
+var WEIGHT_MAX    = 0.50;
 
 function getWeights(letter){
   db=loadDB();
@@ -1750,15 +1864,18 @@ function updateWeights(letter, resolvedPred){
 }
 
 function buildCombinedScore(entries, predictions, letter){
-  var freq    = buildFreqMap(entries);
-  var rec     = buildWeightedScore(entries);
-  var str     = buildStreaks(entries);
-  var bias    = buildBias(predictions||[]);
-  var cooc    = buildCooccurrence(entries);
-  var intReg  = buildIntervalRegularity(entries);
-  var dow     = buildDowPattern(entries);
-  var qtrend  = buildQtyTrend(entries);
-  var missPen = buildMissStreakPenalty(predictions||[]);
+  var freq      = buildFreqMap(entries);
+  var rec       = buildWeightedScore(entries);
+  var str       = buildStreaks(entries);
+  var bias      = buildBias(predictions||[]);
+  var cooc      = buildCooccurrence(entries);
+  var tightCooc = buildTightCooccurrence(entries);
+  var intReg    = buildIntervalRegularity(entries);
+  var dow       = buildDowPattern(entries);
+  var qtrend    = buildQtyTrend(entries);
+  var missPen   = buildMissStreakPenalty(predictions||[]);
+  var cycle     = buildCycleScore(entries);
+  var overdue   = buildOverdueScore(entries);
 
   var w = letter ? getWeights(letter) : Object.assign({},DEFAULT_WEIGHTS);
   var all=Array.from(new Set(entries.reduce(function(a,e){return a.concat(e.codes);},[])));
@@ -1767,20 +1884,24 @@ function buildCombinedScore(entries, predictions, letter){
   var mR  = Math.max.apply(null,Object.values(rec).concat([1]));
   var mS  = Math.max.apply(null,Object.values(str).concat([1]));
   var mC  = Math.max.apply(null,Object.values(cooc).concat([1]));
+  var mTC = Math.max.apply(null,Object.values(tightCooc).concat([1]));
 
   var scores={}, snapshots={};
   all.forEach(function(c){
     var bVal  = bias[c]!==undefined ? bias[c] : 0.5;
     var boost = Math.max(0,(bVal-0.5)*2);
+    var coocNorm = ((cooc[c]||0)/mC + (tightCooc[c]||0)/mTC*2)/3;
 
     var sig = {
       freq:     (freq[c]||0)/mF,
       recency:  (rec[c]||0)/mR,
       streak:   (str[c]||0)/mS,
       bias:     boost,
-      cooccur:  (cooc[c]||0)/mC,
+      cooccur:  coocNorm,
       interval: (intReg[c]||0),
-      dow:      (dow[c]||0)
+      dow:      (dow[c]||0),
+      cycle:    (cycle[c]||0),
+      overdue:  (overdue[c]||0)
     };
 
     var base =
@@ -1790,7 +1911,9 @@ function buildCombinedScore(entries, predictions, letter){
       sig.bias     * w.bias     +
       sig.cooccur  * w.cooccur  +
       sig.interval * w.interval +
-      sig.dow      * w.dow;
+      sig.dow      * w.dow      +
+      sig.cycle    * w.cycle    +
+      sig.overdue  * w.overdue;
 
     var qt = qtrend[c]||1.0;
     var mp = missPen[c]!==undefined ? missPen[c] : 1.0;
@@ -1859,7 +1982,7 @@ function renderAnalytics(){
   var resolvedCount = preds.filter(function(p){return p.status!=='pending';}).length;
   var wEntries = SIGNAL_KEYS.map(function(k){return [k,w[k]];}).sort(function(a,b){return b[1]-a[1];});
   var wMax = wEntries[0][1];
-  var signalLabels = {freq:'Frequency',recency:'Recency',streak:'Streak',bias:'Pred. Accuracy',cooccur:'Co-occurrence',interval:'Interval',dow:'Day-of-week'};
+  var signalLabels = {freq:'Frequency',recency:'Recency',streak:'Streak',bias:'Pred. Accuracy',cooccur:'Co-occurrence',interval:'Interval',dow:'Day-of-week',cycle:'Cycle',overdue:'Overdue'};
   var wHtml = '<p style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5">'
     +(resolvedCount<5
       ? '⚙️ Weights are at defaults — will auto-adapt after '+Math.max(0,5-resolvedCount)+' more resolved prediction'+(5-resolvedCount===1?'':'s')+'.'
@@ -1942,6 +2065,64 @@ function renderAnalytics(){
   document.getElementById('timeline-content').innerHTML='<div class="timeline">'+recent.map(function(e){
     return '<div class="tl-item"><div class="tl-date">'+e.date+'</div><div class="tl-codes">'+codesDisplay(e.codes)+'</div></div>';
   }).join('')+'</div>';
+
+  // Cycle detection
+  var cycleData = buildCycleScore(entries);
+  var topCycle = Object.entries(cycleData).filter(function(x){return x[1]>0.1;}).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
+  document.getElementById('cycle-content').innerHTML = topCycle.length
+    ? '<p style="font-size:11px;color:var(--muted);margin-bottom:8px">Codes detected on N-refill cycles. Higher = stronger cycle pattern. Boosted when currently absent (due/overdue).</p>'
+      + topCycle.map(function(x){
+          var pct=Math.round(x[1]*100);
+          var col=pct>=40?'var(--green)':pct>=20?'var(--gold)':'var(--muted)';
+          return '<div class="freq-row"><span class="freq-code">'+x[0]+'</span>'
+            +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+pct+'%;background:'+col+'"></div></div>'
+            +'<span class="freq-count" style="color:'+col+'">'+pct+'%</span></div>';
+        }).join('')
+    : '<p style="font-size:12px;color:var(--muted)">No clear cycles detected yet. Need 6+ entries.</p>';
+
+  // Overdue signal
+  var overdueData = buildOverdueScore(entries);
+  var topOverdue = Object.entries(overdueData).filter(function(x){return x[1]>0;}).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
+  document.getElementById('overdue-content').innerHTML = topOverdue.length
+    ? '<p style="font-size:11px;color:var(--muted);margin-bottom:8px">High-frequency codes that have been absent longer than their usual interval. Score rises the more overdue they are.</p>'
+      + topOverdue.map(function(x){
+          var pct=Math.round(x[1]*100);
+          var col=pct>=60?'var(--red)':pct>=30?'var(--gold)':'var(--muted)';
+          return '<div class="freq-row"><span class="freq-code">'+x[0]+'</span>'
+            +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+pct+'%;background:'+col+'"></div></div>'
+            +'<span class="freq-count" style="color:'+col+'">'+pct+'%</span></div>';
+        }).join('')
+    : '<p style="font-size:12px;color:var(--muted)">No overdue codes. All high-frequency codes are appearing on schedule.</p>';
+
+  // Tight co-occurrence
+  var tightData = buildTightCooccurrence(entries);
+  // Rebuild pairs from pairCount for display
+  var pairCount2={}, codeCount2={};
+  entries.forEach(function(e){
+    var unique=Array.from(new Set(e.codes));
+    unique.forEach(function(c){codeCount2[c]=(codeCount2[c]||0)+1;});
+    for(var i=0;i<unique.length;i++) for(var j=i+1;j<unique.length;j++){
+      var a=unique[i],b=unique[j];
+      var key=a<b?a+'|'+b:b+'|'+a;
+      pairCount2[key]=(pairCount2[key]||0)+1;
+    }
+  });
+  var tightPairs=Object.entries(pairCount2).filter(function(x){
+    var pts=x[0].split('|'),a=pts[0],b=pts[1],n=x[1];
+    var rAB=codeCount2[a]>0?n/codeCount2[a]:0;
+    var rBA=codeCount2[b]>0?n/codeCount2[b]:0;
+    return rAB>=0.80&&rBA>=0.80;
+  }).sort(function(a,b){return b[1]-a[1];});
+  document.getElementById('tight-cooccur-content').innerHTML = tightPairs.length
+    ? '<p style="font-size:11px;color:var(--muted);margin-bottom:8px">Pairs appearing together ≥80% of the time. Predicting one strongly implies the other.</p>'
+      +tightPairs.slice(0,8).map(function(x){
+          var pts=x[0].split('|'),a=pts[0],b=pts[1];
+          var rAB=Math.round(codeCount2[a]>0?x[1]/codeCount2[a]*100:0);
+          var rBA=Math.round(codeCount2[b]>0?x[1]/codeCount2[b]*100:0);
+          return '<span class="insight-chip"><span class="chip-dot" style="background:var(--accent2)"></span>'
+            +a+' + '+b+' — '+rAB+'% / '+rBA+'%</span>';
+        }).join('')
+    : '<p style="font-size:12px;color:var(--muted)">No tight pairs detected yet (need ≥80% co-appearance rate both ways).</p>';
   renderContinuityCard();
 }
 
@@ -1954,19 +2135,25 @@ function runBacktest(){
   var train=entries.slice(0,entries.length-holdN);
   var test=entries.slice(entries.length-holdN);
   var scores=buildCombinedScore(train,shopPreds(activeShop),activeShop).scores;
-  var top5=Object.entries(scores).sort(function(a,b){return b[1]-a[1];}).slice(0,5).map(function(x){return x[0];});
-  var hits=0,total=0;
+  var top3=Object.entries(scores).sort(function(a,b){return b[1]-a[1];}).slice(0,3).map(function(x){return x[0];});
+  var totalSlots=0, coveredSlots=0;
   var rows=test.map(function(e,i){
-    var h=top5.filter(function(c){return e.codes.includes(c);});
-    hits+=h.length; total+=top5.length;
-    var pct=(h.length/top5.length*100).toFixed(0);
+    // Slot coverage: how many of the actual 18 slots are covered by top-3 codes
+    var slotsInRefill=e.codes.length;
+    var covered=e.codes.filter(function(c){return top3.indexOf(c)>-1;}).length;
+    coveredSlots+=covered; totalSlots+=slotsInRefill;
+    var pct=slotsInRefill>0?Math.round(covered/slotsInRefill*100):0;
+    var col=pct>=50?'bt-hit':pct>=25?'':'bt-miss';
     return '<div class="bt-row"><span class="bt-label">'+e.date+' (holdout '+(i+1)+')</span>'
-      +'<span class="bt-val '+(h.length>0?'bt-hit':'bt-miss')+'">'+h.length+'/'+top5.length+' ('+pct+'%)</span></div>'
-      +'<div style="font-size:10px;color:var(--muted);padding:1px 0 7px">Matched: '+(h.length?h.join(', '):'none')+'</div>';
+      +'<span class="bt-val '+(covered>0?'bt-hit':'bt-miss')+'">'+covered+'/'+slotsInRefill+' slots covered ('+pct+'%)</span></div>'
+      +'<div style="font-size:10px;color:var(--muted);padding:1px 0 7px">Top-3 predicted: '+top3.join(' ')+'</div>';
   });
-  var overall=total>0?(hits/total*100).toFixed(1):0;
-  var cls=overall>50?'alert-success':overall>25?'alert-warn':'alert-error';
-  document.getElementById('backtest-results').innerHTML='<div class="alert '+cls+'">Overall: <strong>'+overall+'%</strong> hit rate — top-5 predictions, '+holdN+' held-out refills</div>'+rows.join('')+'<div style="font-size:10px;color:var(--muted);margin-top:5px">Trained on '+train.length+' entries</div>';
+  var overall=totalSlots>0?Math.round(coveredSlots/totalSlots*100):0;
+  var cls=overall>=40?'alert-success':overall>=20?'alert-warn':'alert-error';
+  document.getElementById('backtest-results').innerHTML=
+    '<div class="alert '+cls+'">Slot coverage: <strong>'+overall+'%</strong> — top-3 codes covered '+coveredSlots+' of '+totalSlots+' actual slots across '+holdN+' held-out refill'+(holdN>1?'s':'')+'</div>'
+    +rows.join('')
+    +'<div style="font-size:10px;color:var(--muted);margin-top:5px">Trained on '+train.length+' entries · Slot coverage = how many refill slots were filled by predicted codes</div>';
 }
 
 // ── DASHBOARD ─────────────────────────────
@@ -2119,7 +2306,8 @@ function buildDriverAnalysis(entries, preds, top3, snapshots, weights){
   var signalLabels = {
     freq:'Frequency', recency:'Recency', streak:'Streak',
     bias:'Pred. accuracy', cooccur:'Co-occurrence',
-    interval:'Interval regularity', dow:'Day-of-week'
+    interval:'Interval regularity', dow:'Day-of-week',
+    cycle:'Cycle pattern', overdue:'Overdue'
   };
   var medals = ['🥇','🥈','🥉'];
   var medalColors = ['var(--gold)','var(--accent)','var(--accent2)'];
@@ -2766,7 +2954,7 @@ function buildGuideDriverAnalysis(){
     var top3      = Object.entries(scores).sort(function(a,b){return b[1]-a[1];}).slice(0,3);
 
     if(top3.length){
-      var signalLabels = {freq:'Frequency',recency:'Recency',streak:'Streak',bias:'Pred. accuracy',cooccur:'Co-occurrence',interval:'Interval regularity',dow:'Day-of-week'};
+      var signalLabels = {freq:'Frequency',recency:'Recency',streak:'Streak',bias:'Pred. accuracy',cooccur:'Co-occurrence',interval:'Interval regularity',dow:'Day-of-week',cycle:'Cycle',overdue:'Overdue'};
       liveHtml = '<div class="guide-live-box"><div class="guide-live-label">Live — Shop '+guideShop+' driver analysis</div>';
       top3.forEach(function(x, i){
         var code = x[0];
@@ -2876,7 +3064,7 @@ function buildGuideSignals(){
           var arrow = diff>2?'▲':diff<-2?'▼':'=';
           return '<div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">'
             +'<span style="font-size:11px;min-width:80px;color:var(--muted)">'
-            +{freq:'Frequency',recency:'Recency',streak:'Streak',bias:'Accuracy',cooccur:'Co-occur',interval:'Interval',dow:'Day-of-wk'}[k]
+            +({freq:'Frequency',recency:'Recency',streak:'Streak',bias:'Accuracy',cooccur:'Co-occur',interval:'Interval',dow:'Day-of-wk',cycle:'Cycle',overdue:'Overdue'}[k]||k)
             +'</span>'
             +'<div class="freq-bar-wrap" style="height:7px"><div class="freq-bar" style="width:'+(val/0.50*100).toFixed(0)+'%;background:'+col+'"></div></div>'
             +'<span style="font-size:11px;font-family:var(--mono);min-width:28px;color:'+col+'">'+pct+'%</span>'
@@ -4175,6 +4363,7 @@ function rebuildPredictions(){
       top3.forEach(function(x){
         outcome[x[0]]=nextEntry.codes.indexOf(x[0])>-1?'hit':'miss';
       });
+      var slotsCovered=nextEntry.codes.filter(function(c){return top3.map(function(x){return x[0];}).indexOf(c)>-1;}).length;
       var status=resolveStatus(outcome);
 
       var pred={
@@ -4191,6 +4380,8 @@ function rebuildPredictions(){
         weightsAtTime:Object.assign({},result.weights),
         status:status,
         outcome:outcome,
+        slotsCovered:slotsCovered,
+        totalSlots:nextEntry.codes.length,
         actualDate:nextEntry.date,
         actualCodes:Array.from(new Set(nextEntry.codes)).filter(function(c){return outcome[c]==='hit';}),
         auto:true
