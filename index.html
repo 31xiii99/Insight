@@ -2015,7 +2015,7 @@ function processObservationWindow(letter, resolvedPred){
           message:'1st miss — watching. Soft penalty ('+Math.round((1-OBS_SOFT_PENALTY)*100)+'%) held in reserve until confirmed.',
           severity:'info', prevState:prevState, newState:'watching'});
 
-      } else if(cobs.state==='watching'&&cobs.consecMisses>=OBS_WATCH_THRESHOLD){
+      } else if(cobs.state==='watching'&&cobs.consecMisses>=OBS_MIN_N){
         cobs.state='confirmed';
         cobs.penaltyApplied=OBS_HARD_PENALTY;
         cobs.confirmedAt=resolvedPred.actualDate;
@@ -2055,10 +2055,10 @@ function processObservationWindow(letter, resolvedPred){
         cobs.penaltyApplied=Math.max(OBS_SOFT_PENALTY, 1.0-(1.0-OBS_HARD_PENALTY)*0.5);
         decisions.push({code:code,action:'recovering',
           message:'Code returned after confirmed absence. Recovery phase started. '
-            +'Need '+( OBS_RECOVER_THRESHOLD-1)+' more hit'+(OBS_RECOVER_THRESHOLD>2?'s':'')+' to fully restore.',
+            +'Need '+( OBS_RECOVER_HITS-1)+' more hit'+(OBS_RECOVER_HITS>2?'s':'')+' to fully restore.',
           severity:'warning', prevState:prevState, newState:'recovering'});
 
-      } else if(cobs.state==='recovering'&&cobs.consecHits>=OBS_RECOVER_THRESHOLD){
+      } else if(cobs.state==='recovering'&&cobs.consecHits>=OBS_RECOVER_HITS){
         cobs.state='idle';
         cobs.penaltyApplied=1.0;
         cobs.confirmedSignal=null;
@@ -2098,15 +2098,15 @@ function processObservationWindow(letter, resolvedPred){
 
     // Push to window
     grad[k].push({val:totalGrad, date:resolvedPred.actualDate||resolvedPred.createdDate});
-    if(grad[k].length>GRAD_WINDOW) grad[k].shift();
+    if(grad[k].length>GRAD_MIN_N) grad[k].shift();
 
     // Only apply if window is full and majority agree on direction
-    if(grad[k].length>=GRAD_WINDOW){
+    if(grad[k].length>=GRAD_MIN_N){
       var positives=grad[k].filter(function(g){return g.val>0.0005;}).length;
       var negatives=grad[k].filter(function(g){return g.val<-0.0005;}).length;
 
-      if(positives>=GRAD_CONFIRM_THRESHOLD||negatives>=GRAD_CONFIRM_THRESHOLD){
-        var direction = positives>=GRAD_CONFIRM_THRESHOLD?1:-1;
+      if(positives>=GRAD_MIN_N||negatives>=GRAD_MIN_N){
+        var direction = positives>=GRAD_MIN_N?1:-1;
         var avgGrad   = grad[k].reduce(function(a,g){return a+g.val;},0)/grad[k].length;
         wCurrent[k]   = (wCurrent[k]||DEFAULT_WEIGHTS[k])+avgGrad;
         changed       = true;
@@ -2185,7 +2185,7 @@ function renderObsWindowSection(obsResult){
   var mixed  =gradDecisions.filter(function(d){return d.direction==='mixed';});
 
   if(applied.length){
-    html+='<div style="font-size:11px;font-weight:700;opacity:.7;margin:8px 0 4px">⚖️ Weight updates (confirmed across '+GRAD_WINDOW+' predictions)</div>';
+    html+='<div style="font-size:11px;font-weight:700;opacity:.7;margin:8px 0 4px">⚖️ Weight updates (confirmed across '+GRAD_MIN_N+' predictions)</div>';
     applied.forEach(function(d){
       var col=d.direction==='up'?'rgba(72,199,142,.8)':'rgba(247,95,95,.8)';
       var arrow=d.direction==='up'?'▲':'▼';
