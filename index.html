@@ -18,6 +18,11 @@
   --mono:'SF Mono','Courier New',monospace;
   --sans:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;
   --radius:14px;
+  /* Signal colour palette — consistent across all tabs */
+  --sig-freq:#4f8ef7;--sig-recency:#38bdf8;--sig-streak:#f97316;
+  --sig-bias:#a78bfa;--sig-cooccur:#34d399;--sig-interval:#fbbf24;
+  --sig-dow:#fb7185;--sig-cycle:#22d3ee;--sig-overdue:#f43f5e;
+  --sig-qtydom:#86efac;--sig-qtystreak:#bef264;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);overflow:hidden}
@@ -323,6 +328,58 @@ label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bot
 .rel-weak{background:rgba(247,95,95,.15);color:var(--red)}
 .rel-none{background:var(--surface);color:var(--muted)}
 
+/* MODEL STATUS BANNER — in shop banner */
+.model-status-line{font-size:10px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:6px}
+.model-status-badge{font-size:9px;font-weight:800;padding:1px 6px;border-radius:8px;letter-spacing:.3px}
+.msb-high{background:rgba(62,207,142,.15);color:var(--green)}
+.msb-moderate{background:rgba(232,169,74,.15);color:var(--gold)}
+.msb-low{background:rgba(247,95,95,.15);color:var(--red)}
+
+/* LEAGUE TABLE */
+.league-row{display:grid;grid-template-columns:36px 1fr 52px 52px 44px;gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.league-row:active{background:var(--surface2)}
+.league-row.expanded{background:var(--surface2);border-radius:8px;padding:8px;margin-bottom:2px}
+.league-rank{font-size:16px;text-align:center}
+.league-shop{font-family:var(--mono);font-weight:800;font-size:14px;color:var(--accent)}
+.league-name{font-size:10px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.league-stat{font-size:12px;font-weight:700;font-family:var(--mono);text-align:center}
+.league-grade{font-size:14px;font-weight:900;font-family:var(--mono);text-align:center}
+
+/* SHOP SPOTLIGHT */
+.spotlight-card{background:var(--surface2);border:1px solid var(--accent);border-radius:12px;padding:12px;margin-top:6px}
+.signal-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
+.signal-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.signal-label{font-size:11px;color:var(--muted);min-width:90px}
+.signal-bar-wrap{flex:1;height:6px;background:var(--surface);border-radius:3px;overflow:hidden}
+.signal-bar-fill{height:100%;border-radius:3px}
+.signal-lift{font-size:11px;font-family:var(--mono);font-weight:700;min-width:40px;text-align:right}
+.signal-badge{font-size:9px;font-weight:800;padding:1px 5px;border-radius:6px;letter-spacing:.3px;white-space:nowrap}
+.sb-strong{background:rgba(62,207,142,.15);color:var(--green)}
+.sb-moderate{background:rgba(232,169,74,.15);color:var(--gold)}
+.sb-weak{background:rgba(247,95,95,.15);color:var(--red)}
+.sb-none{background:var(--surface);color:var(--muted)}
+
+/* PREDICTION EVIDENCE TABLE */
+.pred-summary-card{background:var(--surface2);border:2px solid var(--accent);border-radius:14px;padding:14px;margin-bottom:12px}
+.pred-summary-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.pred-confidence-badge{font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:.3px}
+.pred-code-row{display:grid;grid-template-columns:24px 30px 1fr 52px 52px;gap:6px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)}
+.pred-code-row:last-child{border-bottom:none}
+.pred-code-medal{font-size:14px;text-align:center}
+.pred-code-val{font-family:var(--mono);font-weight:900;font-size:16px;color:var(--accent)}
+.pred-code-driver{font-size:10px;color:var(--muted);line-height:1.4}
+.pred-code-score{font-size:12px;font-family:var(--mono);font-weight:700;text-align:right}
+.pred-code-conf{font-size:9px;font-weight:800;padding:2px 5px;border-radius:6px;text-align:center;white-space:nowrap}
+
+/* CONFIDENCE VERDICT PILLS */
+.verdict-high{background:rgba(62,207,142,.15);color:var(--green);border:1px solid rgba(62,207,142,.3)}
+.verdict-moderate{background:rgba(232,169,74,.15);color:var(--gold);border:1px solid rgba(232,169,74,.3)}
+.verdict-low{background:rgba(247,95,95,.15);color:var(--red);border:1px solid rgba(247,95,95,.3)}
+.verdict-none{background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+
+/* EXPAND/COLLAPSE toggle */
+.expand-toggle{font-size:10px;color:var(--accent);cursor:pointer;padding:4px 8px;border:1px solid rgba(79,142,247,.3);border-radius:8px;background:rgba(79,142,247,.08);display:inline-block;margin-top:6px}
+
 ::-webkit-scrollbar{width:0}
 </style>
 </head>
@@ -340,12 +397,12 @@ label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bot
 </div>
 
 <div id="nav">
-  <button class="nav-btn active" onclick="showPanel('collect')" id="nav-collect"><span class="icon">📥</span>COLLECT</button>
-  <button class="nav-btn" onclick="showPanel('archive')" id="nav-archive"><span class="icon">🗄</span>ARCHIVE</button>
-  <button class="nav-btn" onclick="showPanel('analytics')" id="nav-analytics"><span class="icon">📊</span>ANALYZE</button>
-  <button class="nav-btn" onclick="showPanel('dashboard')" id="nav-dashboard"><span class="icon">🎯</span>PREDICT</button>
-  <button class="nav-btn" onclick="showPanel('track')" id="nav-track"><span class="icon">📈</span>TRACK</button>
   <button class="nav-btn" onclick="showPanel('confidence')" id="nav-confidence"><span class="icon">🏅</span>SCORE</button>
+  <button class="nav-btn active" onclick="showPanel('collect')" id="nav-collect"><span class="icon">📥</span>COLLECT</button>
+  <button class="nav-btn" onclick="showPanel('dashboard')" id="nav-dashboard"><span class="icon">🎯</span>PREDICT</button>
+  <button class="nav-btn" onclick="showPanel('analytics')" id="nav-analytics"><span class="icon">📊</span>ANALYZE</button>
+  <button class="nav-btn" onclick="showPanel('track')" id="nav-track"><span class="icon">📈</span>TRACK</button>
+  <button class="nav-btn" onclick="showPanel('archive')" id="nav-archive"><span class="icon">🗄</span>ARCHIVE</button>
   <button class="nav-btn" onclick="showPanel('guide')" id="nav-guide"><span class="icon">📖</span>GUIDE</button>
   <button class="nav-btn" onclick="showPanel('storage')" id="nav-storage"><span class="icon">💾</span>DATA</button>
 </div>
@@ -395,6 +452,9 @@ label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bot
       After saving, the result card shows prediction vs actual.<br>
       A new prediction is saved automatically for the next refill.
     </div>
+
+    <!-- Persistent What's Next card — updated after each save -->
+    <div id="whats-next-persistent" style="display:none"></div>
 
   </div>
 
@@ -542,44 +602,40 @@ label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bot
     <div id="dashboard-content" style="display:none">
       <div id="next-expected-banner" style="display:none"></div>
 
-      <div class="card">
-        <div class="card-title">🎯 TOP 5 — NEXT REFILL</div>
-        <div id="top3-grid"></div>
-        <div id="top3-reasoning" style="font-size:12px;color:var(--muted);line-height:1.7;margin-top:8px"></div>
+      <!-- ANSWER-FIRST: prediction summary with evidence -->
+      <div class="pred-summary-card">
+        <div class="pred-summary-header">
+          <span style="font-size:13px;font-weight:800;color:var(--text)">🎯 TOP 5 — NEXT REFILL</span>
+          <span id="pred-model-badge" class="pred-confidence-badge verdict-none">—</span>
+        </div>
+        <div id="top5-evidence"></div>
         <div id="pred-saved-indicator" style="font-size:11px;color:var(--green);margin-top:8px;display:none">
           ✅ Top-5 prediction saved — will be compared against the next refill automatically
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-title">🔍 DRIVER ANALYSIS — Why these 3 codes</div>
-        <p style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5">
-          Main signal driving each code's ranking, and how reliable that signal is given current data.
-        </p>
-        <div id="driver-analysis"></div>
-      </div>
-
+      <!-- EMERGENT PATTERNS -->
       <div class="card">
         <div class="card-title">🔬 EMERGENT PATTERNS — Triggered rules</div>
         <div id="predict-emergent-content"></div>
       </div>
 
+      <!-- FULL RANKING (collapsible) -->
       <div class="card">
-        <div class="card-title">📋 FULL PROBABILITY RANKING</div>
-        <p style="font-size:11px;color:var(--muted);margin-bottom:8px">
-          Score = relative signal strength. 100% = strongest code. Not a probability of occurrence. Top-5 codes are formally predicted and tracked.
-        </p>
-        <div id="full-ranking"></div>
+        <div class="card-title" style="cursor:pointer" onclick="toggleFullRanking()">
+          📋 FULL RANKING <span id="ranking-toggle-icon" style="float:right;color:var(--accent)">▼ show</span>
+        </div>
+        <div id="full-ranking" style="display:none">
+          <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Score = relative signal strength. Top-5 are formal predictions (tracked).</p>
+          <div id="full-ranking-list"></div>
+        </div>
       </div>
 
+      <!-- AI NARRATIVE -->
       <div class="card">
         <div class="card-title">⚡ AI NARRATIVE INSIGHT</div>
-        <p style="font-size:11px;color:var(--muted);margin-bottom:10px">
-          Uses Claude to explain the patterns behind this prediction in plain language.
-        </p>
-        <div id="ai-insight-content">
-          <button class="btn btn-primary" onclick="generateAiInsight()">✨ Generate Insight</button>
-        </div>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:10px">Uses Claude to explain patterns in plain language.</p>
+        <div id="ai-insight-content"><button class="btn btn-primary" onclick="generateAiInsight()">✨ Generate Insight</button></div>
       </div>
 
       <div id="last-updated" style="font-size:10px;color:var(--muted);text-align:center;margin-top:2px"></div>
@@ -642,36 +698,33 @@ label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bot
     </div>
   </div>
 
-  <!-- ═══════════════ CONFIDENCE ═══════════════ -->
+  <!-- ═══════════════ CONFIDENCE / SCORE ═══════════════ -->
   <div class="panel" id="panel-confidence">
-    <div class="card" style="margin-bottom:12px">
-      <div class="card-title">🏅 SHOP CONFIDENCE SCORES</div>
-      <p style="font-size:12px;color:var(--muted);line-height:1.6">
-        All shops ranked by how reliable their predictions are.
-        Each shop is scored across 5 dimensions — data volume, pattern strength,
-        recency, streak quality, and prediction accuracy. Total 0–100.
-      </p>
-    </div>
-    <div class="card" style="margin-bottom:12px">
-      <div class="card-title">📊 RECENT PERFORMANCE — ALL SHOPS</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <span style="font-size:12px;color:var(--muted)">Last</span>
-        <button class="rpf-btn active" data-rpf="5">5</button>
-        <button class="rpf-btn" data-rpf="10">10</button>
-        <button class="rpf-btn" data-rpf="0">All</button>
-        <span style="font-size:12px;color:var(--muted)">predictions</span>
+
+    <div class="card" style="margin-bottom:8px">
+      <div class="card-title">🏆 SHOP LEAGUE TABLE — Ranked by prediction performance</div>
+      <div style="font-size:10px;color:var(--muted);display:grid;grid-template-columns:36px 1fr 52px 52px 44px;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);margin-bottom:4px">
+        <span></span><span>SHOP</span><span style="text-align:center">HIT%</span><span style="text-align:center">SLOT%</span><span style="text-align:center">GRADE</span>
       </div>
-      <div style="font-size:10px;color:var(--muted);display:flex;gap:10px;margin-bottom:8px">
-        <span>🟩 hit &nbsp; 🟨 partial &nbsp; 🟥 miss</span>
-        <span style="margin-left:auto">rate = code hit %</span>
+      <div id="league-table"></div>
+    </div>
+
+    <div id="shop-spotlight" style="display:none">
+      <div class="spotlight-card">
+        <div id="spotlight-content"></div>
       </div>
-      <div id="all-shops-perf"></div>
     </div>
-    <div id="confidence-list"></div>
-    <div class="card" style="margin-top:4px">
-      <div class="card-title">📐 HOW CONFIDENCE IS CALCULATED</div>
-      <div id="confidence-legend"></div>
+
+    <div class="card" style="margin-top:8px">
+      <div class="card-title">📊 PREDICTION EVIDENCE — Top-5 for active shop</div>
+      <div id="pred-evidence-table"></div>
     </div>
+
+    <div class="card" style="margin-top:8px">
+      <div class="card-title">📐 CONFIDENCE SCORE BREAKDOWN</div>
+      <div id="confidence-list"></div>
+    </div>
+
   </div>
 
   <!-- ═══════════════ GUIDE ═══════════════ -->
@@ -870,6 +923,39 @@ label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bot
 // ── STORAGE ──────────────────────────────
 var DB_KEY='inv_intel_v4', DB_BAK='inv_intel_bak', AK_KEY='inv_intel_apikey';
 
+// Signal colour map — canonical colours used everywhere
+var SIGNAL_COLORS = {
+  freq:'var(--sig-freq)', recency:'var(--sig-recency)', streak:'var(--sig-streak)',
+  bias:'var(--sig-bias)', cooccur:'var(--sig-cooccur)', interval:'var(--sig-interval)',
+  dow:'var(--sig-dow)', cycle:'var(--sig-cycle)', overdue:'var(--sig-overdue)',
+  qtydom:'var(--sig-qtydom)', qtystreak:'var(--sig-qtystreak)'
+};
+var SIGNAL_NAMES = {
+  freq:'Frequency', recency:'Recency', streak:'Streak', bias:'Pred. accuracy',
+  cooccur:'Co-occur', interval:'Interval', dow:'Day-of-wk', cycle:'Cycle',
+  overdue:'Overdue', qtydom:'Qty dominance', qtystreak:'Qty streak'
+};
+
+// Model status for a shop — returns {level, hitRate, slotCov, label, cls}
+function shopModelStatus(letter){
+  db=loadDB();
+  var preds   = shopPreds(letter);
+  var resolved= preds.filter(function(p){return p.status!=='pending'&&p.outcome;});
+  var last5   = resolved.slice(-5);
+  if(!last5.length) return {level:'none',hitRate:null,slotCov:null,label:'No predictions yet',cls:'sb-none'};
+  var totalC=0,hitC=0,slotT=0,slotCov=0;
+  last5.forEach(function(p){
+    Object.values(p.outcome).forEach(function(v){totalC++;if(v==='hit')hitC++;});
+    slotT+=(p.totalSlots||0); slotCov+=(p.slotsCovered||0);
+  });
+  var hitRate=totalC>0?Math.round(hitC/totalC*100):0;
+  var slotPct=slotT>0?Math.round(slotCov/slotT*100):0;
+  var level=hitRate>=60&&slotPct>=40?'high':hitRate>=30||slotPct>=20?'moderate':'low';
+  var cls={high:'msb-high',moderate:'msb-moderate',low:'msb-low'}[level];
+  var label={high:'HIGH',moderate:'MODERATE',low:'LOW'}[level];
+  return {level:level,hitRate:hitRate,slotCov:slotPct,label:label,cls:cls,n:last5.length};
+}
+
 function loadDB(){
   try{
     // Try current key
@@ -992,12 +1078,23 @@ function updateAllBanners(){
   var ec=s?(s.entries||[]).length:0;
   var sub=code?(ec?ec+' refill'+(ec===1?'':'s')+' recorded':'No entries yet'):'Select a shop above';
 
+  // Model status line — appended to sub where there's data
+  var msHtml='';
+  if(code&&ec>=3){
+    var ms=shopModelStatus(code);
+    if(ms.level!=='none'){
+      msHtml=' <span class="model-status-badge '+ms.cls+'">'+ms.label+'</span>'
+        +' <span style="font-size:10px;color:var(--muted)">'+ms.hitRate+'% hit · '+ms.slotCov+'% slot</span>';
+    }
+  }
+
   // Collect banner
   var bEl=document.getElementById('collect-banner');
   document.getElementById('sb-code').textContent=code||'—';
   document.getElementById('sb-code').className='sb-code'+(code?'':' no-shop');
   document.getElementById('sb-name').textContent=name||'No shop selected';
-  document.getElementById('sb-sub').textContent=sub;
+  var sbSubEl=document.getElementById('sb-sub');
+  sbSubEl.innerHTML=sub+(msHtml?'<div class="model-status-line">Model: '+msHtml+'</div>':'');
   bEl.className='shop-banner'+(code?'':' no-shop');
   document.getElementById('text-shop-lbl').textContent=code?'Shop '+code:'';
 
@@ -1014,7 +1111,8 @@ function updateAllBanners(){
   // Dashboard banner
   document.getElementById('dash-sb-code').textContent=code||'—';
   document.getElementById('dash-sb-name').textContent=name||'No shop selected';
-  document.getElementById('dash-sb-sub').textContent=sub;
+  var dashSub=document.getElementById('dash-sb-sub');
+  if(dashSub) dashSub.innerHTML=sub+(msHtml?'<div class="model-status-line">Model: '+msHtml+'</div>':'');
 
   // Track banner
   document.getElementById('track-sb-code').textContent=code||'—';
@@ -1774,6 +1872,15 @@ function showWhatNextCard(actualCodes, date, predStatus){
 
   var firstCard=document.querySelector('#panel-collect .card');
   if(firstCard) firstCard.parentNode.insertBefore(card,firstCard);
+
+  // Also update persistent version at bottom of Collect
+  var persistEl=document.getElementById('whats-next-persistent');
+  if(persistEl){
+    persistEl.style.display='block';
+    persistEl.innerHTML=card.innerHTML;
+    persistEl.className='card';
+    persistEl.style.cssText='border:2px solid var(--accent);margin-top:12px';
+  }
 }
 function resolveStatus(outcome){
   var vals=Object.values(outcome);
@@ -2145,16 +2252,22 @@ function processObservationWindow(letter, resolvedPred){
 // Render the observation window decisions in a readable card section
 function renderObsWindowSection(obsResult){
   if(!obsResult) return '';
-  var decisions    = obsResult.decisions||[];
-  var gradDecisions= obsResult.gradDecisions||[];
-  var weightsChanged= obsResult.weightsChanged;
+  var allDecisions  = obsResult.decisions||[];
+  var gradDecisions = obsResult.gradDecisions||[];
 
-  if(!decisions.length&&!gradDecisions.filter(function(d){return d.direction!=='mixed';}).length) return '';
+  // Only show actionable states — filter out first-time watching and cleared (idle)
+  var decisions = allDecisions.filter(function(d){
+    return d.action==='confirmed'
+      || d.action==='confirmed_ongoing'
+      || d.action==='recovering'
+      || d.action==='recovering_progress'
+      || d.action==='recovered'
+      || d.action==='relapsed'
+      || d.action==='ambiguous';
+  });
 
-  var sigLabels={freq:'Frequency',recency:'Recency',streak:'Streak',
-    bias:'Pred. accuracy',cooccur:'Co-occurrence',interval:'Interval',
-    dow:'Day-of-week',cycle:'Cycle',overdue:'Overdue',
-    qtydom:'Qty dominance',qtystreak:'Qty streak'};
+  var applied=gradDecisions.filter(function(d){return d.applied;});
+  if(!decisions.length&&!applied.length) return '';
 
   var html='<div style="border-top:1px solid rgba(255,255,255,.15);margin-top:10px;padding-top:10px">'
     +'<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;opacity:.8">🔭 OBSERVATION WINDOWS</div>';
@@ -3310,8 +3423,8 @@ function renderAnalytics(){
       var col=val>def?'var(--green)':val<def*0.8?'var(--red)':'var(--accent)';
       var diffStr=diff>0?'<span style="color:var(--green)">+'+diff+'%</span>':diff<0?'<span style="color:var(--red)">'+diff+'%</span>':'<span style="color:var(--muted)">—</span>';
       return '<div class="freq-row"><span class="freq-code" style="font-size:11px;min-width:90px;font-family:var(--sans)">'+(sigLabels[key]||key)+'</span>'
-        +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+(val/wMax*100).toFixed(0)+'%;background:'+col+'"></div></div>'
-        +'<span class="freq-count" style="color:'+col+';min-width:30px">'+pct+'%</span>'
+        +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+(val/wMax*100).toFixed(0)+'%;background:'+(SIGNAL_COLORS[key]||col)+'"></div></div>'
+        +'<span class="freq-count" style="color:'+(SIGNAL_COLORS[key]||col)+';min-width:30px">'+pct+'%</span>'
         +'<span style="font-size:10px;min-width:36px;text-align:right">'+diffStr+'</span></div>';
     }).join('');
   document.getElementById('signal-weights-content').innerHTML=wHtml;
@@ -3463,6 +3576,15 @@ function buildSignalOutcomeCorrelation(key, code, preds){
     noisy:     Math.abs(lift) < 0.10, // no meaningful difference
     misleading: lift <= -0.15  // high signal actually correlates with misses
   };
+}
+
+function toggleFullRanking(){
+  var el=document.getElementById('full-ranking');
+  var icon=document.getElementById('ranking-toggle-icon');
+  if(!el) return;
+  var isHidden=el.style.display==='none';
+  el.style.display=isHidden?'block':'none';
+  if(icon) icon.textContent=isHidden?'▲ hide':'▼ show';
 }
 
 function signalReliability(key, entries, preds, code){
@@ -3663,52 +3785,57 @@ function buildDriverAnalysis(entries, preds, top3, snapshots, weights){
 function renderEmergentCard(patterns, containerId){
   var el=document.getElementById(containerId);
   if(!el) return;
-  if(!patterns||!patterns.length){
-    el.innerHTML='<p style="font-size:12px;color:var(--muted)">Not enough prediction history to detect emergent patterns. Need 6+ entries and a few resolved predictions.</p>';
+
+  // Filter to significant patterns only: ≥75% confidence AND ≥3 cases
+  var SIG_CONF  = 0.75;
+  var SIG_CASES = 3;
+  var sig = (patterns||[]).filter(function(p){
+    return p.confidence>=SIG_CONF && p.cases>=SIG_CASES;
+  });
+
+  if(!sig.length){
+    el.innerHTML='<p style="font-size:12px;color:var(--muted)">No significant patterns yet (need ≥75% confidence, ≥3 cases). '
+      +(patterns&&patterns.length?patterns.length+' pattern'+(patterns.length>1?'s':'')+' below threshold.':'')
+      +'</p>';
     return;
   }
-  var triggered=patterns.filter(function(p){return p.triggered;});
-  var dormant=patterns.filter(function(p){return !p.triggered;}).slice(0,5);
+
+  var triggered = sig.filter(function(p){return p.triggered;});
+  var dormant   = sig.filter(function(p){return !p.triggered;});
   var html='';
 
   if(triggered.length){
-    html+='<div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:6px">✅ TRIGGERED — conditions met in last refill</div>';
+    html+='<div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:6px">✅ TRIGGERED ('+triggered.length+')</div>';
     html+=triggered.map(function(p){
       var promoteFlag=p.confidence>=0.70&&p.cases>=5;
       var confPct=Math.round(p.confidence*100);
-      var col=confPct>=80?'var(--green)':confPct>=70?'var(--accent)':'var(--gold)';
+      var col=confPct>=90?'var(--green)':confPct>=80?'var(--accent)':'var(--gold)';
       return '<div style="background:var(--surface2);border:1px solid var(--green);border-radius:10px;padding:10px;margin-bottom:8px">'
-        +'<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:5px">'
-        +(promoteFlag?'<span style="font-size:14px">🚀</span>':'<span style="font-size:14px">✅</span>')
-        +'<div style="flex:1">'
-        +'<div style="font-size:12px;font-weight:700;color:var(--text);line-height:1.4">'+p.rule+'</div>'
-        +'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+p.evidence+' · confidence <span style="color:'+col+';font-weight:700">'+confPct+'%</span>'
-        +(promoteFlag?' · <span style="color:var(--green);font-weight:700">promotes '+p.impliedCodes.join(', ')+'</span>':'')+'</div>'
-        +'</div></div>'
-        +'<div style="font-size:11px;color:var(--accent);background:var(--surface);border-radius:6px;padding:5px 8px">'+p.detail+'</div>'
+        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
+        +(promoteFlag?'<span>🚀</span>':'<span>✅</span>')
+        +'<div style="flex:1;font-size:12px;font-weight:700;color:var(--text)">'+p.rule+'</div>'
+        +'<span style="font-size:11px;font-family:var(--mono);font-weight:800;color:'+col+'">'+confPct+'%</span>'
+        +'</div>'
+        +'<div style="font-size:10px;color:var(--muted);margin-bottom:4px">'+p.evidence
+        +(promoteFlag?' · <span style="color:var(--green);font-weight:700">→ promotes '+p.impliedCodes.join(', ')+'</span>':'')+'</div>'
+        +'<div style="font-size:11px;color:var(--accent);background:var(--surface);border-radius:6px;padding:4px 8px">'+p.detail+'</div>'
         +'</div>';
     }).join('');
   }
 
   if(dormant.length){
-    html+='<div style="font-size:11px;font-weight:700;color:var(--muted);margin:'+(triggered.length?'12':'0')+'px 0 6px">⚪ DORMANT — conditions not currently met</div>';
-    html+=dormant.map(function(p){
+    html+='<div style="font-size:11px;font-weight:700;color:var(--muted);margin:'+(triggered.length?'10':'0')+'px 0 5px">⚪ DORMANT ('+dormant.length+')</div>';
+    html+=dormant.slice(0,5).map(function(p){
       var confPct=Math.round(p.confidence*100);
-      var col=confPct>=75?'var(--accent)':'var(--muted)';
-      return '<div style="border:1px solid var(--border);border-radius:8px;padding:8px;margin-bottom:6px">'
-        +'<div style="font-size:12px;color:var(--muted);margin-bottom:3px">'+p.rule+'</div>'
-        +'<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted)">'
-        +'<span>'+p.evidence+'</span>'
-        +'<span style="color:'+col+'">'+confPct+'% confidence</span>'
-        +'</div>'
-        +'<div style="font-size:10px;color:var(--muted);margin-top:3px">'+p.detail+'</div>'
+      var col=confPct>=90?'var(--accent)':'var(--muted)';
+      return '<div style="border:1px solid var(--border);border-radius:8px;padding:8px;margin-bottom:5px;display:flex;align-items:center;gap:8px">'
+        +'<div style="flex:1;font-size:11px;color:var(--muted)">'+p.rule+'</div>'
+        +'<span style="font-size:11px;font-family:var(--mono);font-weight:700;color:'+col+';white-space:nowrap">'+confPct+'% · '+p.evidence+'</span>'
         +'</div>';
     }).join('');
+    if(dormant.length>5) html+='<div style="font-size:10px;color:var(--muted);padding:3px 0">+'+( dormant.length-5)+' more dormant patterns</div>';
   }
 
-  if(!triggered.length&&!dormant.length){
-    html='<p style="font-size:12px;color:var(--muted)">No patterns detected yet at the minimum confidence threshold. Patterns will emerge after more prediction-outcome cycles.</p>';
-  }
   el.innerHTML=html;
 }
 
@@ -3768,43 +3895,90 @@ function renderDashboard(){
       +'</div>';
   }).join('');
 
-  // Summary reasoning line
-  document.getElementById('top3-reasoning').innerHTML=top3.map(function(x){
-    var c=x[0],parts=[],promoted=x[2]===true;
-    if(promoted){
-      var promo=promotions.find(function(p){return p.promoted===c;});
-      return '<b>'+c+'</b>: 🔬 <em>'+( promo?promo.reason:'emergent pattern')+'</em>';
-    }
-    if(streaks[c]>=2) parts.push(streaks[c]+'-entry streak');
-    if(rates[c]>0.5)  parts.push(Math.round(rates[c]*100)+'% of refills');
-    parts.push((freq[c]||0)+' total hits');
-    if(bias[c]!==undefined) parts.push('pred hit rate '+Math.round(bias[c]*100)+'%');
-    return '<b>'+c+'</b>: '+parts.join(' · ');
-  }).join('<br>');
-
-  // Driver analysis
-  var driverEl=document.getElementById('driver-analysis');
-  if(driverEl){
-    driverEl.innerHTML=buildDriverAnalysis(entries, preds, top3, bcsResult.snapshots, bcsResult.weights);
+  // Populate top5-evidence (answer-first card)
+  var ms=shopModelStatus(activeShop);
+  var badgeEl=document.getElementById('pred-model-badge');
+  if(badgeEl){
+    badgeEl.className='pred-confidence-badge '+verdictCls(ms.level);
+    badgeEl.textContent=verdictLabel(ms.level)+(ms.hitRate!==null?' · '+ms.hitRate+'% hit':'');
   }
 
-  // Emergent patterns in Predict tab
+  var medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+  var top5EvidEl=document.getElementById('top5-evidence');
+  if(top5EvidEl){
+    top5EvidEl.innerHTML=top3.map(function(x,i){
+      var code=x[0], score=x[1], promoted=x[2]===true;
+      var pct=Math.round(score/maxS*100);
+      var snap=bcsResult.snapshots[code]||{};
+      var w=bcsResult.weights;
+      // Top driver for this code
+      var topSig=SIGNAL_KEYS.map(function(k){
+        return {k:k,contrib:(snap[k]||0)*(w[k]||DEFAULT_WEIGHTS[k])};
+      }).sort(function(a,b){return b.contrib-a.contrib;})[0];
+      var sigCol=topSig?getSignalColor(topSig.k):'var(--accent)';
+      var rel=topSig?signalReliability(topSig.k,entries,preds,code):{level:'none'};
+      var relCls={strong:'sb-strong',moderate:'sb-moderate',weak:'sb-weak',none:'sb-none'}[rel.level]||'sb-none';
+
+      var promo=promoted&&promotions.find(function(p){return p.promoted===code;});
+      var driverLine=promoted
+        ?'<span style="color:var(--green)">🔬 '+( promo?promo.pattern.rule.slice(0,40)+'…':'Pattern promoted')+'</span>'
+        :(topSig?'<span style="color:'+sigCol+'">'+getSignalName(topSig.k)+'</span>':'—');
+
+      return '<div class="pred-code-row">'
+        +'<span class="pred-code-medal">'+medals[i]+'</span>'
+        +'<span class="pred-code-val" style="color:'+(i===0?'var(--gold)':i===1?'var(--accent)':i===2?'var(--accent2)':i===3?'var(--green)':'var(--muted)')+'">'+code+'</span>'
+        +'<div class="pred-code-driver">'+driverLine
+        +(promoted?'<span style="font-size:9px;background:var(--green);color:#000;padding:1px 4px;border-radius:6px;margin-left:4px">PROMOTED</span>':'')
+        +'<div style="margin-top:2px;height:4px;background:var(--surface);border-radius:2px;overflow:hidden">'
+        +'<div style="width:'+pct+'%;height:100%;background:'+sigCol+';border-radius:2px"></div></div>'
+        +'</div>'
+        +'<span class="pred-code-score" style="color:'+sigCol+'">'+pct+'%</span>'
+        +'<span class="pred-code-conf '+relCls+'">'+rel.level.toUpperCase()+'</span>'
+        +'</div>';
+    }).join('');
+  }
+
+  // Full ranking (collapsed)
+  var fullRankEl=document.getElementById('full-ranking-list');
+  if(fullRankEl){
+    fullRankEl.innerHTML=ranked.slice(0,10).map(function(x,i){
+      var code=x[0],score=x[1];
+      var pct=(score/maxS*100).toFixed(1);
+      var isTop5=i<5;
+      var snap=bcsResult.snapshots[code]||{};
+      var topSig=SIGNAL_KEYS.map(function(k){
+        return {k:k,contrib:(snap[k]||0)*(bcsResult.weights[k]||DEFAULT_WEIGHTS[k])};
+      }).sort(function(a,b){return b.contrib-a.contrib;})[0];
+      var sigCol=topSig?getSignalColor(topSig.k):'var(--muted)';
+      var textCol=i===0?'var(--gold)':i===1?'var(--accent)':i===2?'var(--accent2)':isTop5?'var(--green)':'var(--muted)';
+      return '<div class="freq-row">'
+        +'<span class="freq-code" style="color:'+textCol+'">'+code+(isTop5?' ★':'')+'</span>'
+        +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+pct+'%;background:'+sigCol+'"></div></div>'
+        +'<span class="freq-count" style="color:'+textCol+'">'+pct+'%</span>'
+        +'</div>';
+    }).join('');
+  }
+
+  document.getElementById('last-updated').textContent='Updated '+new Date().toLocaleTimeString();
+  document.getElementById('ai-insight-content').innerHTML='<button class="btn btn-primary" onclick="generateAiInsight()">✨ Generate Insight</button>';
+  renderNextExpectedBanner();
   var predictEmergentEl=document.getElementById('predict-emergent-content');
   if(predictEmergentEl){
-    if(!patterns.length){
-      predictEmergentEl.innerHTML='<p style="font-size:12px;color:var(--muted)">Emergent patterns appear after several prediction-outcome cycles. Check back after a few more refills.</p>';
+    var sigTriggered=patterns.filter(function(p){
+      return p.triggered && p.confidence>=0.75 && p.cases>=3;
+    });
+    if(!sigTriggered.length&&!promotions.length){
+      predictEmergentEl.innerHTML='<p style="font-size:12px;color:var(--muted)">No triggered patterns above 75% confidence. Check Analyze → Emergent Patterns for all discovered rules.</p>';
     } else {
-      // Show only triggered + top dormant (max 3)
-      var triggered=patterns.filter(function(p){return p.triggered;});
-      var topDormant=patterns.filter(function(p){return !p.triggered;}).slice(0,3);
-      renderEmergentCard(triggered.concat(topDormant), 'predict-emergent-content');
+      var promoNote='';
       if(promotions.length){
-        var promoNote='<div style="background:rgba(72,199,142,.1);border:1px solid var(--green);border-radius:8px;padding:8px;margin-bottom:8px;font-size:11px;color:var(--green)">'
-          +'🚀 <strong>'+promotions.length+' code'+(promotions.length>1?'s':'')+' promoted</strong> into top-3 by triggered pattern'+(promotions.length>1?'s':'')+':<br>'
-          +promotions.map(function(p){return '&nbsp;· '+p.promoted+' replaced '+p.displaced+' — '+p.reason;}).join('<br>')
+        promoNote='<div style="background:rgba(72,199,142,.1);border:1px solid var(--green);border-radius:8px;padding:8px;margin-bottom:8px;font-size:11px;color:var(--green)">'
+          +'🚀 <strong>'+promotions.length+' code'+(promotions.length>1?'s':'')+' promoted</strong> into top-5 by triggered pattern'+(promotions.length>1?'s':'')+':<br>'
+          +promotions.map(function(p){return '&nbsp;· Code <strong>'+p.promoted+'</strong> replaced '+p.displaced+' — '+p.reason;}).join('<br>')
           +'</div>';
-        predictEmergentEl.innerHTML=promoNote+predictEmergentEl.innerHTML;
       }
+      renderEmergentCard(sigTriggered,'predict-emergent-content');
+      if(promoNote) predictEmergentEl.innerHTML=promoNote+predictEmergentEl.innerHTML;
     }
   }
 
@@ -3910,83 +4084,94 @@ function renderTrack(){
   renderBiasChart(preds);
   renderEvidenceLedger(activeShop, 'evidence-ledger');
   var pendEl=document.getElementById('pending-list');
-  pendEl.innerHTML=pending.length?pending.map(function(p){return predCardHTML(p,true);}).join('')
+  pendEl.innerHTML=pending.length
+    ?pending.map(function(p){return predCardHTML(p,true);}).join('')
     :'<p style="color:var(--muted);font-size:12px;padding:6px 0">No pending predictions.</p>';
+
   var resEl=document.getElementById('resolved-list');
-  resEl.innerHTML=resolved.length?resolved.slice().reverse().map(function(p){return predCardHTML(p,false);}).join('')
-    :'<p style="color:var(--muted);font-size:12px;padding:6px 0">No resolved predictions yet.</p>';
+  if(!resolved.length){
+    resEl.innerHTML='<p style="color:var(--muted);font-size:12px;padding:6px 0">No resolved predictions yet.</p>';
+  } else {
+    var last10 = resolved.slice().reverse().slice(0,10);
+    var missPartial = last10.filter(function(p){return p.status==='miss'||p.status==='partial';});
+    var allHit      = last10.filter(function(p){return p.status==='hit';});
+    var html='';
+    // Show misses/partials first (need attention), then hits collapsed
+    if(missPartial.length){
+      html+='<div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:4px">⚠️ MISSES & PARTIALS ('+missPartial.length+')</div>';
+      html+=missPartial.map(function(p){return predCardHTML(p,false);}).join('');
+    }
+    if(allHit.length){
+      html+='<div style="font-size:11px;font-weight:700;color:var(--green);margin:'+(missPartial.length?'10':'0')+'px 0 4px">✅ HITS ('+allHit.length+')</div>';
+      html+=allHit.map(function(p){return predCardHTML(p,false);}).join('');
+    }
+    if(resolved.length>10){
+      html+='<div style="font-size:11px;color:var(--muted);text-align:center;padding:8px 0">Showing last 10 of '+resolved.length+' resolved predictions</div>';
+    }
+    resEl.innerHTML=html;
+  }
 }
-function predCardHTML(pred,canResolve){
-  var sLabels={pending:'⏳ Pending',hit:'✅ All Hit',partial:'⚡ Partial',miss:'❌ Miss'};
-  var sCls={pending:'status-pending',hit:'status-hit',partial:'status-partial',miss:'status-miss'};
-  var cCls={pending:'pred-pending',hit:'resolved-good',partial:'resolved-ok',miss:'resolved-bad'};
-
-  var dateLabel=pred.auto?'🤖 Auto · '+pred.createdDate:'🔄 '+pred.createdDate;
-
-  // Score normalisation — find max score among predicted codes
+function predCardHTML(pred, canResolve){
+  var sLabels={pending:'⏳',hit:'✅',partial:'⚡',miss:'❌'};
+  var sColors={pending:'var(--muted)',hit:'var(--green)',partial:'var(--gold)',miss:'var(--red)'};
   var scores=pred.scores||{};
   var maxScore=pred.predictedCodes.reduce(function(m,c){return Math.max(m,scores[c]||0);},0.001);
 
-  // Top-3 code rows with probability bar + outcome
-  var rankColors=['var(--gold)','var(--accent)','var(--accent2)'];
-  var medals=['🥇','🥈','🥉'];
-  var codesRows=pred.predictedCodes.map(function(c,i){
-    var scorePct=maxScore>0?Math.round((scores[c]||0)/maxScore*100):0;
+  // Compact code pills: code + hit/miss icon + score bar
+  var codePills=pred.predictedCodes.map(function(c,i){
     var outcome=pred.outcome?pred.outcome[c]:null;
-    var outcomeIcon=outcome==='hit'?' ✓':outcome==='miss'?' ✗':'';
-    var outcomeCls=outcome==='hit'?' hit':outcome==='miss'?' miss':'';
-    var barColor=outcome==='hit'?'var(--green)':outcome==='miss'?'var(--red)':rankColors[i]||'var(--muted)';
-    return '<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">'
-      +'<span style="font-size:13px;min-width:20px">'+medals[i]+'</span>'
-      +'<span class="tag'+outcomeCls+'" style="font-size:13px;min-width:36px;text-align:center">'+c+outcomeIcon+'</span>'
-      +'<div class="freq-bar-wrap" style="height:8px">'
-      +'<div class="freq-bar" style="width:'+scorePct+'%;background:'+barColor+'"></div>'
-      +'</div>'
-      +'<span style="font-size:11px;font-family:var(--mono);font-weight:700;min-width:34px;color:'+barColor+'">'+scorePct+'%</span>'
+    var icon=outcome==='hit'?'✓':outcome==='miss'?'✗':outcome==='partial'?'~':'';
+    var col=outcome==='hit'?'var(--green)':outcome==='miss'?'var(--red)':outcome==='partial'?'var(--gold)':'var(--muted)';
+    var scorePct=maxScore>0?Math.round((scores[c]||0)/maxScore*100):0;
+    return '<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">'
+      +'<span style="font-family:var(--mono);font-weight:800;font-size:13px;min-width:26px;color:'+(outcome?col:'var(--accent)')+'">'+c+'</span>'
+      +(icon?'<span style="font-size:11px;color:'+col+'">'+icon+'</span>':'')
+      +'<div style="flex:1;height:5px;background:var(--surface);border-radius:3px;overflow:hidden">'
+      +'<div style="width:'+scorePct+'%;height:100%;background:'+col+';border-radius:3px"></div></div>'
+      +'<span style="font-size:10px;font-family:var(--mono);color:var(--muted);min-width:28px;text-align:right">'+scorePct+'%</span>'
       +'</div>';
   }).join('');
 
-  // Actual refill codes (show what actually arrived)
-  var actualRow='';
-  if(pred.actualCodes&&pred.actualCodes.length){
-    var actualDisplay=Array.from(new Set(pred.actualCodes));
-    actualRow='<div style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,.08)">'
-      +'<div style="font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--muted);margin-bottom:4px">ACTUAL REFILL CODES</div>'
-      +'<div style="display:flex;flex-wrap:wrap;gap:4px">'
-      +actualDisplay.map(function(c){
-        var wasPredicted=pred.predictedCodes.indexOf(c)>-1;
-        return '<span class="tag'+(wasPredicted?' hit':'')+'" style="font-size:11px">'+c+(wasPredicted?' ✓':'')+'</span>';
-      }).join('')
-      +'</div>'
-      +'</div>';
-  }
-
-  // Hit summary line
-  var hitCount=pred.outcome?Object.values(pred.outcome).filter(function(v){return v==='hit';}).length:null;
+  // Summary: hit rate + slot coverage on one line
   var summaryLine='';
-  if(hitCount!==null){
-    var hitRate=Math.round(hitCount/pred.predictedCodes.length*100);
-    var sc=hitRate===100?'var(--green)':hitRate>=33?'var(--gold)':'var(--red)';
-    summaryLine='<div style="font-size:12px;margin-top:6px">'
-      +'Prediction accuracy: <strong style="color:'+sc+'">'+hitRate+'%</strong>'
-      +' ('+hitCount+'/'+pred.predictedCodes.length+' codes hit)'
-      +' · Refill date: <span style="font-family:var(--mono)">'+pred.actualDate+'</span>'
+  if(pred.outcome){
+    var hits=Object.values(pred.outcome).filter(function(v){return v==='hit';}).length;
+    var hitRate=Math.round(hits/pred.predictedCodes.length*100);
+    var slotPct=pred.totalSlots>0?Math.round((pred.slotsCovered||0)/pred.totalSlots*100):null;
+    var hCol=hitRate===100?'var(--green)':hitRate>=40?'var(--gold)':'var(--red)';
+    summaryLine='<div style="font-size:11px;color:var(--muted);margin-top:4px;display:flex;gap:12px">'
+      +'<span>Hit rate: <strong style="color:'+hCol+'">'+hitRate+'%</strong></span>'
+      +(slotPct!==null?'<span>Slot coverage: <strong style="color:'+hCol+'">'+slotPct+'%</strong></span>':'')
       +'</div>';
   }
 
+  // Actual codes — compact, only show hits and surprises
+  var actualRow='';
+  if(pred.actualCodes&&pred.actualCodes.length&&pred.outcome){
+    var uniqueActual=Array.from(new Set(pred.actualCodes));
+    var surprises=uniqueActual.filter(function(c){return pred.predictedCodes.indexOf(c)===-1;});
+    if(surprises.length){
+      actualRow='<div style="font-size:10px;color:var(--muted);margin-top:4px">'
+        +'Surprises: '+surprises.map(function(c){
+          return '<span style="font-family:var(--mono);font-weight:700;color:var(--accent2)">'+c+'</span>';
+        }).join(' ')+'</div>';
+    }
+  }
+
+  var statusCol=sColors[pred.status]||'var(--muted)';
   var btns='';
-  if(canResolve) btns='<button class="btn btn-success btn-small" style="margin-top:8px" data-resolve-pred="'+pred.id+'" type="button">✅ Resolve</button> ';
+  if(canResolve) btns='<button class="btn btn-success btn-small" style="margin-top:6px" data-resolve-pred="'+pred.id+'" type="button">✅ Resolve</button> ';
   btns+='<button class="btn btn-secondary btn-small" style="margin-top:6px;color:var(--red);border-color:var(--red)" data-del-pred="'+pred.id+'" type="button">🗑</button>';
 
-  return '<div class="pred-card '+cCls[pred.status]+'">'
-    +'<div class="pred-header" style="margin-bottom:8px">'
-    +'<span class="pred-date">'+dateLabel+'</span>'
-    +'<span class="pred-status '+sCls[pred.status]+'">'+sLabels[pred.status]+'</span>'
+  return '<div style="padding:10px 0;border-bottom:1px solid var(--border)">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+    +'<span style="font-size:11px;color:var(--muted);font-family:var(--mono)">'+(pred.actualDate||pred.createdDate)+'</span>'
+    +'<span style="font-size:12px;font-weight:700;color:'+statusCol+'">'+sLabels[pred.status]+' '+(pred.status==='hit'?'All hit':pred.status==='partial'?'Partial':pred.status==='miss'?'Miss':'Pending')+'</span>'
     +'</div>'
-    +codesRows
+    +codePills
     +summaryLine
     +actualRow
-    +btns
+    +(canResolve?'<div style="margin-top:6px">'+btns+'</div>':'')
     +'</div>';
 }
 function renderAccuracySummary(resolved){
@@ -4196,6 +4381,7 @@ function renderGuide(){
 
   var sections = [
     buildGuideOverview(),
+    buildGuideScoreTab(),
     buildGuidePrediction(),
     buildGuideDriverAnalysis(),
     buildGuideSignals(),
@@ -5443,59 +5629,209 @@ function calcShopConfidence(shopCode){
   return result;
 }
 
+// ── SCORE / DASHBOARD TAB ────────────────
+var spotlightShop = null; // which shop is expanded in the league table
+
+function getSignalColor(key){ return SIGNAL_COLORS[key]||'var(--muted)'; }
+function getSignalName(key){ return SIGNAL_NAMES[key]||key; }
+function verdictCls(level){ return level==='high'?'verdict-high':level==='moderate'?'verdict-moderate':level==='low'?'verdict-low':'verdict-none'; }
+function verdictLabel(level){ return level==='high'?'HIGH':level==='moderate'?'MODERATE':level==='low'?'LOW':'—'; }
+
 function renderConfidence(){
   db=loadDB();
+  renderLeagueTable();
+  renderPredEvidenceTable();
+  if(spotlightShop) renderShopSpotlight(spotlightShop);
+}
+
+function renderLeagueTable(){
+  db=loadDB();
   var shops=Object.keys(db.shops).sort();
-  var list=document.getElementById('confidence-list');
-
-  renderAllShopsPerf('all-shops-perf');
-
+  var el=document.getElementById('league-table');
+  if(!el) return;
   if(!shops.length){
-    list.innerHTML='<div class="empty-state"><div class="es-icon">🏅</div><p>No shops added yet.</p></div>';
-    renderConfidenceLegend();
+    el.innerHTML='<p style="font-size:12px;color:var(--muted);padding:8px 0">No shops yet. Add a shop to get started.</p>';
     return;
   }
 
-  // Compute all, sort by score desc
-  var results=shops.map(function(c){return calcShopConfidence(c);}).filter(Boolean);
-  results.sort(function(a,b){return b.total-a.total;});
+  // Build row data — sort by hit rate desc, then by slot coverage
+  var rows=shops.map(function(code){
+    var s=db.shops[code];
+    var ms=shopModelStatus(code);
+    var conf=calcShopConfidence(code);
+    var grade=conf?conf.grade:'N';
+    var gradeCol={A:'var(--green)',B:'var(--accent)',C:'var(--gold)',D:'var(--red)',N:'var(--muted)'}[grade]||'var(--muted)';
+    return {code:code,name:s.name||'',ms:ms,grade:grade,gradeCol:gradeCol};
+  }).sort(function(a,b){
+    if(b.ms.hitRate===null&&a.ms.hitRate===null) return 0;
+    if(b.ms.hitRate===null) return -1;
+    if(a.ms.hitRate===null) return 1;
+    if(b.ms.hitRate!==a.ms.hitRate) return b.ms.hitRate-a.ms.hitRate;
+    return b.ms.slotCov-a.ms.slotCov;
+  });
 
-  var gradeColors={A:'var(--green)',B:'var(--accent)',C:'var(--gold)',D:'var(--red)',N:'var(--muted)'};
+  var rankEmoji=['🥇','🥈','🥉'];
+  el.innerHTML=rows.map(function(r,i){
+    var isExpanded=(spotlightShop===r.code);
+    var hitCol=r.ms.hitRate>=60?'var(--green)':r.ms.hitRate>=30?'var(--gold)':'var(--red)';
+    var slotCol=r.ms.slotCov>=40?'var(--green)':r.ms.slotCov>=20?'var(--gold)':'var(--red)';
+    var rankIcon=i<3?rankEmoji[i]:(i+1)+'.';
+    return '<div class="league-row'+(isExpanded?' expanded':'')+'" data-league-shop="'+r.code+'">'
+      +'<span class="league-rank">'+rankIcon+'</span>'
+      +'<div><div class="league-shop">'+r.code+'</div>'
+      +(r.name?'<div class="league-name">'+r.name+'</div>':'')
+      +'</div>'
+      +'<div class="league-stat" style="color:'+(r.ms.hitRate!==null?hitCol:'var(--muted)')+'">'+( r.ms.hitRate!==null?r.ms.hitRate+'%':'—')+'</div>'
+      +'<div class="league-stat" style="color:'+(r.ms.slotCov>0?slotCol:'var(--muted)')+'">'+( r.ms.slotCov>0?r.ms.slotCov+'%':'—')+'</div>'
+      +'<div class="league-grade" style="color:'+r.gradeCol+'">'+r.grade+'</div>'
+      +'</div>';
+  }).join('');
+}
 
-  list.innerHTML=results.map(function(r,rank){
-    var color=gradeColors[r.grade];
-    var dimsHtml=Object.entries(r.dims).map(function(x){
-      var dim=x[0],d=x[1];
-      var pct=(d.score/d.max*100).toFixed(0);
-      var barColor=pct>=80?'var(--green)':pct>=50?'var(--accent)':pct>=30?'var(--gold)':'var(--red)';
-      return '<div class="conf-dim-row">'
-        +'<span class="conf-dim-label">'+dim+'</span>'
-        +'<div class="conf-dim-bar-wrap"><div class="conf-dim-bar" style="width:'+pct+'%;background:'+barColor+'"></div></div>'
-        +'<span class="conf-dim-val" style="color:'+barColor+'">'+d.score+'/'+d.max+'</span>'
-        +'</div>'
-        +'<div style="font-size:10px;color:var(--muted);margin:-3px 0 6px 118px">'+d.detail+'</div>';
+function renderShopSpotlight(code){
+  db=loadDB();
+  var el=document.getElementById('shop-spotlight');
+  var content=document.getElementById('spotlight-content');
+  if(!el||!content) return;
+
+  var entries=shopEntries(code);
+  var preds=shopPreds(code);
+  var resolved=preds.filter(function(p){return p.status!=='pending'&&p.outcome;});
+
+  el.style.display='block';
+  content.innerHTML='<div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:10px">📍 '+code+(db.shops[code].name?' — '+db.shops[code].name:'')+'</div>';
+
+  if(entries.length<3){
+    content.innerHTML+='<p style="font-size:12px;color:var(--muted)">Need 3+ entries to show signal diagnosis.</p>';
+    return;
+  }
+
+  // ── Signal diagnosis: outcome correlation per signal ──
+  content.innerHTML+='<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px">SIGNAL PERFORMANCE (lift vs baseline)</div>';
+
+  var baseline=shopBaselineHitRate(code);
+  var sigRows=SIGNAL_KEYS.map(function(k){
+    // Aggregate outcome correlation across all codes
+    var allCodes=Array.from(new Set(entries.reduce(function(a,e){return a.concat(e.codes);},[])));
+    var totalLift=0,liftCount=0;
+    allCodes.forEach(function(c){
+      var corr=buildSignalOutcomeCorrelation(k,c,preds);
+      if(corr&&corr.resolved>=2){ totalLift+=corr.lift; liftCount++; }
+    });
+    var avgLift=liftCount>0?totalLift/liftCount:null;
+    var w=getWeights(code);
+    var wPct=Math.round((w[k]||DEFAULT_WEIGHTS[k])*100);
+    return {key:k,avgLift:avgLift,wPct:wPct,liftCount:liftCount};
+  }).filter(function(s){return s.liftCount>0;})
+    .sort(function(a,b){return (b.avgLift||0)-(a.avgLift||0);});
+
+  if(!sigRows.length){
+    content.innerHTML+='<p style="font-size:12px;color:var(--muted)">Signal performance data available after first resolved predictions.</p>';
+  } else {
+    var maxAbsLift=Math.max.apply(null,sigRows.map(function(s){return Math.abs(s.avgLift||0);}));
+    content.innerHTML+=sigRows.map(function(s){
+      var lift=s.avgLift||0;
+      var liftPct=Math.round(lift*100);
+      var col=lift>=0.25?'var(--green)':lift>=-0.10?'var(--gold)':'var(--red)';
+      var badge=lift>=0.25?'<span class="signal-badge sb-strong">STRONG</span>':lift>=-0.10?'<span class="signal-badge sb-moderate">MODERATE</span>':'<span class="signal-badge sb-weak">WEAK</span>';
+      var barW=maxAbsLift>0?Math.round(Math.abs(lift)/maxAbsLift*100):0;
+      var sigCol=getSignalColor(s.key);
+      return '<div class="signal-row">'
+        +'<div class="signal-dot" style="background:'+sigCol+'"></div>'
+        +'<span class="signal-label">'+getSignalName(s.key)+'</span>'
+        +'<div class="signal-bar-wrap"><div class="signal-bar-fill" style="width:'+barW+'%;background:'+col+'"></div></div>'
+        +'<span class="signal-lift" style="color:'+col+'">'+(liftPct>0?'+':'')+liftPct+'%</span>'
+        +'<span style="font-size:10px;color:var(--muted);min-width:24px;text-align:right">'+s.wPct+'%w</span>'
+        +badge
+        +'</div>';
     }).join('');
+  }
 
-    var top3Html=r.top3.length
-      ?'<div style="margin-top:8px;font-size:11px;color:var(--muted)">Top predicted: '
-        +r.top3.map(function(c){return '<span style="font-family:var(--mono);font-weight:700;color:var(--text)">'+c+'</span>';}).join(' · ')+'</div>'
-      :'';
+  // ── Model status summary ──
+  var ms=shopModelStatus(code);
+  if(ms.level!=='none'){
+    content.innerHTML+='<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;gap:12px;font-size:11px">'
+      +'<span>Hit rate: <strong style="color:'+(ms.hitRate>=60?'var(--green)':ms.hitRate>=30?'var(--gold)':'var(--red)')+'">'+ms.hitRate+'%</strong></span>'
+      +'<span>Slot cov: <strong style="color:'+(ms.slotCov>=40?'var(--green)':ms.slotCov>=20?'var(--gold)':'var(--red)')+'">'+ms.slotCov+'%</strong></span>'
+      +'<span>Model: <span class="model-status-badge '+ms.cls+'">'+ms.label+'</span></span>'
+      +'<span>Predictions: <strong>'+resolved.length+'</strong></span>'
+      +'</div>';
+  }
+}
 
-    return '<div class="conf-shop-card grade-'+r.grade+'">'
-      +'<div class="conf-header">'
-      +'<span class="conf-grade">'+(rank===0?'🥇':rank===1?'🥈':rank===2?'🥉':r.grade)+'</span>'
-      +'<div style="flex:1">'
-      +'<div class="conf-shop-name" style="font-family:var(--mono);font-weight:900;font-size:18px;color:'+color+'">'+r.code+(r.name?' <span style="font-size:13px;font-weight:600;color:var(--text)">— '+r.name+'</span>':'')+'</div>'
-      +'<div style="font-size:10px;color:var(--muted);margin-top:2px">Grade <strong style="color:'+color+'">'+r.grade+'</strong> · Confidence <strong style="color:'+color+'">'+r.total+'/100</strong></div>'
+function renderPredEvidenceTable(){
+  db=loadDB();
+  var el=document.getElementById('pred-evidence-table');
+  if(!el) return;
+  var code=activeShop;
+  if(!code){
+    el.innerHTML='<p style="font-size:12px;color:var(--muted)">Select a shop to see prediction evidence.</p>';
+    return;
+  }
+  var entries=shopEntries(code);
+  var preds=shopPreds(code);
+  if(entries.length<3){
+    el.innerHTML='<p style="font-size:12px;color:var(--muted)">Need 3+ entries to generate prediction.</p>';
+    return;
+  }
+
+  var bcsResult=buildCombinedScore(entries,preds,code);
+  var scores=bcsResult.scores;
+  var snaps=bcsResult.snapshots;
+  var weights=bcsResult.weights;
+  var ranked=Object.entries(scores).sort(function(a,b){return b[1]-a[1];});
+  var maxS=ranked[0]?ranked[0][1]:1;
+  var top5=ranked.slice(0,5);
+  var ms=shopModelStatus(code);
+
+  // Overall confidence header
+  var confBadgeCls=verdictCls(ms.level);
+  var confHtml='<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
+    +'<span style="font-size:12px;color:var(--muted)">Shop '+code+' · Model confidence:</span>'
+    +'<span class="pred-confidence-badge '+confBadgeCls+'">'+verdictLabel(ms.level)+'</span>'
+    +(ms.hitRate!==null?'<span style="font-size:11px;color:var(--muted);margin-left:auto">'+ms.hitRate+'% hit · '+ms.slotCov+'% slot</span>':'')
+    +'</div>';
+
+  var medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+  var rowsHtml=top5.map(function(x,i){
+    var c=x[0], sc=x[1];
+    var pct=Math.round(sc/maxS*100);
+    var snap=snaps[c]||{};
+
+    // Find top 2 contributing signals
+    var topSigs=SIGNAL_KEYS.map(function(k){
+      return {k:k,contrib:(snap[k]||0)*(weights[k]||DEFAULT_WEIGHTS[k])};
+    }).sort(function(a,b){return b.contrib-a.contrib;}).slice(0,2).filter(function(s){return s.contrib>0.005;});
+
+    // Signal reliability for top signal
+    var topKey=topSigs.length?topSigs[0].k:null;
+    var rel=topKey?signalReliability(topKey,entries,preds,c):{level:'none',reason:'No data'};
+    var relCls={strong:'sb-strong',moderate:'sb-moderate',weak:'sb-weak',none:'sb-none'}[rel.level]||'sb-none';
+    var sigCol=topKey?getSignalColor(topKey):'var(--muted)';
+
+    // Z-score if available
+    var corr=topKey?buildSignalOutcomeCorrelation(topKey,c,preds):null;
+    var zStr=corr&&corr.resolved>=3?'z='+(corr.lift*10).toFixed(1):'';
+
+    var driverText=topSigs.map(function(s){
+      return '<span style="color:'+getSignalColor(s.k)+'">'+getSignalName(s.k)+'</span>';
+    }).join(' + ')+(zStr?' <span style="color:var(--muted)">'+zStr+'</span>':'');
+
+    var confBadge='<span class="pred-code-conf '+relCls+'">'+rel.level.toUpperCase()+'</span>';
+
+    return '<div class="pred-code-row">'
+      +'<span class="pred-code-medal">'+medals[i]+'</span>'
+      +'<span class="pred-code-val">'+c+'</span>'
+      +'<div class="pred-code-driver">'+driverText+'<br>'
+      +'<div style="margin-top:2px;height:4px;background:var(--surface);border-radius:2px;overflow:hidden">'
+      +'<div style="width:'+pct+'%;height:100%;background:'+sigCol+';border-radius:2px"></div></div>'
       +'</div>'
-      +'</div>'
-      +dimsHtml
-      +top3Html
-      +'<div class="conf-verdict">'+r.verdict+'</div>'
+      +'<span class="pred-code-score" style="color:'+sigCol+'">'+pct+'%</span>'
+      +confBadge
       +'</div>';
   }).join('');
 
-  renderConfidenceLegend();
+  el.innerHTML=confHtml+rowsHtml;
 }
 
 function renderConfidenceLegend(){
@@ -6327,7 +6663,20 @@ window.addEventListener('DOMContentLoaded',function(){
     selectShop(pill.getAttribute('data-shop'));
   });
 
-  // Delegated handler for resolve modal toggle buttons
+  // League table — tap shop row to show spotlight
+  document.getElementById('panel-confidence').addEventListener('click',function(e){
+    var row=e.target.closest('[data-league-shop]');
+    if(!row) return;
+    var code=row.getAttribute('data-league-shop');
+    if(spotlightShop===code){
+      spotlightShop=null;
+      document.getElementById('shop-spotlight').style.display='none';
+    } else {
+      spotlightShop=code;
+      renderShopSpotlight(code);
+    }
+    renderLeagueTable(); // re-render to update expanded state
+  });
   document.getElementById('resolve-codes-list').addEventListener('click',function(e){
     var btn=e.target;
     if(btn.hasAttribute('data-resolve-code')){
