@@ -1074,10 +1074,11 @@ function selectShop(code){
   renderShopPills();
   updateAllBanners();
   var p=curPanel();
-  if(p==='archive')   renderArchive();
-  if(p==='analytics') renderAnalytics();
-  if(p==='dashboard') renderDashboard();
-  if(p==='track')     renderTrack();
+  if(p==='archive')    renderArchive();
+  if(p==='analytics')  renderAnalytics();
+  if(p==='dashboard')  renderDashboard();
+  if(p==='track')      renderTrack();
+  if(p==='confidence') renderPredEvidenceTable();
   document.getElementById('no-shop-msg').style.display='none';
 }
 
