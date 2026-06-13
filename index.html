@@ -117,13 +117,15 @@ label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bot
 .top3-card.rank1{background:linear-gradient(135deg,#1a1600,#2e2400);border:1px solid var(--gold)}
 .top3-card.rank2{background:linear-gradient(135deg,#101720,#192133);border:1px solid var(--accent)}
 .top3-card.rank3{background:linear-gradient(135deg,#15101a,#221530);border:1px solid var(--accent2)}
+.top3-card.rank4{background:linear-gradient(135deg,#0d1a15,#122518);border:1px solid var(--green)}
+.top3-card.rank5{background:linear-gradient(135deg,#1a1010,#251515);border:1px solid var(--muted)}
 .top3-rank{font-size:9px;font-weight:700;letter-spacing:1px;color:var(--muted)}
 .top3-code{font-size:30px;font-weight:900;font-family:var(--mono);margin:3px 0}
-.rank1 .top3-code{color:var(--gold)}.rank2 .top3-code{color:var(--accent)}.rank3 .top3-code{color:var(--accent2)}
+.rank1 .top3-code{color:var(--gold)}.rank2 .top3-code{color:var(--accent)}.rank3 .top3-code{color:var(--accent2)}.rank4 .top3-code{color:var(--green)}.rank5 .top3-code{color:var(--muted)}
 .top3-pct{font-size:11px;font-weight:700}
 .top3-sub{font-size:9px;color:var(--muted);margin-top:3px}
 .conf-bar{height:3px;border-radius:2px;margin-top:5px}
-.rank1 .conf-bar{background:var(--gold)}.rank2 .conf-bar{background:var(--accent)}.rank3 .conf-bar{background:var(--accent2)}
+.rank1 .conf-bar{background:var(--gold)}.rank2 .conf-bar{background:var(--accent)}.rank3 .conf-bar{background:var(--accent2)}.rank4 .conf-bar{background:var(--green)}.rank5 .conf-bar{background:var(--muted)}
 
 .pred-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:9px}
 .pred-card.resolved-good{border-color:rgba(62,207,142,.4)}
@@ -440,33 +442,60 @@ label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bot
     </div>
 
     <div id="analytics-content" style="display:none">
-      <div class="card">
-        <div class="card-title">🧠 SIGNAL WEIGHTS — ADAPTED PER SHOP</div>
-        <div id="signal-weights-content"></div>
+
+      <div class="section-head" style="font-size:12px;font-weight:800;color:var(--accent);padding:8px 0 4px;letter-spacing:.5px;border-bottom:1px solid var(--border);margin-bottom:8px">
+        📋 RAW ANALYSIS — Observed facts from data
       </div>
+
       <div class="card">
-        <div class="card-title">🔢 FREQUENCY — Total occurrences per code</div>
+        <div class="card-title">🔢 FREQUENCY &amp; QUANTITY DISTRIBUTION</div>
         <div id="freq-chart"></div>
       </div>
       <div class="card">
-        <div class="card-title">🔁 RECURRENCE PATTERNS</div>
+        <div class="card-title">📐 GAP &amp; INTERVAL ANALYSIS</div>
+        <div id="gap-analysis-content"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📈 TREND ANALYSIS</div>
+        <div id="trend-content"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔁 PATTERN DETECTION — Streaks, cycles, quantity runs</div>
         <div id="pattern-insights"></div>
       </div>
       <div class="card">
-        <div class="card-title">🔥 ACTIVE STREAKS — Consecutive refills</div>
-        <div id="streak-content"></div>
+        <div class="card-title">🏆 COMPARATIVE RANKINGS</div>
+        <div id="comparative-content"></div>
       </div>
       <div class="card">
-        <div class="card-title">🤝 CO-OCCURRENCE PAIRS</div>
+        <div class="card-title">🤝 CO-OCCURRENCE &amp; TIGHT PAIRS</div>
         <div id="cooccur-content"></div>
       </div>
       <div class="card">
-        <div class="card-title">⏱ INTERVAL REGULARITY — Consistency of gaps</div>
-        <div id="interval-content"></div>
+        <div class="card-title">🎯 QUANTITY DOMINANCE — Multi-slot codes</div>
+        <div id="qtydom-content"></div>
       </div>
       <div class="card">
-        <div class="card-title">📈 QUANTITY TREND — Growing or shrinking</div>
-        <div id="qtytrend-content"></div>
+        <div class="card-title">🔢 QUANTITY STREAK — Consecutive multi-slot runs</div>
+        <div id="qtystreak-content"></div>
+      </div>
+
+      <div class="section-head" style="font-size:12px;font-weight:800;color:var(--gold);padding:16px 0 4px;letter-spacing:.5px;border-bottom:1px solid var(--border);margin-bottom:8px">
+        🧠 PROCESSED ANALYSIS — Signals, insights, evidence
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔬 EMERGENT PATTERNS — Hidden conditional rules</div>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5">Rules discovered from prediction-outcome history. ✅ Triggered rules promote codes into the top-3 prediction.</p>
+        <div id="emergent-content"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🧠 SIGNAL EFFECTIVENESS — Adapted weights</div>
+        <div id="signal-weights-content"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📚 LESSONS LEARNED — Recent prediction outcomes</div>
+        <div id="lessons-content"></div>
       </div>
       <div class="card">
         <div class="card-title">🔄 CYCLE DETECTION — N-refill patterns</div>
@@ -477,10 +506,6 @@ label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bot
         <div id="overdue-content"></div>
       </div>
       <div class="card">
-        <div class="card-title">🔗 TIGHT PAIRS — Near-certain co-occurrences ≥80%</div>
-        <div id="tight-cooccur-content"></div>
-      </div>
-      <div class="card">
         <div class="card-title">📅 RECENT TIMELINE</div>
         <div id="timeline-content"></div>
       </div>
@@ -489,11 +514,8 @@ label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bot
         <div id="continuity-content"></div>
       </div>
       <div class="card">
-        <div class="card-title">🧪 BACKTEST — Manual accuracy check</div>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">
-          Holds out the most recent 25% of entries and measures how well the model would have predicted them.
-          Also runs automatically after any missed prediction.
-        </p>
+        <div class="card-title">🧪 BACKTEST — Slot coverage accuracy</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Measures how many actual refill slots were covered by top-3 predictions on held-out data.</p>
         <button class="btn btn-secondary" onclick="runBacktest()">▶ Run Backtest</button>
         <div id="backtest-results" style="margin-top:12px"></div>
       </div>
@@ -514,18 +536,18 @@ label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bot
 
     <div id="dashboard-empty" class="empty-state" style="display:none">
       <div class="es-icon">🎯</div>
-      <p>Need at least 3 refill entries<br>to generate a prediction.</p>
+      <p>Need at least 3 refill entries<br>to generate a top-5 prediction.</p>
     </div>
 
     <div id="dashboard-content" style="display:none">
       <div id="next-expected-banner" style="display:none"></div>
 
       <div class="card">
-        <div class="card-title">🎯 TOP 3 — NEXT REFILL</div>
+        <div class="card-title">🎯 TOP 5 — NEXT REFILL</div>
         <div id="top3-grid"></div>
         <div id="top3-reasoning" style="font-size:12px;color:var(--muted);line-height:1.7;margin-top:8px"></div>
         <div id="pred-saved-indicator" style="font-size:11px;color:var(--green);margin-top:8px;display:none">
-          ✅ Prediction saved — will be compared against the next refill automatically
+          ✅ Top-5 prediction saved — will be compared against the next refill automatically
         </div>
       </div>
 
@@ -538,9 +560,14 @@ label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bot
       </div>
 
       <div class="card">
+        <div class="card-title">🔬 EMERGENT PATTERNS — Triggered rules</div>
+        <div id="predict-emergent-content"></div>
+      </div>
+
+      <div class="card">
         <div class="card-title">📋 FULL PROBABILITY RANKING</div>
         <p style="font-size:11px;color:var(--muted);margin-bottom:8px">
-          Score = relative signal strength. 100% = strongest code. Not a probability of occurrence.
+          Score = relative signal strength. 100% = strongest code. Not a probability of occurrence. Top-5 codes are formally predicted and tracked.
         </p>
         <div id="full-ranking"></div>
       </div>
@@ -599,6 +626,14 @@ label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bot
           Signal weights adapt separately — see Analytics.
         </p>
         <div id="bias-chart"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 EVIDENCE LEDGER — Model decisions vs outcomes</div>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5">
+          Every model decision — observation window changes, weight updates, emergent pattern promotions —
+          tracked against actual hit performance. Shows whether each decision was correct.
+        </p>
+        <div id="evidence-ledger"></div>
       </div>
       <div class="section-head">⏳ PENDING — Awaiting next refill</div>
       <div id="pending-list"></div>
@@ -877,10 +912,14 @@ var db={shops:{}}, activeShop=null;
 function shopData(c){
   if(!db.shops[c]) db.shops[c]={name:'',entries:[],predictions:[]};
   if(!db.shops[c].predictions) db.shops[c].predictions=[];
+  if(!db.shops[c].obsWindow)   db.shops[c].obsWindow={};   // observation windows per code
+  if(!db.shops[c].gradAccum)   db.shops[c].gradAccum={};   // gradient accumulator per signal
   return db.shops[c];
 }
 function shopEntries(c){ return shopData(c).entries; }
 function shopPreds(c){ return shopData(c).predictions; }
+function shopObs(c){ return shopData(c).obsWindow; }
+function shopGrad(c){ return shopData(c).gradAccum; }
 
 // ── NAVIGATION ────────────────────────────
 function showPanel(id){
@@ -1189,6 +1228,7 @@ function saveTextEntry(){
   // Compare against prediction and show immediate result
   var resolveResult=autoResolve(activeShop,date,codes);
   showRefillResultAlert(resolveResult, codes, date);
+  if(!resolveResult.hadPrediction) showWhatNextCard(codes, date, null);
   showBackupReminder();
   showToast('Saved to Shop '+activeShop);
 }
@@ -1213,7 +1253,7 @@ function autoSavePrediction(letter){
   var result=buildCombinedScore(entries,preds,letter);
   var scores=result.scores;
   var snapshots=result.snapshots;
-  var top3=Object.entries(scores).sort(function(a,b){return b[1]-a[1];}).slice(0,3);
+  var top3=Object.entries(scores).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
   if(!top3.length) return;
   // Use the latest entry's refill date (not today) so historical batch entry resolves correctly
   var lastEntryDate = entries[entries.length-1].date;
@@ -1240,39 +1280,114 @@ function autoSavePrediction(letter){
 }
 
 // ── AUTO-RESOLVE ──────────────────────────
-function autoResolve(letter,actualDate,actualCodes){
+function autoResolve(letter, actualDate, actualCodes){
   db=loadDB();
   var changed=false;
   var worstStatus='hit';
   var resolvedPreds=[];
+  var diagnostics=[];
+
+  var entries=shopEntries(letter);
+  var avgQtyMap=buildAvgQty(entries);
 
   shopPreds(letter).forEach(function(pred){
     if(pred.status!=='pending') return;
-    // Auto predictions: resolve when a new refill arrives whose date is after the prediction's createdDate
-    // This works correctly for both real-time entry and historical batch entry
-    var shouldResolve = pred.auto
-      ? actualDate > pred.createdDate
-      : (pred.targetDate ? actualDate >= pred.targetDate : true);
+    var shouldResolve=pred.auto
+      ? actualDate>pred.createdDate
+      : (pred.targetDate ? actualDate>=pred.targetDate : true);
     if(!shouldResolve) return;
 
     var outcome={};
     pred.predictedCodes.forEach(function(c){
-      // Slot coverage: count how many times predicted code appears in actual refill
-      var slots=actualCodes.filter(function(x){return x===c;}).length;
-      outcome[c]=slots>0?'hit':'miss';
+      var actualCount=actualCodes.filter(function(x){return x===c;}).length;
+      if(actualCount===0){
+        outcome[c]='miss';
+      } else {
+        var avg=avgQtyMap[c]||1;
+        outcome[c]=actualCount>=Math.round(avg)?'hit':'partial';
+      }
     });
-    // Also store slot coverage metadata
     pred.slotsCovered=actualCodes.filter(function(c){return pred.predictedCodes.indexOf(c)>-1;}).length;
     pred.totalSlots=actualCodes.length;
     pred.status=resolveStatus(outcome);
     pred.outcome=outcome;
     pred.actualDate=actualDate;
     pred.actualCodes=actualCodes;
-    resolvedPreds.push({
-      predictedCodes:pred.predictedCodes,
-      outcome:outcome,
-      status:pred.status
+
+    // ── DIAGNOSIS: for each missed/partial code ──
+    var missedCodes=pred.predictedCodes.filter(function(c){return outcome[c]==='miss';});
+    var partialCodes=pred.predictedCodes.filter(function(c){return outcome[c]==='partial';});
+    var hitCodes=pred.predictedCodes.filter(function(c){return outcome[c]==='hit';});
+
+    var codeDiags=[];
+    missedCodes.concat(partialCodes).forEach(function(c){
+      var snap=pred.signalSnapshot&&pred.signalSnapshot[c]||{};
+      var weights=pred.weightsAtTime||{};
+      // Find dominant signal at prediction time
+      var contribs=SIGNAL_KEYS.map(function(k){
+        return {key:k,contrib:(snap[k]||0)*(weights[k]||0)};
+      }).sort(function(a,b){return b.contrib-a.contrib;});
+      var topSig=contribs[0];
+      var sigLabels={freq:'Frequency',recency:'Recency',streak:'Streak',
+        bias:'Pred. accuracy',cooccur:'Co-occurrence',interval:'Interval',
+        dow:'Day-of-week',cycle:'Cycle',overdue:'Overdue',
+        qtydom:'Qty dominance',qtystreak:'Qty streak'};
+
+      // Count consecutive misses for this code
+      var allPreds=shopPreds(letter);
+      var recentResolved=allPreds.filter(function(p){
+        return p.status!=='pending'&&p.outcome&&p.predictedCodes.indexOf(c)>-1;
+      });
+      var consecMisses=0;
+      for(var i=recentResolved.length-1;i>=0;i--){
+        if(recentResolved[i].outcome[c]==='miss') consecMisses++;
+        else break;
+      }
+      // Add this current miss
+      consecMisses++;
+
+      var severity=consecMisses===1?'first':consecMisses===2?'second':consecMisses>=3?'repeated':'first';
+      var implication=consecMisses===1
+        ?'Isolated miss — may be an outlier. Monitor next refill.'
+        :consecMisses===2
+        ?'Second consecutive miss — '+( topSig?sigLabels[topSig.key]+' signal':'Leading signal')+' may be misleading for this code.'
+        :'Repeated miss ('+consecMisses+'×) — code '+c+' is being over-predicted. '+(topSig?sigLabels[topSig.key]+' signal is counter-predictive.':'Model may need recalibration.');
+
+      codeDiags.push({
+        code:c,
+        status:outcome[c],
+        dominantSignal:topSig?topSig.key:null,
+        dominantLabel:topSig?(sigLabels[topSig.key]||topSig.key):null,
+        dominantContrib:topSig?topSig.contrib:0,
+        consecMisses:consecMisses,
+        severity:severity,
+        implication:implication
+      });
     });
+
+    // What changed in the model after this resolution
+    var changes=[];
+    if(missedCodes.length){
+      changes.push('Miss-streak penalty applied to: '+missedCodes.join(', '));
+      changes.push('Weights nudged — signals that were high for missed codes penalised');
+    }
+    if(hitCodes.length){
+      changes.push('Weight reinforcement for signals driving: '+hitCodes.join(', '));
+    }
+    var slotPct=pred.totalSlots>0?Math.round(pred.slotsCovered/pred.totalSlots*100):0;
+    changes.push('Slot coverage this refill: '+pred.slotsCovered+'/'+pred.totalSlots+' ('+slotPct+'%)');
+
+    diagnostics.push({
+      pred:pred,
+      hitCodes:hitCodes,
+      missedCodes:missedCodes,
+      partialCodes:partialCodes,
+      codeDiags:codeDiags,
+      changes:changes,
+      slotCoverage:slotPct
+    });
+
+    resolvedPreds.push(pred);
     if(pred.status==='miss') worstStatus='miss';
     else if(pred.status==='partial'&&worstStatus!=='miss') worstStatus='partial';
     changed=true;
@@ -1281,33 +1396,37 @@ function autoResolve(letter,actualDate,actualCodes){
   if(changed){
     saveDB(db);
     renderShopPills();
-    // Update weights for each resolved prediction
+    var obsResults=[];
     resolvedPreds.forEach(function(pred){
-      updateWeights(letter, pred);
+      var obsResult=processObservationWindow(letter, pred);
+      obsResults.push(obsResult);
     });
+    // Attach obs result to first diagnostic
+    if(diagnostics.length&&obsResults.length){
+      diagnostics[0].obsResult=obsResults[0];
+    }
     if(worstStatus==='miss'||worstStatus==='partial'){
       triggerAutoBacktest(letter, worstStatus);
     }
   }
 
   return {
-    hadPrediction: resolvedPreds.length>0,
-    resolved: resolvedPreds,
-    worstStatus: changed ? worstStatus : null,
-    backtest: changed&&(worstStatus==='miss'||worstStatus==='partial')
-      ? ((loadDB().shops[letter]||{}).lastAutoBacktest||null)
-      : null
+    hadPrediction:resolvedPreds.length>0,
+    resolved:resolvedPreds,
+    diagnostics:diagnostics,
+    worstStatus:changed?worstStatus:null,
+    backtest:changed&&(worstStatus==='miss'||worstStatus==='partial')
+      ?((loadDB().shops[letter]||{}).lastAutoBacktest||null)
+      :null
   };
 }
 
 // ── REFILL RESULT ALERT ───────────────────
 function showRefillResultAlert(result, actualCodes, date){
-  // Remove any existing alert
   var old=document.getElementById('refill-result-alert');
   if(old) old.remove();
 
   if(!result||!result.hadPrediction){
-    // No pending prediction — show a gentle nudge if there are enough entries
     db=loadDB();
     var entries=shopEntries(activeShop);
     if(entries.length>=3){
@@ -1315,60 +1434,160 @@ function showRefillResultAlert(result, actualCodes, date){
       nudge.id='refill-result-alert';
       nudge.className='alert alert-info';
       nudge.style.marginBottom='12px';
-      nudge.innerHTML='💡 No prediction was locked before this refill. Go to <strong>Predict</strong> and lock a prediction before the next one arrives.';
-      var firstCard=document.querySelector('#panel-collect .card');
-      if(firstCard) firstCard.parentNode.insertBefore(nudge, firstCard);
+      nudge.innerHTML='💡 No pending prediction for this refill. A new prediction has been saved for next time.';
+      var fc=document.querySelector('#panel-collect .card');
+      if(fc) fc.parentNode.insertBefore(nudge,fc);
     }
+    // Still show what's next even without a prior prediction
+    showWhatNextCard(actualCodes, date, null);
     return;
   }
 
-  // Build the result card
-  var pred=result.resolved[0]; // show first resolved prediction
-  var hits=pred.predictedCodes.filter(function(c){return pred.outcome[c]==='hit';});
-  var misses=pred.predictedCodes.filter(function(c){return pred.outcome[c]==='miss';});
-  var hitRate=Math.round(hits.length/pred.predictedCodes.length*100);
+  var diag    = result.diagnostics&&result.diagnostics[0]||null;
+  var pred    = result.resolved[0];
+  var hitCodes    = diag?diag.hitCodes  :pred.predictedCodes.filter(function(c){return pred.outcome[c]==='hit';});
+  var missedCodes = diag?diag.missedCodes:pred.predictedCodes.filter(function(c){return pred.outcome[c]==='miss';});
+  var partialCodes= diag?diag.partialCodes:pred.predictedCodes.filter(function(c){return pred.outcome[c]==='partial';});
+  var hitRate =Math.round(hitCodes.length/pred.predictedCodes.length*100);
+  var statusIcon  =pred.status==='hit'?'✅':pred.status==='partial'?'⚡':'❌';
+  var statusLabel =pred.status==='hit'?'All 3 codes appeared':pred.status==='partial'?'Some codes appeared':'No predicted codes appeared';
+  var alertCls    =pred.status==='hit'?'alert-success':pred.status==='partial'?'alert-warn':'alert-error';
 
-  var statusIcon=pred.status==='hit'?'✅':pred.status==='partial'?'⚡':'❌';
-  var statusLabel=pred.status==='hit'?'All predicted codes appeared':pred.status==='partial'?'Some predicted codes appeared':'No predicted codes appeared';
-  var alertCls=pred.status==='hit'?'alert-success':pred.status==='partial'?'alert-warn':'alert-error';
-
+  // Predicted codes with outcome
   var codesHtml='<div style="display:flex;flex-wrap:wrap;gap:5px;margin:8px 0">';
   pred.predictedCodes.forEach(function(c){
-    var isHit=pred.outcome[c]==='hit';
-    codesHtml+='<span class="tag '+(isHit?'hit':'miss')+'" style="font-size:13px">'+c+' '+(isHit?'✓':'✗')+'</span>';
+    var st=pred.outcome[c];
+    var col=st==='hit'?'hit':st==='partial'?'partial':'miss';
+    var icon=st==='hit'?'✓':st==='partial'?'~':'✗';
+    codesHtml+='<span class="tag '+col+'" style="font-size:13px">'+c+' '+icon+'</span>';
   });
   codesHtml+='</div>';
 
-  // Codes in actual refill not predicted
-  var surprise=actualCodes.filter(function(c){
-    return pred.predictedCodes.indexOf(c)===-1;
-  });
-  var uniqueSurprise=Array.from(new Set(surprise));
-  var surpriseHtml='';
-  if(uniqueSurprise.length){
-    surpriseHtml='<div style="font-size:11px;color:var(--muted);margin-top:4px">Also arrived (not predicted): '
-      +uniqueSurprise.map(function(c){return '<span style="font-family:var(--mono);font-weight:700">'+c+'</span>';}).join(' ')
-      +'</div>';
+  // Surprise codes
+  var uniqueSurprise=Array.from(new Set(actualCodes.filter(function(c){return pred.predictedCodes.indexOf(c)===-1;})));
+  var surpriseHtml=uniqueSurprise.length
+    ?'<div style="font-size:11px;color:var(--muted);margin-top:2px">Also arrived (not predicted): '
+      +uniqueSurprise.map(function(c){return '<span style="font-family:var(--mono);font-weight:700">'+c+'</span>';}).join(' ')+'</div>'
+    :'';
+
+  // Slot coverage
+  var slotPct=diag?diag.slotCoverage:(pred.totalSlots>0?Math.round(pred.slotsCovered/pred.totalSlots*100):0);
+
+  // ── DIAGNOSIS section (miss/partial only) ──
+  var diagHtml='';
+  if(diag&&diag.codeDiags.length){
+    diagHtml='<div style="border-top:1px solid rgba(255,255,255,.15);margin-top:10px;padding-top:10px">'
+      +'<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;opacity:.8">🔍 Why it missed</div>';
+
+    diag.codeDiags.forEach(function(cd){
+      var sev=cd.severity;
+      var sevCol=sev==='first'?'rgba(255,255,255,.5)':sev==='second'?'var(--gold)':'var(--red)';
+      diagHtml+='<div style="margin-bottom:8px;padding:8px;background:rgba(0,0,0,.2);border-radius:8px">'
+        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'
+        +'<span style="font-family:var(--mono);font-weight:800;font-size:15px">'+cd.code+'</span>'
+        +'<span style="font-size:10px;padding:2px 6px;border-radius:8px;background:rgba(0,0,0,.3);color:'+sevCol+';">'
+        +(sev==='first'?'1st miss':sev==='second'?'2nd miss':'miss #'+cd.consecMisses)+'</span>'
+        +(cd.dominantLabel?'<span style="font-size:10px;color:rgba(255,255,255,.5)">driven by '+cd.dominantLabel+'</span>':'')
+        +'</div>'
+        +'<div style="font-size:11px;color:rgba(255,255,255,.7);line-height:1.5">'+cd.implication+'</div>'
+        +'</div>';
+    });
+
+    // What changed
+    diagHtml+='<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:8px 0 4px;opacity:.8">⚙️ What just changed</div>';
+    diag.changes.forEach(function(ch){
+      diagHtml+='<div style="font-size:11px;color:rgba(255,255,255,.65);padding:2px 0">→ '+ch+'</div>';
+    });
+    diagHtml+='</div>';
   }
 
+  // ── Backtest result ──
   var btHtml='';
-  // Show backtest result if triggered
   db=loadDB();
   var abt=(db.shops[activeShop]||{}).lastAutoBacktest;
   if(abt&&abt.result&&(pred.status==='miss'||pred.status==='partial')){
     var r=abt.result;
-    var btColor=r.overallPct>=60?'var(--green)':r.overallPct>=40?'var(--gold)':'var(--red)';
-    var btMsg=r.overallPct>=60?'Model signal is still strong — this miss may be an outlier.'
-      :r.overallPct>=40?'Model has moderate accuracy. Consider adding more refill data.'
-      :'Model accuracy is low. Predictions need more historical data to improve.';
-    btHtml='<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.1)">'
-      +'<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">🧪 Auto-Backtest Result</div>'
-      +'<div style="display:flex;justify-content:space-between;align-items:center">'
-      +'<span style="font-size:12px;color:var(--muted)">Model accuracy on held-out data</span>'
-      +'<span style="font-family:var(--mono);font-weight:800;font-size:16px;color:'+btColor+'">'+r.overallPct+'%</span>'
+    var health=r.health||'fair';
+    var btCol=health==='good'?'var(--green)':health==='fair'?'var(--gold)':'var(--red)';
+    var btMsg=health==='good'
+      ?'Model signal is strong — this miss is likely an outlier. Continue monitoring.'
+      :health==='fair'
+      ?'Model accuracy is moderate. The pattern may be evolving — add more recent refills.'
+      :'Model accuracy is low. The shop pattern may have shifted significantly. Consider adding 5+ recent refills to recalibrate.';
+    var recommendation=health==='poor'
+      ?'<div style="font-size:11px;margin-top:5px;padding:5px 8px;background:rgba(0,0,0,.2);border-radius:6px;color:rgba(255,255,255,.8)">💡 Recommendation: enter the last 5 recent refills if not already done, then run DATA → 🔧 Rebuild Predictions to recalibrate the model.</div>'
+      :'';
+    btHtml='<div style="border-top:1px solid rgba(255,255,255,.15);margin-top:10px;padding-top:10px">'
+      +'<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;opacity:.8">🧪 Auto-Backtest</div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">'
+      +'<span style="font-size:12px;opacity:.8">Slot coverage on held-out refills</span>'
+      +'<span style="font-family:var(--mono);font-weight:800;font-size:16px;color:'+btCol+'">'+r.overallPct+'%</span>'
       +'</div>'
-      +'<div style="font-size:11px;color:var(--muted);margin-top:3px">'+btMsg+'</div>'
+      +'<div style="font-size:11px;opacity:.7">'+btMsg+'</div>'
+      +recommendation
       +'</div>';
+  }
+
+  // ── OBSERVATION WINDOWS ──
+  var obsHtml='';
+  if(diag&&diag.obsResult){
+    obsHtml=renderObsWindowSection(diag.obsResult);
+  }
+
+  // ── MODEL DEBRIEF ──
+  var debrief=null;
+  if(diag&&pred){
+    db=loadDB();
+    var abt2=(db.shops[activeShop]||{}).lastAutoBacktest;
+    var btRes=abt2&&abt2.result?abt2.result:null;
+    debrief=buildModelDebrief(activeShop,pred,diag.weightDeltas||[],btRes);
+  }
+  var debriefHtml='';
+  if(debrief){
+    var sigLabels={freq:'Frequency',recency:'Recency',streak:'Streak',
+      bias:'Pred. accuracy',cooccur:'Co-occurrence',interval:'Interval',
+      dow:'Day-of-week',cycle:'Cycle',overdue:'Overdue',
+      qtydom:'Qty dominance',qtystreak:'Qty streak'};
+
+    debriefHtml='<div style="border-top:1px solid rgba(255,255,255,.15);margin-top:10px;padding-top:10px">'
+      +'<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;opacity:.8">🧬 WHAT THE MODEL LEARNED</div>';
+
+    // Signals that worked vs failed
+    if(debrief.strongSignals.length){
+      debriefHtml+='<div style="font-size:11px;color:rgba(72,199,142,.9);margin-bottom:3px">✅ Signals that worked: '
+        +debrief.strongSignals.map(function(k){return sigLabels[k];}).join(', ')+'</div>';
+    }
+    if(debrief.weakSignals.length){
+      debriefHtml+='<div style="font-size:11px;color:rgba(247,95,95,.9);margin-bottom:3px">❌ Signals that failed: '
+        +debrief.weakSignals.map(function(k){return sigLabels[k];}).join(', ')+'</div>';
+    }
+
+    // Weight changes
+    if(debrief.wDeltaLines.length){
+      debriefHtml+='<div style="font-size:11px;font-weight:700;opacity:.7;margin:7px 0 4px">⚖️ Weight adjustments</div>';
+      debrief.wDeltaLines.forEach(function(d){
+        var col=d.dir==='up'?'rgba(72,199,142,.8)':'rgba(247,95,95,.8)';
+        var arrow=d.dir==='up'?'▲':'▼';
+        debriefHtml+='<div style="font-size:11px;display:flex;justify-content:space-between;padding:2px 0;opacity:.85">'
+          +'<span style="color:'+col+'">'+arrow+' '+d.label+'</span>'
+          +'<span style="font-family:var(--mono);color:'+col+'">'+d.from+'% → '+d.to+'% ('+(d.delta>0?'+':'')+d.delta+'%)</span>'
+          +'</div>';
+      });
+    }
+
+    // Forward implications
+    if(debrief.implications.length){
+      debriefHtml+='<div style="font-size:11px;font-weight:700;opacity:.7;margin:7px 0 4px">🔭 Implications</div>';
+      debrief.implications.forEach(function(imp){
+        var col=imp.type==='positive'?'rgba(72,199,142,.85)'
+          :imp.type==='warning'?'rgba(255,179,71,.85)'
+          :imp.type==='danger'?'rgba(247,95,95,.85)'
+          :'rgba(255,255,255,.6)';
+        debriefHtml+='<div style="font-size:11px;color:'+col+';padding:3px 0;line-height:1.5;border-bottom:1px solid rgba(255,255,255,.08)">'+imp.text+'</div>';
+      });
+    }
+
+    debriefHtml+='</div>';
   }
 
   var alert=document.createElement('div');
@@ -1378,15 +1597,183 @@ function showRefillResultAlert(result, actualCodes, date){
   alert.innerHTML=
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
     +'<strong style="font-size:14px">'+statusIcon+' '+statusLabel+'</strong>'
-    +'<span style="font-family:var(--mono);font-weight:800;font-size:16px">'+hits.length+'/'+pred.predictedCodes.length+'</span>'
+    +'<span style="font-family:var(--mono);font-weight:800;font-size:16px">'+hitCodes.length+'/'+pred.predictedCodes.length+'</span>'
     +'</div>'
-    +'<div style="font-size:11px;opacity:.8;margin-bottom:2px">Refill date: '+date+' · Prediction hit rate: '+hitRate+'%</div>'
+    +'<div style="font-size:11px;opacity:.8;margin-bottom:2px">'+date+' · Code hit rate: '+hitRate+'% · Slot coverage: '+slotPct+'%</div>'
     +codesHtml
     +surpriseHtml
-    +btHtml;
+    +diagHtml
+    +btHtml
+    +obsHtml
+    +debriefHtml;
 
   var firstCard=document.querySelector('#panel-collect .card');
-  if(firstCard) firstCard.parentNode.insertBefore(alert, firstCard);
+  if(firstCard) firstCard.parentNode.insertBefore(alert,firstCard);
+
+  // Always show what's next below the result
+  showWhatNextCard(actualCodes, date, pred.status);
+}
+
+// ── WHAT'S NEXT CARD ──────────────────────
+function showWhatNextCard(actualCodes, date, predStatus){
+  var old=document.getElementById('whats-next-card');
+  if(old) old.remove();
+  if(!activeShop) return;
+
+  db=loadDB();
+  var entries=shopEntries(activeShop);
+  if(entries.length<3) return;
+  var preds=shopPreds(activeShop);
+
+  // Build fresh prediction with updated model
+  var bcsResult=buildCombinedScore(entries,preds,activeShop);
+  var scores=bcsResult.scores;
+  var ranked=Object.entries(scores).sort(function(a,b){return b[1]-a[1];});
+  var maxS=ranked[0]?ranked[0][1]:1;
+
+  // Apply emergent patterns
+  var patterns=buildEmergentPatterns(entries,preds);
+  var emergent=applyEmergentToTop3(ranked.slice(0,5),patterns,scores);
+  var top3=emergent.top3;
+  var promotions=emergent.promotions;
+
+  // Build signal context per top-3 code
+  var freq=buildFreqMap(entries);
+  var rates=buildAppearanceRate(entries);
+  var streaks=buildStreaks(entries);
+  var bias=buildBias(preds);
+  var overdueMap=buildOverdueScore(entries);
+  var qtydomMap=buildQtyDominance(entries);
+  var missPen=buildMissStreakPenalty(preds,activeShop);
+  var medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+
+  var top3Html=top3.map(function(x,i){
+    var c=x[0],sc=x[1],promoted=x[2]===true;
+    var pct=Math.round(sc/maxS*100);
+    var reasons=[];
+    if(promoted){
+      var promo=promotions.find(function(p){return p.promoted===c;});
+      reasons.push('🔬 Pattern: '+(promo?promo.pattern.rule:'emergent rule triggered'));
+    } else {
+      var streak=streaks[c]||0;
+      if(streak>=2) reasons.push('🔥 '+streak+'-refill streak');
+      if(qtydomMap[c]&&qtydomMap[c]>=0.65) reasons.push('📊 High quantity avg');
+      if(overdueMap[c]&&overdueMap[c]>=0.5) reasons.push('⏰ Overdue');
+      if(bias[c]!==undefined&&bias[c]>=0.6) reasons.push('🎯 '+(Math.round(bias[c]*100))+'% hit rate');
+      if(missPen[c]!==undefined&&missPen[c]<0.85) reasons.push('⚠️ Miss penalty '+Math.round((1-missPen[c])*100)+'%');
+      if(!reasons.length) reasons.push(Math.round((rates[c]||0)*100)+'% appearance rate');
+    }
+    var medalCol=i===0?'var(--gold)':i===1?'var(--accent)':'var(--accent2)';
+    return '<div style="padding:8px 0;border-bottom:1px solid var(--border)">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">'
+      +'<span style="font-size:16px">'+medals[i]+'</span>'
+      +'<span style="font-family:var(--mono);font-weight:900;font-size:18px;color:'+medalCol+'">'+c+'</span>'
+      +(promoted?'<span style="font-size:10px;background:var(--green);color:#000;padding:1px 6px;border-radius:8px;font-weight:700">PROMOTED</span>':'')
+      +'<span style="font-size:12px;font-family:var(--mono);color:var(--muted);margin-left:auto">'+pct+'%</span>'
+      +'</div>'
+      +'<div style="font-size:11px;color:var(--muted);padding-left:24px">'+reasons.join(' · ')+'</div>'
+      +'</div>';
+  }).join('');
+
+  // Watch list — codes beyond top-3 worth monitoring
+  var watchList=[];
+  // Triggered emergent patterns not already in top-3
+  patterns.filter(function(p){return p.triggered&&p.confidence>=0.60;}).forEach(function(p){
+    p.impliedCodes.forEach(function(c){
+      if(!top3.some(function(x){return x[0]===c;})&&watchList.indexOf(c)===-1){
+        watchList.push({c:c,reason:'🔬 Pattern triggered: '+p.rule,col:'var(--accent)'});
+      }
+    });
+  });
+  // Overdue codes not in top-3
+  Object.entries(overdueMap).filter(function(x){return x[1]>=0.6;}).forEach(function(x){
+    var c=x[0];
+    if(!top3.some(function(t){return t[0]===c;})&&!watchList.some(function(w){return w.c===c;})){
+      watchList.push({c:c,reason:'⏰ Overdue — absent longer than expected',col:'var(--gold)'});
+    }
+  });
+  // Codes on quantity streak not in top-3
+  var qtyStr=buildQtyStreak(entries);
+  Object.entries(qtyStr).filter(function(x){return x[1]>=0.5;}).forEach(function(x){
+    var c=x[0];
+    if(!top3.some(function(t){return t[0]===c;})&&!watchList.some(function(w){return w.c===c;})){
+      watchList.push({c:c,reason:'📈 On quantity streak — appeared 2+ times for '+Math.round(x[1]*4)+' consecutive refills',col:'var(--green)'});
+    }
+  });
+
+  var watchHtml='';
+  if(watchList.length){
+    watchHtml='<div style="margin-top:12px">'
+      +'<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">👀 WATCH LIST</div>'
+      +watchList.slice(0,4).map(function(w){
+        return '<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">'
+          +'<span style="font-family:var(--mono);font-weight:800;font-size:14px;color:'+w.col+';min-width:28px">'+w.c+'</span>'
+          +'<span style="font-size:11px;color:var(--muted);line-height:1.5">'+w.reason+'</span>'
+          +'</div>';
+      }).join('')
+      +'</div>';
+  }
+
+  // Model calibration status
+  var calHtml='';
+  db=loadDB();
+  var allPreds=shopPreds(activeShop);
+  var resolved=allPreds.filter(function(p){return p.status!=='pending'&&p.outcome;});
+  if(resolved.length>=3){
+    var recent5=resolved.slice(-5);
+    var totalCodes=0,hitC=0,slotCovTotal=0,slotTotal=0;
+    recent5.forEach(function(p){
+      Object.values(p.outcome).forEach(function(v){totalCodes++;if(v==='hit')hitC++;});
+      slotCovTotal+=(p.slotsCovered||0);
+      slotTotal+=(p.totalSlots||0);
+    });
+    var recentHitRate=totalCodes>0?Math.round(hitC/totalCodes*100):0;
+    var recentSlotCov=slotTotal>0?Math.round(slotCovTotal/slotTotal*100):0;
+    var trust=recentHitRate>=60&&recentSlotCov>=40?'high'
+      :recentHitRate>=30||recentSlotCov>=20?'moderate':'low';
+    var trustCol=trust==='high'?'var(--green)':trust==='moderate'?'var(--gold)':'var(--red)';
+    var trustMsg=trust==='high'?'Model is well-calibrated. Trust this prediction.'
+      :trust==='moderate'?'Model is learning. Use prediction as a guide.'
+      :'Model accuracy is low. Check Analyze → Lessons Learned.';
+    // Current weights — which signal dominates
+    var currentW=getWeights(activeShop);
+    var topW=SIGNAL_KEYS.slice().sort(function(a,b){return currentW[b]-currentW[a];}).slice(0,2);
+    var sigLabelsShort={freq:'Freq',recency:'Recency',streak:'Streak',bias:'Accuracy',
+      cooccur:'Co-occur',interval:'Interval',dow:'Day-of-wk',cycle:'Cycle',
+      overdue:'Overdue',qtydom:'Qty dom',qtystreak:'Qty streak'};
+    calHtml='<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">'
+      +'<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">📡 MODEL STATUS</div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+      +'<span style="font-size:12px;color:var(--muted)">Confidence (last 5 predictions)</span>'
+      +'<span style="font-size:12px;font-weight:700;color:'+trustCol+'">'+trust.toUpperCase()+'</span>'
+      +'</div>'
+      +'<div style="display:flex;gap:12px;font-size:11px;color:var(--muted);margin-bottom:4px">'
+      +'<span>Code hit rate: <strong style="color:'+trustCol+'">'+recentHitRate+'%</strong></span>'
+      +'<span>Slot coverage: <strong style="color:'+trustCol+'">'+recentSlotCov+'%</strong></span>'
+      +'</div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-bottom:4px">'+trustMsg+'</div>'
+      +'<div style="font-size:11px;color:var(--muted)">Leading signals: '
+      +topW.map(function(k){return '<strong style="color:var(--accent)">'+sigLabelsShort[k]+'</strong> '+Math.round(currentW[k]*100)+'%';}).join(' · ')
+      +'</div>'
+      +'</div>';
+  }
+
+  var card=document.createElement('div');
+  card.id='whats-next-card';
+  card.className='card';
+  card.style.cssText='margin-bottom:12px;border:2px solid var(--accent)';
+  card.innerHTML=
+    '<div class="card-title" style="color:var(--accent)">🔮 WHAT\'S NEXT — Refill #'+entries.length+'+1</div>'
+    +'<div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5">'
+    +'Updated using all '+(entries.length)+' refills'
+    +(promotions.length?' · '+promotions.length+' code'+(promotions.length>1?'s':'')+' promoted by emergent pattern'+(promotions.length>1?'s':''):'')
+    +'</div>'
+    +top3Html
+    +watchHtml
+    +calHtml;
+
+  var firstCard=document.querySelector('#panel-collect .card');
+  if(firstCard) firstCard.parentNode.insertBefore(card,firstCard);
 }
 function resolveStatus(outcome){
   var vals=Object.values(outcome);
@@ -1396,7 +1783,430 @@ function resolveStatus(outcome){
   return 'partial';
 }
 
-// ── AUTO-BACKTEST ─────────────────────────
+// ── MODEL DEBRIEF ENGINE ──────────────────
+// After a resolved prediction, synthesises:
+// 1. Which signals worked and which didn't
+// 2. What the weight changes mean
+// 3. What patterns are now confirmed or suspect
+// 4. Forward implications for the next prediction
+function buildModelDebrief(letter, resolvedPred, weightDeltas, btResult){
+  if(!resolvedPred||!resolvedPred.outcome) return null;
+
+  var entries  = shopEntries(letter);
+  var preds    = shopPreds(letter);
+  var snap     = resolvedPred.signalSnapshot||{};
+  var weights  = resolvedPred.weightsAtTime||{};
+  var outcome  = resolvedPred.outcome;
+  var sigLabels= {freq:'Frequency',recency:'Recency',streak:'Streak',
+    bias:'Pred. accuracy',cooccur:'Co-occurrence',interval:'Interval',
+    dow:'Day-of-week',cycle:'Cycle',overdue:'Overdue',
+    qtydom:'Qty dominance',qtystreak:'Qty streak'};
+
+  var worked=[], failed=[], partial=[];
+
+  // For each predicted code, find which signals were high and whether it hit
+  resolvedPred.predictedCodes.forEach(function(c){
+    var st=outcome[c];
+    var codSnap=snap[c]||{};
+    // Top 2 signals for this code at prediction time
+    var topSigs=SIGNAL_KEYS.map(function(k){
+      return {key:k,contrib:(codSnap[k]||0)*(weights[k]||0),val:codSnap[k]||0};
+    }).sort(function(a,b){return b.contrib-a.contrib;}).slice(0,2);
+
+    if(st==='hit'){
+      worked.push({code:c, signals:topSigs,
+        note:topSigs.length?sigLabels[topSigs[0].key]+' signal confirmed':'Signal confirmed'});
+    } else if(st==='partial'){
+      partial.push({code:c, signals:topSigs,
+        note:'Arrived below expected quantity — '+( topSigs.length?sigLabels[topSigs[0].key]+' overstated quantity':'quantity lower than expected')});
+    } else {
+      failed.push({code:c, signals:topSigs,
+        note:topSigs.length?sigLabels[topSigs[0].key]+' signal did not predict correctly':'Signal failed'});
+    }
+  });
+
+  // Aggregate signal performance across all codes in this prediction
+  var sigPerf={};
+  SIGNAL_KEYS.forEach(function(k){ sigPerf[k]={hitContrib:0,missContrib:0}; });
+  resolvedPred.predictedCodes.forEach(function(c){
+    var st=outcome[c];
+    var codSnap=snap[c]||{};
+    SIGNAL_KEYS.forEach(function(k){
+      var contrib=(codSnap[k]||0)*(weights[k]||0);
+      if(st==='hit')  sigPerf[k].hitContrib+=contrib;
+      else            sigPerf[k].missContrib+=contrib;
+    });
+  });
+
+  // Signals that drove hits vs misses
+  var strongSignals=SIGNAL_KEYS.filter(function(k){
+    return sigPerf[k].hitContrib>sigPerf[k].missContrib&&sigPerf[k].hitContrib>0.01;
+  });
+  var weakSignals=SIGNAL_KEYS.filter(function(k){
+    return sigPerf[k].missContrib>sigPerf[k].hitContrib&&sigPerf[k].missContrib>0.01;
+  });
+
+  // Weight delta summary — what the model adjusted
+  var wDeltaLines=[];
+  if(weightDeltas&&weightDeltas.length){
+    var raised=weightDeltas.filter(function(d){return d.delta>0.002;})
+      .sort(function(a,b){return b.delta-a.delta;}).slice(0,3);
+    var lowered=weightDeltas.filter(function(d){return d.delta<-0.002;})
+      .sort(function(a,b){return a.delta-b.delta;}).slice(0,3);
+    raised.forEach(function(d){
+      wDeltaLines.push({dir:'up',key:d.key,label:sigLabels[d.key],
+        from:Math.round(d.before*100),to:Math.round(d.after*100),
+        delta:Math.round(d.delta*100),
+        reason:'drove correct predictions'});
+    });
+    lowered.forEach(function(d){
+      wDeltaLines.push({dir:'down',key:d.key,label:sigLabels[d.key],
+        from:Math.round(d.before*100),to:Math.round(d.after*100),
+        delta:Math.round(d.delta*100),
+        reason:'drove missed predictions'});
+    });
+  }
+
+  // Overall consecutive miss tracking across all codes
+  var consecMissMap={};
+  var allResolved=preds.filter(function(p){return p.status!=='pending'&&p.outcome;});
+  var allCodes=Array.from(new Set(entries.reduce(function(a,e){return a.concat(e.codes);},[]) ));
+  allCodes.forEach(function(c){
+    var codePreds=allResolved.filter(function(p){return p.predictedCodes.indexOf(c)>-1;});
+    var streak=0;
+    for(var i=codePreds.length-1;i>=0;i--){
+      if(codePreds[i].outcome[c]==='miss') streak++;
+      else break;
+    }
+    if(streak>=2) consecMissMap[c]=streak;
+  });
+
+  // Forward implications
+  var implications=[];
+  if(worked.length===resolvedPred.predictedCodes.length){
+    implications.push({type:'positive',text:'All signals performed. Model is well-calibrated for this shop. Next prediction carries high confidence.'});
+  }
+  if(failed.length>=2){
+    implications.push({type:'warning',text:'Multiple codes missed. '+(weakSignals.length?'The '+sigLabels[weakSignals[0]]+' signal appears unreliable — watch next prediction.':'The model may be overfitting to old patterns.')});
+  }
+  Object.keys(consecMissMap).forEach(function(c){
+    var n=consecMissMap[c];
+    if(n>=3){
+      implications.push({type:'danger',text:'Code '+c+' has missed '+n+' consecutive predictions. It will carry a strong penalty score. If it genuinely stopped arriving, it will self-correct within 2-3 refills.'});
+    } else if(n===2){
+      implications.push({type:'warning',text:'Code '+c+' missed twice in a row. Its leading signal is being penalised. If it misses again, it will likely exit the top-5.'});
+    }
+  });
+  if(btResult&&btResult.health==='poor'){
+    implications.push({type:'danger',text:'Backtest shows low slot coverage ('+btResult.overallPct+'%). The shop pattern may have shifted. Run DATA → Rebuild after entering any missing recent refills.'});
+  } else if(btResult&&btResult.health==='fair'){
+    implications.push({type:'warning',text:'Backtest shows moderate slot coverage ('+btResult.overallPct+'%). More data will improve accuracy.'});
+  }
+  if(!implications.length&&(failed.length>0||partial.length>0)){
+    implications.push({type:'info',text:'Isolated miss. Model has logged the outcome and adjusted weights. Next prediction will reflect this.'});
+  }
+
+  return {
+    worked:worked, failed:failed, partial:partial,
+    strongSignals:strongSignals, weakSignals:weakSignals,
+    wDeltaLines:wDeltaLines, implications:implications,
+    consecMissMap:consecMissMap
+  };
+}
+
+// ── OBSERVATION WINDOW ENGINE ─────────────
+//
+// Adaptive significance-based windows — closes when evidence is statistically
+// significant, not when a fixed counter hits a number.
+//
+// States per code:
+//   idle        → no issues
+//   watching    → accumulating evidence, below significance threshold
+//   confirmed   → z-score crossed threshold — penalty applied, weights nudged
+//   recovering  → hit after confirmed — watching for full recovery
+//
+// Deferred weight adaptation:
+//   Per-signal gradients accumulate until z-score confirms consistent direction.
+//   Mixed signals are suppressed as noise.
+
+var OBS_MIN_N           = 3;     // minimum observations before any decision
+var OBS_MAX_N           = 10;    // max window size — if no significance after 10, flag AMBIGUOUS
+var OBS_Z_THRESHOLD     = 1.5;   // z-score threshold for significance
+var OBS_SOFT_PENALTY    = 0.85;  // × applied while WATCHING
+var OBS_HARD_PENALTY    = 0.60;  // × applied when CONFIRMED
+var OBS_RECOVER_HITS    = 2;     // hits needed to fully recover
+var GRAD_Z_THRESHOLD    = 1.2;   // z-score for gradient confirmation
+var GRAD_MIN_N          = 3;     // min gradient observations before testing
+
+// Shop-level baseline hit rate (used as z-score null hypothesis)
+function shopBaselineHitRate(letter){
+  db=loadDB();
+  var resolved=shopPreds(letter).filter(function(p){
+    return p.status!=='pending'&&p.outcome;
+  });
+  if(!resolved.length) return 0.5;
+  var total=0,hits=0;
+  resolved.forEach(function(p){
+    Object.values(p.outcome).forEach(function(v){total++;if(v==='hit')hits++;});
+  });
+  return total>0?hits/total:0.5;
+}
+
+// One-sided z-score for observed proportion vs baseline
+// Returns signed z — negative means below baseline (counter-predictive)
+function zScore(observed, baseline, n){
+  if(n<OBS_MIN_N) return 0;
+  var denom=Math.sqrt(baseline*(1-baseline)/n);
+  if(denom===0) return 0;
+  return (observed-baseline)/denom;
+}
+
+// Get current effective penalty for a code from obs window
+function getObsPenalty(letter, code){
+  db=loadDB();
+  var obs=shopObs(letter)[code];
+  if(!obs) return 1.0;
+  if(obs.state==='confirmed')  return OBS_HARD_PENALTY;
+  if(obs.state==='watching')   return OBS_SOFT_PENALTY;
+  if(obs.state==='recovering') return Math.max(OBS_SOFT_PENALTY, 1.0-(1.0-OBS_HARD_PENALTY)*0.5);
+  return 1.0;
+}
+
+// Core function: processes one resolved prediction through the observation window
+// Returns a decision log of what was watched, confirmed, recovered, or ignored
+function processObservationWindow(letter, resolvedPred){
+  db=loadDB();
+  if(!resolvedPred||!resolvedPred.outcome) return {decisions:[], gradDecisions:[]};
+
+  var obs   = shopObs(letter);
+  var grad  = shopGrad(letter);
+  var snap  = resolvedPred.signalSnapshot||{};
+  var wAtTime = resolvedPred.weightsAtTime||{};
+  var decisions = [];
+
+  var sigLabels = {freq:'Frequency',recency:'Recency',streak:'Streak',
+    bias:'Pred. accuracy',cooccur:'Co-occurrence',interval:'Interval',
+    dow:'Day-of-week',cycle:'Cycle',overdue:'Overdue',
+    qtydom:'Qty dominance',qtystreak:'Qty streak'};
+
+  // ── Step 1: Update per-code observation state ──
+  resolvedPred.predictedCodes.forEach(function(code){
+    var outcome = resolvedPred.outcome[code];
+    var isMiss  = outcome==='miss';
+    var isHit   = outcome==='hit'||outcome==='partial';
+
+    if(!obs[code]) obs[code]={state:'idle',consecMisses:0,consecHits:0,penaltyApplied:1.0,history:[]};
+    var cobs = obs[code];
+
+    // Record outcome in rolling history (last 5)
+    cobs.history.push(outcome);
+    if(cobs.history.length>5) cobs.history.shift();
+
+    var prevState = cobs.state;
+
+    if(isMiss){
+      cobs.consecMisses++;
+      cobs.consecHits=0;
+
+      if(cobs.state==='idle'&&cobs.consecMisses===1){
+        cobs.state='watching';
+        cobs.penaltyApplied=OBS_SOFT_PENALTY;
+        decisions.push({code:code,action:'watching',
+          message:'1st miss — watching. Soft penalty ('+Math.round((1-OBS_SOFT_PENALTY)*100)+'%) held in reserve until confirmed.',
+          severity:'info', prevState:prevState, newState:'watching'});
+
+      } else if(cobs.state==='watching'&&cobs.consecMisses>=OBS_WATCH_THRESHOLD){
+        cobs.state='confirmed';
+        cobs.penaltyApplied=OBS_HARD_PENALTY;
+        cobs.confirmedAt=resolvedPred.actualDate;
+        // Find dominant signal for this code
+        var topSig=SIGNAL_KEYS.map(function(k){
+          return {k:k,c:(snap[code]&&snap[code][k]||0)*(wAtTime[k]||0)};
+        }).sort(function(a,b){return b.c-a.c;})[0];
+        cobs.confirmedSignal=topSig?topSig.k:null;
+        decisions.push({code:code,action:'confirmed',
+          message:cobs.consecMisses+' consecutive misses confirmed. Hard penalty applied ('+Math.round((1-OBS_HARD_PENALTY)*100)+'%). '
+            +(topSig?sigLabels[topSig.k]+' signal flagged as counter-predictive for this code.':''),
+          severity:'danger', prevState:prevState, newState:'confirmed',
+          signal:topSig?topSig.k:null});
+
+      } else if(cobs.state==='confirmed'){
+        cobs.penaltyApplied=OBS_HARD_PENALTY;
+        decisions.push({code:code,action:'confirmed_ongoing',
+          message:'Miss #'+cobs.consecMisses+' — still confirmed. Penalty maintained.',
+          severity:'danger', prevState:prevState, newState:'confirmed'});
+
+      } else if(cobs.state==='recovering'){
+        // Relapsed — back to watching
+        cobs.state='watching';
+        cobs.consecHits=0;
+        cobs.penaltyApplied=OBS_SOFT_PENALTY;
+        decisions.push({code:code,action:'relapsed',
+          message:'Missed again after partial recovery. Back to watching.',
+          severity:'warning', prevState:prevState, newState:'watching'});
+      }
+
+    } else { // hit or partial
+      cobs.consecHits++;
+      cobs.consecMisses=0;
+
+      if(cobs.state==='confirmed'&&cobs.consecHits===1){
+        cobs.state='recovering';
+        cobs.penaltyApplied=Math.max(OBS_SOFT_PENALTY, 1.0-(1.0-OBS_HARD_PENALTY)*0.5);
+        decisions.push({code:code,action:'recovering',
+          message:'Code returned after confirmed absence. Recovery phase started. '
+            +'Need '+( OBS_RECOVER_THRESHOLD-1)+' more hit'+(OBS_RECOVER_THRESHOLD>2?'s':'')+' to fully restore.',
+          severity:'warning', prevState:prevState, newState:'recovering'});
+
+      } else if(cobs.state==='recovering'&&cobs.consecHits>=OBS_RECOVER_THRESHOLD){
+        cobs.state='idle';
+        cobs.penaltyApplied=1.0;
+        cobs.confirmedSignal=null;
+        decisions.push({code:code,action:'recovered',
+          message:'Code '+code+' fully recovered. Penalty removed. Window reset.',
+          severity:'positive', prevState:prevState, newState:'idle'});
+
+      } else if(cobs.state==='watching'&&cobs.consecHits>=1){
+        cobs.state='idle';
+        cobs.consecMisses=0;
+        cobs.penaltyApplied=1.0;
+        decisions.push({code:code,action:'cleared',
+          message:'Code appeared — single miss cleared. Window reset.',
+          severity:'positive', prevState:prevState, newState:'idle'});
+      }
+      // If idle and hit — nothing to do
+    }
+  });
+
+  // ── Step 2: Deferred gradient accumulation ──
+  // Accumulate per-signal gradients; only apply when 2/3 agree in direction
+  var gradDecisions = [];
+  var wCurrent = getWeights(letter);
+  var wBefore  = Object.assign({},wCurrent);
+  var changed  = false;
+
+  SIGNAL_KEYS.forEach(function(k){
+    if(!grad[k]) grad[k]=[];
+
+    // Compute gradient for this signal from this prediction
+    var totalGrad=0;
+    resolvedPred.predictedCodes.forEach(function(code){
+      var sigVal=(snap[code]&&snap[code][k])||0;
+      var isHit=resolvedPred.outcome[code]==='hit'?1:0;
+      totalGrad += LEARNING_RATE*(isHit-0.5)*sigVal;
+    });
+
+    // Push to window
+    grad[k].push({val:totalGrad, date:resolvedPred.actualDate||resolvedPred.createdDate});
+    if(grad[k].length>GRAD_WINDOW) grad[k].shift();
+
+    // Only apply if window is full and majority agree on direction
+    if(grad[k].length>=GRAD_WINDOW){
+      var positives=grad[k].filter(function(g){return g.val>0.0005;}).length;
+      var negatives=grad[k].filter(function(g){return g.val<-0.0005;}).length;
+
+      if(positives>=GRAD_CONFIRM_THRESHOLD||negatives>=GRAD_CONFIRM_THRESHOLD){
+        var direction = positives>=GRAD_CONFIRM_THRESHOLD?1:-1;
+        var avgGrad   = grad[k].reduce(function(a,g){return a+g.val;},0)/grad[k].length;
+        wCurrent[k]   = (wCurrent[k]||DEFAULT_WEIGHTS[k])+avgGrad;
+        changed       = true;
+        gradDecisions.push({signal:k,label:sigLabels[k],
+          direction:direction>0?'up':'down',
+          gradients:grad[k].map(function(g){return g.val>0?'+':'−';}),
+          delta:Math.round(avgGrad*100*10)/10,
+          from:Math.round(wBefore[k]*100),
+          to:Math.round(wCurrent[k]*100),
+          reason:direction>0?'Consistently drove correct predictions':'Consistently drove missed predictions'
+        });
+        grad[k]=[];  // reset window after applying
+      } else {
+        gradDecisions.push({signal:k,label:sigLabels[k],
+          direction:'mixed', gradients:grad[k].map(function(g){return g.val>0?'+':'−';}),
+          reason:'Mixed signal — gradients disagree. Not applied (noise protection).',
+          delta:0});
+      }
+    }
+  });
+
+  if(changed){
+    wCurrent=normaliseWeights(wCurrent);
+    saveWeights(letter,wCurrent);
+  }
+
+  // Save observation window and gradient accumulator
+  db=loadDB();
+  shopData(letter).obsWindow=obs;
+  shopData(letter).gradAccum=grad;
+  saveDB(db);
+
+  return {decisions:decisions, gradDecisions:gradDecisions, weightsChanged:changed};
+}
+
+// Render the observation window decisions in a readable card section
+function renderObsWindowSection(obsResult){
+  if(!obsResult) return '';
+  var decisions    = obsResult.decisions||[];
+  var gradDecisions= obsResult.gradDecisions||[];
+  var weightsChanged= obsResult.weightsChanged;
+
+  if(!decisions.length&&!gradDecisions.filter(function(d){return d.direction!=='mixed';}).length) return '';
+
+  var sigLabels={freq:'Frequency',recency:'Recency',streak:'Streak',
+    bias:'Pred. accuracy',cooccur:'Co-occurrence',interval:'Interval',
+    dow:'Day-of-week',cycle:'Cycle',overdue:'Overdue',
+    qtydom:'Qty dominance',qtystreak:'Qty streak'};
+
+  var html='<div style="border-top:1px solid rgba(255,255,255,.15);margin-top:10px;padding-top:10px">'
+    +'<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;opacity:.8">🔭 OBSERVATION WINDOWS</div>';
+
+  decisions.forEach(function(d){
+    var icon=d.action==='watching'?'👁'
+      :d.action==='confirmed'||d.action==='confirmed_ongoing'?'🚨'
+      :d.action==='recovering'?'🔄'
+      :d.action==='recovered'||d.action==='cleared'?'✅'
+      :d.action==='relapsed'?'⚠️':'ℹ️';
+    var col=d.severity==='danger'?'rgba(247,95,95,.85)'
+      :d.severity==='warning'?'rgba(255,179,71,.85)'
+      :d.severity==='positive'?'rgba(72,199,142,.85)'
+      :'rgba(255,255,255,.6)';
+    var stateLabel={watching:'WATCHING',confirmed:'CONFIRMED',recovering:'RECOVERING',idle:'IDLE',relapsed:'WATCHING'}[d.newState]||d.newState.toUpperCase();
+    html+='<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08)">'
+      +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">'
+      +'<span>'+icon+'</span>'
+      +'<span style="font-family:var(--mono);font-weight:800;font-size:13px;color:'+col+'">'+d.code+'</span>'
+      +'<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:rgba(0,0,0,.3);color:'+col+';font-weight:700">'+stateLabel+'</span>'
+      +'</div>'
+      +'<div style="font-size:11px;color:rgba(255,255,255,.65);padding-left:20px;line-height:1.5">'+d.message+'</div>'
+      +'</div>';
+  });
+
+  // Gradient decisions — show applied and mixed
+  var applied=gradDecisions.filter(function(d){return d.direction!=='mixed'&&d.delta!==0;});
+  var mixed  =gradDecisions.filter(function(d){return d.direction==='mixed';});
+
+  if(applied.length){
+    html+='<div style="font-size:11px;font-weight:700;opacity:.7;margin:8px 0 4px">⚖️ Weight updates (confirmed across '+GRAD_WINDOW+' predictions)</div>';
+    applied.forEach(function(d){
+      var col=d.direction==='up'?'rgba(72,199,142,.8)':'rgba(247,95,95,.8)';
+      var arrow=d.direction==='up'?'▲':'▼';
+      var grads=d.gradients.join(' ');
+      html+='<div style="font-size:11px;padding:2px 0;display:flex;justify-content:space-between;align-items:center">'
+        +'<span style="color:'+col+'">'+arrow+' '+d.label+' <span style="opacity:.6;font-size:10px">['+grads+']</span></span>'
+        +'<span style="font-family:var(--mono);font-size:11px;color:'+col+'">'+d.from+'%→'+d.to+'%</span>'
+        +'</div>';
+    });
+  }
+
+  if(mixed.length){
+    html+='<div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:6px">'
+      +'⟳ '+mixed.length+' signal'+(mixed.length>1?'s':'')+' accumulating — mixed evidence, not applied yet ('
+      +mixed.map(function(d){return d.label+'['+d.gradients.join('')+']';}).join(', ')+').'
+      +'</div>';
+  }
+
+  html+='</div>';
+  return html;
+}
 function triggerAutoBacktest(letter, triggerStatus){
   db=loadDB();
   var entries=shopEntries(letter);
@@ -1414,17 +2224,19 @@ function triggerAutoBacktest(letter, triggerStatus){
   var test=entries.slice(entries.length-holdN);
   var scores=buildCombinedScore(train,preds,letter).scores;
   var top5=Object.entries(scores).sort(function(a,b){return b[1]-a[1];}).slice(0,5).map(function(x){return x[0];});
-  var totalHits=0, totalSlots=0;
+  var totalCovered=0, totalSlots=0;
   var holdouts=test.map(function(e){
-    var hits=top5.filter(function(c){return e.codes.includes(c);});
-    totalHits+=hits.length; totalSlots+=top5.length;
-    return {date:e.date,hits:hits.length,total:top5.length,matched:hits};
+    var covered=e.codes.filter(function(c){return top5.indexOf(c)>-1;}).length;
+    totalCovered+=covered; totalSlots+=e.codes.length;
+    return {date:e.date,covered:covered,total:e.codes.length,pct:e.codes.length>0?Math.round(covered/e.codes.length*100):0};
   });
-  var pct=totalSlots>0?Math.round(totalHits/totalSlots*100):0;
-  var interp=pct>=60?'strong':pct>=40?'moderate':pct>=20?'weak':'very-weak';
+  var pct=totalSlots>0?Math.round(totalCovered/totalSlots*100):0;
+  var interp=pct>=50?'strong':pct>=30?'moderate':pct>=15?'weak':'very-weak';
+  var health=pct>=50?'good':pct>=30?'fair':'poor';
   shopData(letter).lastAutoBacktest={
     triggeredBy:triggerStatus, triggeredAt:todayStr(),
-    result:{trainCount:train.length,holdoutCount:holdN,top5:top5,holdouts:holdouts,overallPct:pct,interpretation:interp},
+    result:{trainCount:train.length,holdoutCount:holdN,top5:top5,holdouts:holdouts,
+            overallPct:pct,interpretation:interp,health:health},
     note:null
   };
   saveDB(db);
@@ -1510,6 +2322,67 @@ function buildAvgQty(entries){
   var avg={};
   Object.keys(totals).forEach(function(c){avg[c]=totals[c]/apps[c];});
   return avg;
+}
+
+// ── SIGNAL: Quantity Dominance ────────────
+// Measures how many times a code appears per refill on average, normalised
+// by the total slots per refill. A code averaging 2.5 appearances in an
+// 18-slot refill is genuinely dominant; one averaging 1.0 is just present.
+// Returns {code: dominanceScore 0–1}
+function buildQtyDominance(entries){
+  if(!entries.length) return {};
+  var avgSlotsPerRefill = entries.reduce(function(a,e){return a+e.codes.length;},0)/entries.length;
+  if(avgSlotsPerRefill===0) return {};
+
+  // avgQty per code across all refills (counting only refills where it appeared)
+  var totals={}, apps={};
+  entries.forEach(function(e){
+    var cnt={};
+    e.codes.forEach(function(c){cnt[c]=(cnt[c]||0)+1;});
+    Object.keys(cnt).forEach(function(c){
+      totals[c]=(totals[c]||0)+cnt[c];
+      apps[c]=(apps[c]||0)+1;
+    });
+  });
+
+  // Pool average: total slots / unique appearing codes — baseline for a uniform draw
+  var allCodes=Object.keys(totals);
+  var poolAvg = allCodes.length>0
+    ? entries.reduce(function(a,e){return a+e.codes.length;},0) / allCodes.length / entries.length
+    : 1;
+
+  var score={};
+  allCodes.forEach(function(c){
+    var avgQty = totals[c]/apps[c];   // avg times it appears when present
+    var appearRate = apps[c]/entries.length; // fraction of refills it appears in
+    var weightedAvg = avgQty * appearRate;   // expected slots per refill
+
+    // Dominance = how much above pool average
+    var lift = poolAvg>0 ? (weightedAvg - poolAvg) / poolAvg : 0;
+    score[c] = Math.max(0, Math.min(1, 0.5 + lift)); // 0.5 = average, >0.5 = dominant
+  });
+  return score;
+}
+
+// ── SIGNAL: Quantity Streak ───────────────
+// Consecutive refills where the code appeared MORE THAN ONCE.
+// A code that has appeared 2+ times in each of the last 4 refills
+// is on a quantity streak — strongly predictive of repeat appearance.
+// Returns {code: qtyStreakScore 0–1}
+function buildQtyStreak(entries){
+  var rev=entries.slice().reverse();
+  var allCodes=Array.from(new Set(entries.reduce(function(a,e){return a.concat(e.codes);},[])));
+  var score={};
+  allCodes.forEach(function(c){
+    var streak=0;
+    for(var i=0;i<rev.length;i++){
+      var cnt=rev[i].codes.filter(function(x){return x===c;}).length;
+      if(cnt>=2) streak++;      // only counts if appeared 2+ times
+      else break;
+    }
+    score[c] = Math.min(1, streak/4); // normalise: 4+ refills of 2+ = score 1.0
+  });
+  return score;
 }
 function buildWeightedScore(entries){
   var s={},n=entries.length;
@@ -1720,10 +2593,23 @@ function buildOverdueScore(entries){
 }
 
 // ── SIGNAL: Miss-streak Penalty ──────────
-function buildMissStreakPenalty(predictions){
+// Uses observation window state when available; falls back to streak counting
+function buildMissStreakPenalty(predictions, letter){
+  var penalty={};
+
+  // Use observation window if available
+  if(letter){
+    db=loadDB();
+    var obs=shopObs(letter);
+    Object.keys(obs).forEach(function(code){
+      penalty[code]=obs[code].penaltyApplied!==undefined?obs[code].penaltyApplied:1.0;
+    });
+    return penalty;
+  }
+
+  // Fallback: streak counting from predictions
   var resolved=predictions.filter(function(p){return p.status!=='pending'&&p.outcome;});
   if(!resolved.length) return {};
-  var penalty={};
   var recent=resolved.slice().reverse();
   var codeMissStreak={};
   recent.forEach(function(p){
@@ -1735,7 +2621,7 @@ function buildMissStreakPenalty(predictions){
   });
   Object.keys(codeMissStreak).forEach(function(c){
     var streak=codeMissStreak[c];
-    penalty[c]=streak===0?1.0:streak===1?0.85:streak===2?0.70:0.50;
+    penalty[c]=streak===0?1.0:streak===1?OBS_SOFT_PENALTY:streak===2?0.70:OBS_HARD_PENALTY;
   });
   return penalty;
 }
@@ -1781,17 +2667,19 @@ function buildBias(predictions){
 
 // ── WEIGHT ADAPTATION ENGINE ──────────────
 var DEFAULT_WEIGHTS = {
-  freq:     0.18,
-  recency:  0.20,
-  streak:   0.12,
-  bias:     0.10,
-  cooccur:  0.10,
-  interval: 0.06,
-  dow:      0.04,
-  cycle:    0.10,
-  overdue:  0.10
+  freq:     0.15,
+  recency:  0.18,
+  streak:   0.10,
+  bias:     0.08,
+  cooccur:  0.08,
+  interval: 0.05,
+  dow:      0.03,
+  cycle:    0.08,
+  overdue:  0.08,
+  qtydom:   0.10,  // quantity dominance — avg slots per refill above pool average
+  qtystreak:0.07   // consecutive refills with 2+ appearances
 };
-var SIGNAL_KEYS = ['freq','recency','streak','bias','cooccur','interval','dow','cycle','overdue'];
+var SIGNAL_KEYS = ['freq','recency','streak','bias','cooccur','interval','dow','cycle','overdue','qtydom','qtystreak'];
 var LEARNING_RATE = 0.03;
 var WEIGHT_MIN    = 0.02;
 var WEIGHT_MAX    = 0.50;
@@ -1831,36 +2719,37 @@ function normaliseWeights(w){
 // Gradient: if code was a HIT, nudge weights toward signals that were HIGH for it.
 //           if code was a MISS, nudge weights away from signals that were HIGH for it.
 function updateWeights(letter, resolvedPred){
-  if(!resolvedPred||!resolvedPred.signalSnapshot||!resolvedPred.outcome) return;
+  if(!resolvedPred||!resolvedPred.signalSnapshot||!resolvedPred.outcome) return [];
   db=loadDB();
   var entries=shopEntries(letter);
-  if(entries.length<5) return; // too little data for weight updates to be meaningful
+  if(entries.length<5) return [];
 
-  var w = getWeights(letter);
-  var snap = resolvedPred.signalSnapshot; // {code: {freq:0.8, recency:0.6, ...}}
-  var codes = resolvedPred.predictedCodes;
+  var w    = getWeights(letter);
+  var wOld = Object.assign({},w);
+  var snap = resolvedPred.signalSnapshot;
+  var codes= resolvedPred.predictedCodes;
 
   codes.forEach(function(c){
     if(!snap[c]) return;
-    var signals = snap[c];
-    var isHit   = resolvedPred.outcome[c]==='hit' ? 1 : 0;
-    var target  = isHit; // 1 for hit, 0 for miss
-
-    // For each signal: if signal value is high and outcome is hit → reinforce
-    // if signal value is high and outcome is miss → penalise
-    // Gradient: d_loss/d_w_k = (predicted - target) * signal_k
-    // predicted ≈ 0.5 (neutral baseline, since we don't have a sigmoid output)
-    // We use a simplified perceptron-style rule:
-    // Δw_k = learning_rate * (target - 0.5) * signal_k
+    var signals=snap[c];
+    var isHit=resolvedPred.outcome[c]==='hit'?1:0;
     SIGNAL_KEYS.forEach(function(k){
-      var sigVal = signals[k]||0;
-      var delta = LEARNING_RATE * (target - 0.5) * sigVal;
-      w[k] = (w[k]||DEFAULT_WEIGHTS[k]) + delta;
+      var sigVal=signals[k]||0;
+      var delta=LEARNING_RATE*(isHit-0.5)*sigVal;
+      w[k]=(w[k]||DEFAULT_WEIGHTS[k])+delta;
     });
   });
 
-  w = normaliseWeights(w);
-  saveWeights(letter, w);
+  w=normaliseWeights(w);
+  saveWeights(letter,w);
+
+  // Return delta log for debrief display
+  var deltas=SIGNAL_KEYS.map(function(k){
+    return {key:k, before:wOld[k]||DEFAULT_WEIGHTS[k], after:w[k],
+            delta:w[k]-(wOld[k]||DEFAULT_WEIGHTS[k])};
+  }).filter(function(d){return Math.abs(d.delta)>0.001;})
+    .sort(function(a,b){return Math.abs(b.delta)-Math.abs(a.delta);});
+  return deltas;
 }
 
 function buildCombinedScore(entries, predictions, letter){
@@ -1873,9 +2762,11 @@ function buildCombinedScore(entries, predictions, letter){
   var intReg    = buildIntervalRegularity(entries);
   var dow       = buildDowPattern(entries);
   var qtrend    = buildQtyTrend(entries);
-  var missPen   = buildMissStreakPenalty(predictions||[]);
+  var missPen   = buildMissStreakPenalty(predictions||[], letter||null);
   var cycle     = buildCycleScore(entries);
   var overdue   = buildOverdueScore(entries);
+  var qtydom    = buildQtyDominance(entries);
+  var qtystreak = buildQtyStreak(entries);
 
   var w = letter ? getWeights(letter) : Object.assign({},DEFAULT_WEIGHTS);
   var all=Array.from(new Set(entries.reduce(function(a,e){return a.concat(e.codes);},[])));
@@ -1893,27 +2784,31 @@ function buildCombinedScore(entries, predictions, letter){
     var coocNorm = ((cooc[c]||0)/mC + (tightCooc[c]||0)/mTC*2)/3;
 
     var sig = {
-      freq:     (freq[c]||0)/mF,
-      recency:  (rec[c]||0)/mR,
-      streak:   (str[c]||0)/mS,
-      bias:     boost,
-      cooccur:  coocNorm,
-      interval: (intReg[c]||0),
-      dow:      (dow[c]||0),
-      cycle:    (cycle[c]||0),
-      overdue:  (overdue[c]||0)
+      freq:      (freq[c]||0)/mF,
+      recency:   (rec[c]||0)/mR,
+      streak:    (str[c]||0)/mS,
+      bias:      boost,
+      cooccur:   coocNorm,
+      interval:  (intReg[c]||0),
+      dow:       (dow[c]||0),
+      cycle:     (cycle[c]||0),
+      overdue:   (overdue[c]||0),
+      qtydom:    (qtydom[c]||0),
+      qtystreak: (qtystreak[c]||0)
     };
 
     var base =
-      sig.freq     * w.freq     +
-      sig.recency  * w.recency  +
-      sig.streak   * w.streak   +
-      sig.bias     * w.bias     +
-      sig.cooccur  * w.cooccur  +
-      sig.interval * w.interval +
-      sig.dow      * w.dow      +
-      sig.cycle    * w.cycle    +
-      sig.overdue  * w.overdue;
+      sig.freq      * w.freq      +
+      sig.recency   * w.recency   +
+      sig.streak    * w.streak    +
+      sig.bias      * w.bias      +
+      sig.cooccur   * w.cooccur   +
+      sig.interval  * w.interval  +
+      sig.dow       * w.dow       +
+      sig.cycle     * w.cycle     +
+      sig.overdue   * w.overdue   +
+      sig.qtydom    * w.qtydom    +
+      sig.qtystreak * w.qtystreak;
 
     var qt = qtrend[c]||1.0;
     var mp = missPen[c]!==undefined ? missPen[c] : 1.0;
@@ -1924,7 +2819,289 @@ function buildCombinedScore(entries, predictions, letter){
   return {scores:scores, snapshots:snapshots, weights:w};
 }
 
-// ── RENDER ANALYTICS ─────────────────────
+// ── EMERGENT PATTERN ENGINE ───────────────
+// Discovers hidden conditional patterns from prediction-outcome history.
+// Returns array of {type, rule, evidence, cases, confidence, triggered, impliedCodes, detail}
+
+function buildEmergentPatterns(entries, predictions){
+  var sorted   = entries.slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+  var n        = sorted.length;
+  var resolved = predictions.filter(function(p){return p.status!=='pending'&&p.outcome&&p.actualCodes;});
+  var patterns = [];
+  var MIN_CASES = 3;     // minimum supporting cases to surface a pattern
+  var MIN_CONF  = 0.60;  // minimum confidence to show
+  var PROMOTE_CONF = 0.70; // confidence to promote into top-3
+  var PROMOTE_CASES= 5;    // minimum cases to promote
+
+  if(n < 6) return patterns;
+
+  var allCodes = Array.from(new Set(entries.reduce(function(a,e){return a.concat(e.codes);},[])));
+  var avgQtyMap = buildAvgQty(entries);
+
+  // ── TYPE 1: Sequential Trigger ─────────────
+  // "Code A appeared in refill N → Code B appeared in refill N+1"
+  // Also includes quantity variant: "Code A appeared 2+ times → Code B followed"
+  allCodes.forEach(function(trigCode){
+    allCodes.forEach(function(targetCode){
+      if(trigCode===targetCode) return;
+      var matchCases=0, hitCases=0;
+      var qtyMatchCases=0, qtyHitCases=0;
+      for(var i=0;i<sorted.length-1;i++){
+        var cur  = sorted[i];
+        var next = sorted[i+1];
+        var trigCount = cur.codes.filter(function(c){return c===trigCode;}).length;
+        var targetCount = next.codes.filter(function(c){return c===targetCode;}).length;
+        // Simple presence trigger
+        if(trigCount>0){
+          matchCases++;
+          if(targetCount>0) hitCases++;
+        }
+        // Quantity trigger (2+ times)
+        if(trigCount>=2){
+          qtyMatchCases++;
+          if(targetCount>0) qtyHitCases++;
+        }
+      }
+      // Simple sequential
+      if(matchCases>=MIN_CASES){
+        var conf=hitCases/matchCases;
+        if(conf>=MIN_CONF){
+          var lastEntry=sorted[sorted.length-1];
+          var triggered=lastEntry.codes.indexOf(trigCode)>-1;
+          patterns.push({
+            type:'sequential',
+            rule:'Code '+trigCode+' appeared → Code '+targetCode+' followed next refill',
+            evidence:hitCases+'/'+matchCases+' cases',
+            cases:matchCases, hits:hitCases, confidence:conf,
+            triggered:triggered,
+            impliedCodes:[targetCode],
+            triggerCode:trigCode,
+            detail:triggered
+              ?'✅ Trigger met — '+trigCode+' appeared in last refill'
+              :'⚪ Not triggered — '+trigCode+' absent last refill'
+          });
+        }
+      }
+      // Quantity sequential
+      if(qtyMatchCases>=MIN_CASES){
+        var qconf=qtyHitCases/qtyMatchCases;
+        if(qconf>=MIN_CONF){
+          var lastEntry2=sorted[sorted.length-1];
+          var qtrigCount=lastEntry2.codes.filter(function(c){return c===trigCode;}).length;
+          var qtriggered=qtrigCount>=2;
+          patterns.push({
+            type:'qty_sequential',
+            rule:'Code '+trigCode+' appeared 2+ times → Code '+targetCode+' followed',
+            evidence:qtyHitCases+'/'+qtyMatchCases+' cases',
+            cases:qtyMatchCases, hits:qtyHitCases, confidence:qconf,
+            triggered:qtriggered,
+            impliedCodes:[targetCode],
+            triggerCode:trigCode,
+            detail:qtriggered
+              ?'✅ Trigger met — '+trigCode+' appeared '+qtrigCount+'× last refill'
+              :'⚪ Not triggered (need '+trigCode+' 2+ times last refill)'
+          });
+        }
+      }
+    });
+  });
+
+  // ── TYPE 2: Quantity Momentum ──────────────
+  // "Code A appeared X+ times in last N refills → it appeared X+ times next refill"
+  allCodes.forEach(function(c){
+    var avg = avgQtyMap[c]||1;
+    var threshold = Math.max(2, Math.round(avg));
+    var matchCases=0, hitCases=0;
+    for(var i=0;i<sorted.length-1;i++){
+      var cnt=sorted[i].codes.filter(function(x){return x===c;}).length;
+      if(cnt>=threshold){
+        matchCases++;
+        var nextCnt=sorted[i+1].codes.filter(function(x){return x===c;}).length;
+        if(nextCnt>=threshold) hitCases++;
+      }
+    }
+    if(matchCases>=MIN_CASES){
+      var conf=hitCases/matchCases;
+      if(conf>=MIN_CONF){
+        var lastCnt=sorted[sorted.length-1].codes.filter(function(x){return x===c;}).length;
+        var triggered=lastCnt>=threshold;
+        patterns.push({
+          type:'qty_momentum',
+          rule:'Code '+c+' at '+threshold+'+ slots → stayed at '+threshold+'+ next refill',
+          evidence:hitCases+'/'+matchCases+' cases',
+          cases:matchCases, hits:hitCases, confidence:conf,
+          triggered:triggered,
+          impliedCodes:[c],
+          detail:triggered
+            ?'✅ Trigger met — '+c+' appeared '+lastCnt+'× last refill (threshold '+threshold+')'
+            :'⚪ Not triggered ('+c+' appeared '+lastCnt+'× last refill, need '+threshold+')'
+        });
+      }
+    }
+  });
+
+  // ── TYPE 3: Cluster Trigger ────────────────
+  // "When codes A AND B both appeared → Code C followed next refill"
+  // Only check top-10 frequent codes for performance
+  var topCodes = Object.entries(buildFreqMap(entries))
+    .sort(function(a,b){return b[1]-a[1];}).slice(0,10).map(function(x){return x[0];});
+  for(var ai=0;ai<topCodes.length;ai++){
+    for(var bi=ai+1;bi<topCodes.length;bi++){
+      var ca=topCodes[ai], cb=topCodes[bi];
+      allCodes.forEach(function(ct){
+        if(ct===ca||ct===cb) return;
+        var matchCases=0, hitCases=0;
+        for(var i=0;i<sorted.length-1;i++){
+          var unique=Array.from(new Set(sorted[i].codes));
+          if(unique.indexOf(ca)>-1&&unique.indexOf(cb)>-1){
+            matchCases++;
+            if(sorted[i+1].codes.indexOf(ct)>-1) hitCases++;
+          }
+        }
+        if(matchCases>=MIN_CASES){
+          var conf=hitCases/matchCases;
+          if(conf>=MIN_CONF){
+            var lastUnique=Array.from(new Set(sorted[sorted.length-1].codes));
+            var triggered=lastUnique.indexOf(ca)>-1&&lastUnique.indexOf(cb)>-1;
+            patterns.push({
+              type:'cluster',
+              rule:'Codes '+ca+' & '+cb+' both appeared → Code '+ct+' followed',
+              evidence:hitCases+'/'+matchCases+' cases',
+              cases:matchCases, hits:hitCases, confidence:conf,
+              triggered:triggered,
+              impliedCodes:[ct],
+              detail:triggered
+                ?'✅ Trigger met — both '+ca+' and '+cb+' in last refill'
+                :'⚪ Not triggered (need both '+ca+' and '+cb+')'
+            });
+          }
+        }
+      });
+    }
+  }
+
+  // ── TYPE 4: Absence Trigger ────────────────
+  // "Code A was absent for N+ refills → it returned"
+  allCodes.forEach(function(c){
+    var appRate = buildAppearanceRate(entries)[c]||0;
+    if(appRate<0.30) return; // only track codes that appear reasonably often
+    var expectedInterval = Math.round(1/appRate);
+    if(expectedInterval<2) return;
+    var matchCases=0, hitCases=0;
+    for(var i=expectedInterval;i<sorted.length-1;i++){
+      // Count consecutive absences ending at i
+      var absenceRun=0;
+      for(var j=i;j>=0;j--){
+        if(sorted[j].codes.indexOf(c)===-1) absenceRun++;
+        else break;
+      }
+      if(absenceRun>=expectedInterval){
+        matchCases++;
+        if(sorted[i+1].codes.indexOf(c)>-1) hitCases++;
+      }
+    }
+    if(matchCases>=MIN_CASES){
+      var conf=hitCases/matchCases;
+      if(conf>=MIN_CONF){
+        // Current absence run
+        var curAbsence=0;
+        for(var i2=sorted.length-1;i2>=0;i2--){
+          if(sorted[i2].codes.indexOf(c)===-1) curAbsence++;
+          else break;
+        }
+        var triggered=curAbsence>=expectedInterval;
+        patterns.push({
+          type:'absence',
+          rule:'Code '+c+' absent '+expectedInterval+'+ refills → returned next refill',
+          evidence:hitCases+'/'+matchCases+' cases',
+          cases:matchCases, hits:hitCases, confidence:conf,
+          triggered:triggered,
+          impliedCodes:[c],
+          detail:triggered
+            ?'✅ Trigger met — '+c+' absent '+curAbsence+' refills (expected every '+expectedInterval+')'
+            :'⚪ Not triggered ('+c+' absent '+curAbsence+' of '+expectedInterval+' needed)'
+        });
+      }
+    }
+  });
+
+  // ── TYPE 5: Quantity Threshold ─────────────
+  // "When refill total > X slots → Code C is always/usually present"
+  var refillSizes = sorted.map(function(e){return e.codes.length;});
+  var avgSize = refillSizes.reduce(function(a,b){return a+b;},0)/refillSizes.length;
+  var highThreshold = Math.round(avgSize*1.15); // 15% above average = "large" refill
+  allCodes.forEach(function(c){
+    var highCases=0, highHits=0;
+    sorted.forEach(function(e){
+      if(e.codes.length>=highThreshold){
+        highCases++;
+        if(e.codes.indexOf(c)>-1) highHits++;
+      }
+    });
+    if(highCases>=MIN_CASES){
+      var conf=highHits/highCases;
+      if(conf>=0.85){ // higher bar for this type
+        var lastSize=sorted[sorted.length-1].codes.length;
+        patterns.push({
+          type:'qty_threshold',
+          rule:'Refill with '+highThreshold+'+ total slots → Code '+c+' appears',
+          evidence:highHits+'/'+highCases+' high-volume refills',
+          cases:highCases, hits:highHits, confidence:conf,
+          triggered:false, // future refill — can't know size yet
+          impliedCodes:[c],
+          detail:'ℹ️ Applies when next refill has '+highThreshold+'+ total slots (avg: '+Math.round(avgSize)+')'
+        });
+      }
+    }
+  });
+
+  // Sort: triggered first, then by confidence desc
+  patterns.sort(function(a,b){
+    if(a.triggered&&!b.triggered) return -1;
+    if(!a.triggered&&b.triggered) return 1;
+    return b.confidence-a.confidence;
+  });
+
+  return patterns;
+}
+
+// Apply triggered emergent patterns to promote codes into top-3
+// A triggered pattern with conf>=0.70 and cases>=5 promotes its implied code
+// displacing the lowest-scoring current top-3 code (if not already in top-3)
+function applyEmergentToTop3(top5, patterns, allScores){
+  var top3=top5; // top5 passed in, variable renamed for clarity
+  var result = top3.slice();
+  var promotionLog = [];
+
+  patterns.forEach(function(p){
+    if(!p.triggered) return;
+    if(p.confidence < 0.70) return;
+    if(p.cases < 5) return;
+
+    p.impliedCodes.forEach(function(code){
+      // Already in top-3?
+      var alreadyIn = result.some(function(x){return x[0]===code;});
+      if(alreadyIn) return;
+
+      // Find the lowest-scoring code in current top-3
+      var lowestIdx=0;
+      for(var i=1;i<result.length;i++){
+        if(result[i][1]<result[lowestIdx][1]) lowestIdx=i;
+      }
+
+      var displaced = result[lowestIdx];
+      result[lowestIdx] = [code, allScores[code]||0, true, p]; // true = promoted
+      promotionLog.push({
+        promoted: code,
+        displaced: displaced[0],
+        pattern: p,
+        reason: p.rule+' ('+Math.round(p.confidence*100)+'% confidence, '+p.cases+' cases)'
+      });
+    });
+  });
+
+  return {top3: result, promotions: promotionLog};
+}
 function renderAnalytics(){
   if(!activeShop) return;
   db=loadDB();
@@ -1945,187 +3122,269 @@ function renderAnalytics(){
   var intReg  = buildIntervalRegularity(entries);
   var qtrend  = buildQtyTrend(entries);
   var preds   = shopPreds(activeShop);
-  var missPen = buildMissStreakPenalty(preds);
+  var missPen = buildMissStreakPenalty(preds,letter);
+  var n       = entries.length;
+  var sorted  = entries.slice().sort(function(a,b){return a.date.localeCompare(b.date);});
 
-  // Frequency chart
-  var sorted=Object.entries(freq).sort(function(a,b){return b[1]-a[1];}).slice(0,20);
-  var maxF=sorted[0][1];
-  document.getElementById('freq-chart').innerHTML=sorted.map(function(item){
-    var c=item[0],n=item[1];
-    var avg=avgQ[c]||1;
-    var avgStr=avg>1.05?' avg x'+avg.toFixed(1):'';
-    return '<div class="freq-row">'
-      +'<span class="freq-code">'+c+'</span>'
-      +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+((n/maxF)*100).toFixed(1)+'%;background:var(--accent)"></div></div>'
-      +'<span class="freq-count">'+n+avgStr+'</span></div>';
-  }).join('');
+  // ── RAW: Frequency & Quantity Distribution ──
+  var freqSorted=Object.entries(freq).sort(function(a,b){return b[1]-a[1];}).slice(0,20);
+  var maxF=freqSorted.length?freqSorted[0][1]:1;
+  var avgSlots=entries.reduce(function(a,e){return a+e.codes.length;},0)/n;
+  document.getElementById('freq-chart').innerHTML=
+    '<div style="font-size:10px;color:var(--muted);margin-bottom:6px">Avg refill size: <strong>'+avgSlots.toFixed(1)+'</strong> slots · '+Object.keys(freq).length+' unique codes</div>'
+    +freqSorted.map(function(item){
+      var c=item[0],cnt=item[1];
+      var avg=avgQ[c]||1;
+      var appRate=Math.round((rates[c]||0)*100);
+      return '<div class="freq-row">'
+        +'<span class="freq-code">'+c+'</span>'
+        +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+((cnt/maxF)*100).toFixed(1)+'%;background:var(--accent)"></div></div>'
+        +'<span class="freq-count">'+cnt+' ('+appRate+'%) avg '+avg.toFixed(1)+'×</span></div>';
+    }).join('');
 
-  // Recurrence pattern chips
-  var chips=[];
-  Object.entries(rates).filter(function(x){return x[1]>0.5;}).sort(function(a,b){return b[1]-a[1];}).slice(0,8)
-    .forEach(function(x){chips.push('<span class="insight-chip"><span class="chip-dot" style="background:var(--green)"></span>'+x[0]+' — '+Math.round(x[1]*100)+'% of refills</span>');});
-  Object.entries(streaks).filter(function(x){return x[1]>=2;}).sort(function(a,b){return b[1]-a[1];}).slice(0,5)
-    .forEach(function(x){chips.push('<span class="insight-chip"><span class="chip-dot" style="background:var(--gold)"></span>'+x[0]+' — '+x[1]+'-refill streak 🔥</span>');});
-  // Miss-streak penalties visible
-  Object.entries(missPen).filter(function(x){return x[1]<0.85;}).sort(function(a,b){return a[1]-b[1];}).slice(0,4)
-    .forEach(function(x){chips.push('<span class="insight-chip"><span class="chip-dot" style="background:var(--red)"></span>'+x[0]+' — miss-streak penalty '+Math.round((1-x[1])*100)+'% ⬇</span>');});
-  document.getElementById('pattern-insights').innerHTML=chips.length?chips.join(''):'<span style="color:var(--muted);font-size:12px">Add more entries to reveal patterns.</span>';
-
-  // Streaks
-  var topStr=Object.entries(streaks).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
-  document.getElementById('streak-content').innerHTML=topStr.length
-    ?topStr.map(function(x){return '<div class="bt-row"><span class="bt-label">Code '+x[0]+'</span><span class="bt-val bt-hit">'+x[1]+' consecutive refills</span></div>';}).join('')
-    :'<p style="color:var(--muted);font-size:12px">No active streaks yet.</p>';
-
-  // Signal effectiveness / adapted weights
-  var w = getWeights(activeShop);
-  var resolvedCount = preds.filter(function(p){return p.status!=='pending';}).length;
-  var wEntries = SIGNAL_KEYS.map(function(k){return [k,w[k]];}).sort(function(a,b){return b[1]-a[1];});
-  var wMax = wEntries[0][1];
-  var signalLabels = {freq:'Frequency',recency:'Recency',streak:'Streak',bias:'Pred. Accuracy',cooccur:'Co-occurrence',interval:'Interval',dow:'Day-of-week',cycle:'Cycle',overdue:'Overdue'};
-  var wHtml = '<p style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5">'
-    +(resolvedCount<5
-      ? '⚙️ Weights are at defaults — will auto-adapt after '+Math.max(0,5-resolvedCount)+' more resolved prediction'+(5-resolvedCount===1?'':'s')+'.'
-      : '⚙️ Adapted from '+resolvedCount+' resolved predictions. Weights drift toward signals that proved most predictive for this shop.')
-    +'</p>';
-  wHtml += wEntries.map(function(x){
-    var key=x[0], val=x[1];
-    var def=DEFAULT_WEIGHTS[key];
-    var pct=Math.round(val*100);
-    var defPct=Math.round(def*100);
-    var diff=pct-defPct;
-    var diffStr=diff>0?'<span style="color:var(--green)">+'+diff+'%</span>':diff<0?'<span style="color:var(--red)">'+diff+'%</span>':'<span style="color:var(--muted)">0%</span>';
-    var col=val>def?'var(--green)':val<def*0.8?'var(--red)':'var(--accent)';
-    return '<div class="freq-row">'
-      +'<span class="freq-code" style="font-size:11px;min-width:90px;font-family:var(--sans)">'+signalLabels[key]+'</span>'
-      +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+(val/wMax*100).toFixed(0)+'%;background:'+col+'"></div></div>'
-      +'<span class="freq-count" style="color:'+col+';min-width:30px">'+pct+'%</span>'
-      +'<span style="font-size:10px;min-width:36px;text-align:right">'+diffStr+'</span>'
+  // ── RAW: Gap & Interval Analysis ──
+  var gapHtml='<p style="font-size:11px;color:var(--muted);margin-bottom:8px">Gap = refills since last appearance. Ratio = current gap ÷ expected gap. Red = overdue, green = recently active.</p>';
+  var gapData=[];
+  Object.keys(freq).forEach(function(c){
+    var appRate=rates[c]||0;
+    if(appRate<0.2) return; // skip very rare codes
+    var expectedGap=appRate>0?Math.round(1/appRate):999;
+    var curGap=0;
+    for(var i=sorted.length-1;i>=0;i--){
+      if(sorted[i].codes.indexOf(c)>-1) break;
+      curGap++;
+    }
+    var ratio=expectedGap>0?curGap/expectedGap:0;
+    gapData.push({c:c,curGap:curGap,expectedGap:expectedGap,ratio:ratio,appRate:appRate});
+  });
+  gapData.sort(function(a,b){return b.ratio-a.ratio;});
+  gapHtml+=gapData.slice(0,12).map(function(g){
+    var col=g.ratio>=1.5?'var(--red)':g.ratio>=0.8?'var(--gold)':g.curGap===0?'var(--green)':'var(--muted)';
+    var status=g.ratio>=1.5?'OVERDUE':g.curGap===0?'PRESENT':'gap '+g.curGap;
+    return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">'
+      +'<span style="font-family:var(--mono);font-weight:700;min-width:28px;color:'+col+'">'+g.c+'</span>'
+      +'<span style="font-size:11px;color:var(--muted);flex:1">absent '+g.curGap+' refills · expected every '+g.expectedGap+'</span>'
+      +'<span style="font-size:11px;font-weight:700;font-family:var(--mono);color:'+col+'">'+status+'</span>'
       +'</div>';
   }).join('');
-  document.getElementById('signal-weights-content').innerHTML=wHtml;
-  var coocSorted=Object.entries(cooc).sort(function(a,b){return b[1]-a[1];}).slice(0,12);
-  var maxC=coocSorted.length?coocSorted[0][1]:1;
-  if(coocSorted.length){
-    // Also build top pairs
-    var pairCount={};
-    entries.forEach(function(e){
-      var u=Array.from(new Set(e.codes));
-      for(var i=0;i<u.length;i++) for(var j=i+1;j<u.length;j++){
-        var key=u[i]<u[j]?u[i]+'+'+u[j]:u[j]+'+'+u[i];
-        pairCount[key]=(pairCount[key]||0)+1;
-      }
-    });
-    var topPairs=Object.entries(pairCount).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
-    var pairsHtml=topPairs.map(function(x){
-      var pct=Math.round(x[1]/entries.length*100);
-      return '<span class="insight-chip"><span class="chip-dot" style="background:var(--accent2)"></span>'+x[0]+' together '+pct+'% of refills</span>';
+  document.getElementById('gap-analysis-content').innerHTML=gapHtml;
+
+  // ── RAW: Trend Analysis ──
+  var trendHtml='<p style="font-size:11px;color:var(--muted);margin-bottom:8px">Compares first third vs last third of refill history. ↑ rising · ↓ falling · → stable.</p>';
+  var third=Math.max(1,Math.floor(n/3));
+  var early=sorted.slice(0,third), late=sorted.slice(n-third);
+  var trendData=[];
+  Object.keys(freq).forEach(function(c){
+    var earlyRate=early.filter(function(e){return e.codes.indexOf(c)>-1;}).length/early.length;
+    var lateRate=late.filter(function(e){return e.codes.indexOf(c)>-1;}).length/late.length;
+    var earlyQty=early.reduce(function(a,e){return a+e.codes.filter(function(x){return x===c;}).length;},0)/early.length;
+    var lateQty=late.reduce(function(a,e){return a+e.codes.filter(function(x){return x===c;}).length;},0)/late.length;
+    var rateDiff=lateRate-earlyRate;
+    var qtyDiff=lateQty-earlyQty;
+    if(Math.abs(rateDiff)>0.1||Math.abs(qtyDiff)>0.3){
+      trendData.push({c:c,rateDiff:rateDiff,qtyDiff:qtyDiff,lateRate:lateRate,lateQty:lateQty});
+    }
+  });
+  trendData.sort(function(a,b){return Math.abs(b.rateDiff)-Math.abs(a.rateDiff);});
+  if(trendData.length){
+    trendHtml+=trendData.slice(0,10).map(function(t){
+      var rArrow=t.rateDiff>0.1?'↑ ':t.rateDiff<-0.1?'↓ ':'→ ';
+      var qArrow=t.qtyDiff>0.3?'↑':t.qtyDiff<-0.3?'↓':'→';
+      var col=t.rateDiff>0.1?'var(--green)':t.rateDiff<-0.1?'var(--red)':'var(--muted)';
+      return '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border)">'
+        +'<span style="font-family:var(--mono);font-weight:700;min-width:28px;color:'+col+'">'+t.c+'</span>'
+        +'<span style="font-size:11px;color:'+col+';flex:1">'+rArrow+'appearance rate '+(t.rateDiff>0?'+':'')+Math.round(t.rateDiff*100)+'%</span>'
+        +'<span style="font-size:11px;color:var(--muted)">qty '+qArrow+' '+(t.qtyDiff>0?'+':'')+t.qtyDiff.toFixed(1)+'×</span>'
+        +'</div>';
     }).join('');
-    document.getElementById('cooccur-content').innerHTML=
-      '<p style="font-size:11px;color:var(--muted);margin-bottom:8px">Codes that tend to arrive together. If one is predicted, the other gets a boost.</p>'
-      +(pairsHtml||'<span style="font-size:12px;color:var(--muted)">Not enough data yet.</span>');
   } else {
-    document.getElementById('cooccur-content').innerHTML='<p style="color:var(--muted);font-size:12px">Need more entries to detect co-occurrence patterns.</p>';
+    trendHtml+='<p style="font-size:12px;color:var(--muted)">No significant trends detected. Patterns are stable across history.</p>';
   }
+  document.getElementById('trend-content').innerHTML=trendHtml;
 
-  // Interval regularity
-  var intSorted=Object.entries(intReg).filter(function(x){return x[1]>0;}).sort(function(a,b){return b[1]-a[1];}).slice(0,12);
-  var maxI=intSorted.length?intSorted[0][1]:1;
-  document.getElementById('interval-content').innerHTML=intSorted.length
-    ?'<p style="font-size:11px;color:var(--muted);margin-bottom:8px">1.0 = perfectly regular gaps. Lower = unpredictable timing.</p>'
-    +intSorted.map(function(x){
-      var pct=(x[1]/1)*100;
-      var col=pct>=70?'var(--green)':pct>=40?'var(--gold)':'var(--red)';
-      return '<div class="freq-row"><span class="freq-code">'+x[0]+'</span>'
-        +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+pct.toFixed(0)+'%;background:'+col+'"></div></div>'
-        +'<span class="freq-count" style="color:'+col+'">'+pct.toFixed(0)+'%</span></div>';
-    }).join('')
-    :'<p style="color:var(--muted);font-size:12px">Need 3+ appearances per code to measure regularity.</p>';
+  // ── RAW: Pattern Detection ──
+  var chips=[];
+  Object.entries(rates).filter(function(x){return x[1]>0.7;}).sort(function(a,b){return b[1]-a[1];}).slice(0,6)
+    .forEach(function(x){chips.push('<span class="insight-chip"><span class="chip-dot" style="background:var(--green)"></span>'+x[0]+' — '+Math.round(x[1]*100)+'% of refills</span>');});
+  Object.entries(streaks).filter(function(x){return x[1]>=2;}).sort(function(a,b){return b[1]-a[1];}).slice(0,4)
+    .forEach(function(x){chips.push('<span class="insight-chip"><span class="chip-dot" style="background:var(--gold)"></span>'+x[0]+' — '+x[1]+'-refill streak 🔥</span>');});
+  Object.entries(missPen).filter(function(x){return x[1]<0.85;}).sort(function(a,b){return a[1]-b[1];}).slice(0,4)
+    .forEach(function(x){chips.push('<span class="insight-chip"><span class="chip-dot" style="background:var(--red)"></span>'+x[0]+' — miss-penalty '+Math.round((1-x[1])*100)+'%</span>');});
+  document.getElementById('pattern-insights').innerHTML=chips.length?chips.join(''):'<span style="color:var(--muted);font-size:12px">Add more entries to reveal patterns.</span>';
 
-  // Quantity trend
-  var qtSorted=Object.entries(qtrend).filter(function(x){return x[1]!==1.0;}).sort(function(a,b){return b[1]-a[1];});
-  var growing=qtSorted.filter(function(x){return x[1]>1.0;});
-  var shrinking=qtSorted.filter(function(x){return x[1]<1.0;});
-  var qtHtml='<p style="font-size:11px;color:var(--muted);margin-bottom:8px">Compares recent vs earlier average quantity. Boosts (+20% max) or reduces (−20% max) scores.</p>';
-  if(growing.length){
-    qtHtml+='<div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:4px">📈 Growing quantity</div>';
-    qtHtml+=growing.slice(0,6).map(function(x){
-      return '<span class="insight-chip"><span class="chip-dot" style="background:var(--green)"></span>'+x[0]+' +'+((x[1]-1)*100).toFixed(0)+'%</span>';
+  // ── RAW: Comparative Rankings ──
+  var allCodes=Object.keys(freq);
+  var qtydomMap=buildQtyDominance(entries);
+  var overallRank=allCodes.map(function(c){
+    var f=(freq[c]||0)/Math.max.apply(null,Object.values(freq).concat([1]));
+    var r=(rates[c]||0);
+    var q=(qtydomMap[c]||0.5);
+    var combined=f*0.4+r*0.3+q*0.3;
+    return {c:c,score:combined,freq:freq[c],rate:Math.round(r*100),qty:(avgQ[c]||0).toFixed(1)};
+  }).sort(function(a,b){return b.score-a.score;});
+  document.getElementById('comparative-content').innerHTML=
+    '<p style="font-size:11px;color:var(--muted);margin-bottom:8px">Composite rank across frequency, appearance rate, and quantity dominance.</p>'
+    +'<div style="font-size:10px;color:var(--muted);display:grid;grid-template-columns:28px 1fr 36px 40px 36px;gap:4px;padding:3px 0;border-bottom:1px solid var(--border);margin-bottom:3px">'
+    +'<span>#</span><span>CODE</span><span>CNT</span><span>RATE%</span><span>AVG×</span></div>'
+    +overallRank.slice(0,12).map(function(x,i){
+      var col=i<3?'var(--gold)':i<6?'var(--accent)':'var(--muted)';
+      return '<div style="font-size:11px;display:grid;grid-template-columns:28px 1fr 36px 40px 36px;gap:4px;padding:3px 0;border-bottom:1px solid var(--border)">'
+        +'<span style="color:var(--muted)">'+(i+1)+'</span>'
+        +'<span style="font-family:var(--mono);font-weight:700;color:'+col+'">'+x.c+'</span>'
+        +'<span>'+x.freq+'</span>'
+        +'<span>'+x.rate+'%</span>'
+        +'<span>'+x.qty+'×</span>'
+        +'</div>';
     }).join('');
-  }
-  if(shrinking.length){
-    qtHtml+='<div style="font-size:11px;font-weight:700;color:var(--red);margin:8px 0 4px">📉 Shrinking quantity</div>';
-    qtHtml+=shrinking.slice(0,6).map(function(x){
-      return '<span class="insight-chip"><span class="chip-dot" style="background:var(--red)"></span>'+x[0]+' '+((x[1]-1)*100).toFixed(0)+'%</span>';
+
+  // ── RAW: Co-occurrence & Tight Pairs ──
+  var pairCount={}, codeCount={};
+  entries.forEach(function(e){
+    var u=Array.from(new Set(e.codes));
+    u.forEach(function(c){codeCount[c]=(codeCount[c]||0)+1;});
+    for(var i=0;i<u.length;i++) for(var j=i+1;j<u.length;j++){
+      var key=u[i]<u[j]?u[i]+'+'+u[j]:u[j]+'+'+u[i];
+      pairCount[key]=(pairCount[key]||0)+1;
+    }
+  });
+  var topPairs=Object.entries(pairCount).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
+  var tightPairs=topPairs.filter(function(x){
+    var pts=x[0].split('+'),a=pts[0],b=pts[1];
+    return (codeCount[a]>0&&x[1]/codeCount[a]>=0.80)&&(codeCount[b]>0&&x[1]/codeCount[b]>=0.80);
+  });
+  var pairsHtml='<p style="font-size:11px;color:var(--muted);margin-bottom:6px">Top pairs by co-appearance count. 🔗 = tight pair (≥80% both ways).</p>'
+    +topPairs.map(function(x){
+      var pts=x[0].split('+'),a=pts[0],b=pts[1];
+      var rAB=codeCount[a]>0?Math.round(x[1]/codeCount[a]*100):0;
+      var rBA=codeCount[b]>0?Math.round(x[1]/codeCount[b]*100):0;
+      var isTight=(rAB>=80&&rBA>=80);
+      return '<span class="insight-chip"><span class="chip-dot" style="background:'+(isTight?'var(--green)':'var(--accent2)')+'"></span>'
+        +(isTight?'🔗 ':'')+a+'+'+b+' — '+rAB+'%/'+rBA+'% ('+x[1]+' refills)</span>';
     }).join('');
+  document.getElementById('cooccur-content').innerHTML=pairsHtml||'<p style="font-size:12px;color:var(--muted)">Need more entries.</p>';
+
+  // ── RAW: Quantity Dominance ──
+  var qtydomSorted=Object.entries(qtydomMap).sort(function(a,b){return b[1]-a[1];}).slice(0,12);
+  var poolAvg=allCodes.length>0?entries.reduce(function(a,e){return a+e.codes.length;},0)/allCodes.length/n:1;
+  document.getElementById('qtydom-content').innerHTML=
+    '<p style="font-size:11px;color:var(--muted);margin-bottom:6px">Pool avg: <strong>'+poolAvg.toFixed(2)+'×</strong> per code per refill · Score >0.5 = above average · Most important codes to predict.</p>'
+    +qtydomSorted.map(function(x){
+      var c=x[0],sc=x[1];
+      var avg=(avgQ[c]||0).toFixed(2);
+      var pct=Math.round(sc*100);
+      var col=sc>=0.65?'var(--green)':sc>=0.5?'var(--accent)':sc>=0.35?'var(--gold)':'var(--muted)';
+      return '<div class="freq-row"><span class="freq-code">'+c+'</span>'
+        +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+pct+'%;background:'+col+'"></div></div>'
+        +'<span class="freq-count" style="color:'+col+'">'+avg+'×</span></div>';
+    }).join('');
+
+  // ── RAW: Quantity Streak ──
+  var qtystreakData=buildQtyStreak(entries);
+  var topQtyStreak=Object.entries(qtystreakData).filter(function(x){return x[1]>0;}).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
+  document.getElementById('qtystreak-content').innerHTML=topQtyStreak.length
+    ?'<p style="font-size:11px;color:var(--muted);margin-bottom:8px">Consecutive refills with 2+ appearances. Strong quantity streak = reliable multi-slot predictor.</p>'
+      +topQtyStreak.map(function(x){
+        var r=Math.round(x[1]*4);
+        var col=x[1]>=0.75?'var(--green)':x[1]>=0.5?'var(--gold)':'var(--muted)';
+        return '<div class="bt-row"><span class="bt-label">Code '+x[0]+'</span>'
+          +'<span class="bt-val" style="color:'+col+'">'+r+' consecutive 2+ slot refills</span></div>';
+      }).join('')
+    :'<p style="font-size:12px;color:var(--muted)">No quantity streaks yet.</p>';
+
+  // ── PROCESSED: Emergent Patterns ──
+  var emergentPatterns=buildEmergentPatterns(entries,preds);
+  renderEmergentCard(emergentPatterns,'emergent-content');
+
+  // ── PROCESSED: Signal Effectiveness ──
+  var w=getWeights(activeShop);
+  var resolvedCount=preds.filter(function(p){return p.status!=='pending';}).length;
+  var wEntries=SIGNAL_KEYS.map(function(k){return [k,w[k]];}).sort(function(a,b){return b[1]-a[1];});
+  var wMax=wEntries[0][1];
+  var sigLabels={freq:'Frequency',recency:'Recency',streak:'Streak',bias:'Pred. Accuracy',cooccur:'Co-occurrence',interval:'Interval',dow:'Day-of-week',cycle:'Cycle',overdue:'Overdue',qtydom:'Qty dominance',qtystreak:'Qty streak'};
+  var wHtml='<p style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5">'
+    +(resolvedCount<5?'⚙️ Using defaults — adapts after '+(5-resolvedCount)+' more predictions.':'⚙️ Adapted from '+resolvedCount+' resolved predictions.')
+    +'</p>'
+    +wEntries.map(function(x){
+      var key=x[0],val=x[1],def=DEFAULT_WEIGHTS[key]||0;
+      var pct=Math.round(val*100),defPct=Math.round(def*100),diff=pct-defPct;
+      var col=val>def?'var(--green)':val<def*0.8?'var(--red)':'var(--accent)';
+      var diffStr=diff>0?'<span style="color:var(--green)">+'+diff+'%</span>':diff<0?'<span style="color:var(--red)">'+diff+'%</span>':'<span style="color:var(--muted)">—</span>';
+      return '<div class="freq-row"><span class="freq-code" style="font-size:11px;min-width:90px;font-family:var(--sans)">'+(sigLabels[key]||key)+'</span>'
+        +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+(val/wMax*100).toFixed(0)+'%;background:'+col+'"></div></div>'
+        +'<span class="freq-count" style="color:'+col+';min-width:30px">'+pct+'%</span>'
+        +'<span style="font-size:10px;min-width:36px;text-align:right">'+diffStr+'</span></div>';
+    }).join('');
+  document.getElementById('signal-weights-content').innerHTML=wHtml;
+
+  // ── PROCESSED: Lessons Learned ──
+  var resolved=preds.filter(function(p){return p.status!=='pending'&&p.outcome;});
+  var lessonsHtml='';
+  if(resolved.length){
+    var last5=resolved.slice(-5).reverse();
+    var totalCodes=0,hitCodes=0;
+    resolved.forEach(function(p){
+      Object.values(p.outcome).forEach(function(v){totalCodes++;if(v==='hit')hitCodes++;});
+    });
+    var overallRate=totalCodes>0?Math.round(hitCodes/totalCodes*100):0;
+    var overallCol=overallRate>=60?'var(--green)':overallRate>=30?'var(--gold)':'var(--red)';
+    lessonsHtml='<div style="font-size:12px;margin-bottom:10px">Overall code hit rate: <strong style="color:'+overallCol+'">'+overallRate+'%</strong> across '+resolved.length+' predictions</div>';
+    lessonsHtml+=last5.map(function(p){
+      var hits=Object.values(p.outcome).filter(function(v){return v==='hit';}).length;
+      var total=p.predictedCodes.length;
+      var sc=hits===total?'var(--green)':hits>0?'var(--gold)':'var(--red)';
+      var slotPct=p.totalSlots>0?Math.round((p.slotsCovered||0)/p.totalSlots*100):0;
+      return '<div style="padding:6px 0;border-bottom:1px solid var(--border)">'
+        +'<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">'
+        +'<span style="font-family:var(--mono);color:var(--muted)">'+(p.actualDate||p.createdDate)+'</span>'
+        +'<span style="color:'+sc+'">'+hits+'/'+total+' codes · '+slotPct+'% slot coverage</span>'
+        +'</div>'
+        +'<div style="font-size:10px;color:var(--muted)">Predicted: '+p.predictedCodes.map(function(c){
+          var h=p.outcome[c]==='hit';
+          return '<span style="color:'+(h?'var(--green)':'var(--red)')+'">'+c+(h?' ✓':' ✗')+'</span>';
+        }).join(' · ')+'</div>'
+        +'</div>';
+    }).join('');
+  } else {
+    lessonsHtml='<p style="font-size:12px;color:var(--muted)">No resolved predictions yet. Run Rebuild in DATA tab after entering historical data.</p>';
   }
-  if(!growing.length&&!shrinking.length) qtHtml+='<p style="color:var(--muted);font-size:12px">No quantity trends detected yet. Need 4+ appearances per code.</p>';
-  document.getElementById('qtytrend-content').innerHTML=qtHtml;
-  var recent=entries.slice().sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,8);
+  document.getElementById('lessons-content').innerHTML=lessonsHtml;
+
+  // ── PROCESSED: Cycle Detection ──
+  var cycleData=buildCycleScore(entries);
+  var topCycle=Object.entries(cycleData).filter(function(x){return x[1]>0.1;}).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
+  document.getElementById('cycle-content').innerHTML=topCycle.length
+    ?'<p style="font-size:11px;color:var(--muted);margin-bottom:8px">Codes on N-refill cycles. Boosted when currently absent (overdue on cycle).</p>'
+      +topCycle.map(function(x){
+        var pct=Math.round(x[1]*100);
+        var col=pct>=40?'var(--green)':pct>=20?'var(--gold)':'var(--muted)';
+        return '<div class="freq-row"><span class="freq-code">'+x[0]+'</span>'
+          +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+pct+'%;background:'+col+'"></div></div>'
+          +'<span class="freq-count" style="color:'+col+'">'+pct+'%</span></div>';
+      }).join('')
+    :'<p style="font-size:12px;color:var(--muted)">No clear cycles yet. Need 6+ entries.</p>';
+
+  // ── PROCESSED: Overdue ──
+  var overdueData=buildOverdueScore(entries);
+  var topOverdue=Object.entries(overdueData).filter(function(x){return x[1]>0;}).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
+  document.getElementById('overdue-content').innerHTML=topOverdue.length
+    ?'<p style="font-size:11px;color:var(--muted);margin-bottom:8px">High-frequency codes absent longer than usual. Score rises the more overdue.</p>'
+      +topOverdue.map(function(x){
+        var pct=Math.round(x[1]*100);
+        var col=pct>=60?'var(--red)':pct>=30?'var(--gold)':'var(--muted)';
+        return '<div class="freq-row"><span class="freq-code">'+x[0]+'</span>'
+          +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+pct+'%;background:'+col+'"></div></div>'
+          +'<span class="freq-count" style="color:'+col+'">'+pct+'%</span></div>';
+      }).join('')
+    :'<p style="font-size:12px;color:var(--muted)">No overdue codes.</p>';
+
+  // Timeline
+  var recent=sorted.slice(-8).reverse();
   document.getElementById('timeline-content').innerHTML='<div class="timeline">'+recent.map(function(e){
     return '<div class="tl-item"><div class="tl-date">'+e.date+'</div><div class="tl-codes">'+codesDisplay(e.codes)+'</div></div>';
   }).join('')+'</div>';
 
-  // Cycle detection
-  var cycleData = buildCycleScore(entries);
-  var topCycle = Object.entries(cycleData).filter(function(x){return x[1]>0.1;}).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
-  document.getElementById('cycle-content').innerHTML = topCycle.length
-    ? '<p style="font-size:11px;color:var(--muted);margin-bottom:8px">Codes detected on N-refill cycles. Higher = stronger cycle pattern. Boosted when currently absent (due/overdue).</p>'
-      + topCycle.map(function(x){
-          var pct=Math.round(x[1]*100);
-          var col=pct>=40?'var(--green)':pct>=20?'var(--gold)':'var(--muted)';
-          return '<div class="freq-row"><span class="freq-code">'+x[0]+'</span>'
-            +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+pct+'%;background:'+col+'"></div></div>'
-            +'<span class="freq-count" style="color:'+col+'">'+pct+'%</span></div>';
-        }).join('')
-    : '<p style="font-size:12px;color:var(--muted)">No clear cycles detected yet. Need 6+ entries.</p>';
-
-  // Overdue signal
-  var overdueData = buildOverdueScore(entries);
-  var topOverdue = Object.entries(overdueData).filter(function(x){return x[1]>0;}).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
-  document.getElementById('overdue-content').innerHTML = topOverdue.length
-    ? '<p style="font-size:11px;color:var(--muted);margin-bottom:8px">High-frequency codes that have been absent longer than their usual interval. Score rises the more overdue they are.</p>'
-      + topOverdue.map(function(x){
-          var pct=Math.round(x[1]*100);
-          var col=pct>=60?'var(--red)':pct>=30?'var(--gold)':'var(--muted)';
-          return '<div class="freq-row"><span class="freq-code">'+x[0]+'</span>'
-            +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+pct+'%;background:'+col+'"></div></div>'
-            +'<span class="freq-count" style="color:'+col+'">'+pct+'%</span></div>';
-        }).join('')
-    : '<p style="font-size:12px;color:var(--muted)">No overdue codes. All high-frequency codes are appearing on schedule.</p>';
-
-  // Tight co-occurrence
-  var tightData = buildTightCooccurrence(entries);
-  // Rebuild pairs from pairCount for display
-  var pairCount2={}, codeCount2={};
-  entries.forEach(function(e){
-    var unique=Array.from(new Set(e.codes));
-    unique.forEach(function(c){codeCount2[c]=(codeCount2[c]||0)+1;});
-    for(var i=0;i<unique.length;i++) for(var j=i+1;j<unique.length;j++){
-      var a=unique[i],b=unique[j];
-      var key=a<b?a+'|'+b:b+'|'+a;
-      pairCount2[key]=(pairCount2[key]||0)+1;
-    }
-  });
-  var tightPairs=Object.entries(pairCount2).filter(function(x){
-    var pts=x[0].split('|'),a=pts[0],b=pts[1],n=x[1];
-    var rAB=codeCount2[a]>0?n/codeCount2[a]:0;
-    var rBA=codeCount2[b]>0?n/codeCount2[b]:0;
-    return rAB>=0.80&&rBA>=0.80;
-  }).sort(function(a,b){return b[1]-a[1];});
-  document.getElementById('tight-cooccur-content').innerHTML = tightPairs.length
-    ? '<p style="font-size:11px;color:var(--muted);margin-bottom:8px">Pairs appearing together ≥80% of the time. Predicting one strongly implies the other.</p>'
-      +tightPairs.slice(0,8).map(function(x){
-          var pts=x[0].split('|'),a=pts[0],b=pts[1];
-          var rAB=Math.round(codeCount2[a]>0?x[1]/codeCount2[a]*100:0);
-          var rBA=Math.round(codeCount2[b]>0?x[1]/codeCount2[b]*100:0);
-          return '<span class="insight-chip"><span class="chip-dot" style="background:var(--accent2)"></span>'
-            +a+' + '+b+' — '+rAB+'% / '+rBA+'%</span>';
-        }).join('')
-    : '<p style="font-size:12px;color:var(--muted)">No tight pairs detected yet (need ≥80% co-appearance rate both ways).</p>';
   renderContinuityCard();
 }
-
 function runBacktest(){
   if(!activeShop) return;
   db=loadDB();
@@ -2135,7 +3394,7 @@ function runBacktest(){
   var train=entries.slice(0,entries.length-holdN);
   var test=entries.slice(entries.length-holdN);
   var scores=buildCombinedScore(train,shopPreds(activeShop),activeShop).scores;
-  var top3=Object.entries(scores).sort(function(a,b){return b[1]-a[1];}).slice(0,3).map(function(x){return x[0];});
+  var top5=Object.entries(scores).sort(function(a,b){return b[1]-a[1];}).slice(0,5).map(function(x){return x[0];});
   var totalSlots=0, coveredSlots=0;
   var rows=test.map(function(e,i){
     // Slot coverage: how many of the actual 18 slots are covered by top-3 codes
@@ -2307,10 +3566,11 @@ function buildDriverAnalysis(entries, preds, top3, snapshots, weights){
     freq:'Frequency', recency:'Recency', streak:'Streak',
     bias:'Pred. accuracy', cooccur:'Co-occurrence',
     interval:'Interval regularity', dow:'Day-of-week',
-    cycle:'Cycle pattern', overdue:'Overdue'
+    cycle:'Cycle pattern', overdue:'Overdue',
+    qtydom:'Qty dominance', qtystreak:'Qty streak'
   };
-  var medals = ['🥇','🥈','🥉'];
-  var medalColors = ['var(--gold)','var(--accent)','var(--accent2)'];
+  var medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+  var medalColors = ['var(--gold)','var(--accent)','var(--accent2)','var(--green)','var(--muted)'];
 
   return top3.map(function(x, rank){
     var code = x[0], score = x[1];
@@ -2350,7 +3610,7 @@ function buildDriverAnalysis(entries, preds, top3, snapshots, weights){
     var rates = buildAppearanceRate(entries);
     var streaks = buildStreaks(entries);
     var biasData = buildBias(preds);
-    var mp = buildMissStreakPenalty(preds);
+    var mp = buildMissStreakPenalty(preds, null);
 
     // Check if any top signal is counter-predictive
     var hasCounterPredictive = topSignals.some(function(s){
@@ -2399,6 +3659,59 @@ function buildDriverAnalysis(entries, preds, top3, snapshots, weights){
   }).join('');
 }
 
+// ── EMERGENT CARD RENDERER ────────────────
+function renderEmergentCard(patterns, containerId){
+  var el=document.getElementById(containerId);
+  if(!el) return;
+  if(!patterns||!patterns.length){
+    el.innerHTML='<p style="font-size:12px;color:var(--muted)">Not enough prediction history to detect emergent patterns. Need 6+ entries and a few resolved predictions.</p>';
+    return;
+  }
+  var triggered=patterns.filter(function(p){return p.triggered;});
+  var dormant=patterns.filter(function(p){return !p.triggered;}).slice(0,5);
+  var html='';
+
+  if(triggered.length){
+    html+='<div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:6px">✅ TRIGGERED — conditions met in last refill</div>';
+    html+=triggered.map(function(p){
+      var promoteFlag=p.confidence>=0.70&&p.cases>=5;
+      var confPct=Math.round(p.confidence*100);
+      var col=confPct>=80?'var(--green)':confPct>=70?'var(--accent)':'var(--gold)';
+      return '<div style="background:var(--surface2);border:1px solid var(--green);border-radius:10px;padding:10px;margin-bottom:8px">'
+        +'<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:5px">'
+        +(promoteFlag?'<span style="font-size:14px">🚀</span>':'<span style="font-size:14px">✅</span>')
+        +'<div style="flex:1">'
+        +'<div style="font-size:12px;font-weight:700;color:var(--text);line-height:1.4">'+p.rule+'</div>'
+        +'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+p.evidence+' · confidence <span style="color:'+col+';font-weight:700">'+confPct+'%</span>'
+        +(promoteFlag?' · <span style="color:var(--green);font-weight:700">promotes '+p.impliedCodes.join(', ')+'</span>':'')+'</div>'
+        +'</div></div>'
+        +'<div style="font-size:11px;color:var(--accent);background:var(--surface);border-radius:6px;padding:5px 8px">'+p.detail+'</div>'
+        +'</div>';
+    }).join('');
+  }
+
+  if(dormant.length){
+    html+='<div style="font-size:11px;font-weight:700;color:var(--muted);margin:'+(triggered.length?'12':'0')+'px 0 6px">⚪ DORMANT — conditions not currently met</div>';
+    html+=dormant.map(function(p){
+      var confPct=Math.round(p.confidence*100);
+      var col=confPct>=75?'var(--accent)':'var(--muted)';
+      return '<div style="border:1px solid var(--border);border-radius:8px;padding:8px;margin-bottom:6px">'
+        +'<div style="font-size:12px;color:var(--muted);margin-bottom:3px">'+p.rule+'</div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted)">'
+        +'<span>'+p.evidence+'</span>'
+        +'<span style="color:'+col+'">'+confPct+'% confidence</span>'
+        +'</div>'
+        +'<div style="font-size:10px;color:var(--muted);margin-top:3px">'+p.detail+'</div>'
+        +'</div>';
+    }).join('');
+  }
+
+  if(!triggered.length&&!dormant.length){
+    html='<p style="font-size:12px;color:var(--muted)">No patterns detected yet at the minimum confidence threshold. Patterns will emerge after more prediction-outcome cycles.</p>';
+  }
+  el.innerHTML=html;
+}
+
 function renderDashboard(){
   if(!activeShop) return;
   db=loadDB();
@@ -2411,54 +3724,107 @@ function renderDashboard(){
   }
   document.getElementById('dashboard-empty').style.display='none';
   document.getElementById('dashboard-content').style.display='block';
-  var bcsResult=buildCombinedScore(entries,preds,activeShop);
-  var scores=bcsResult.scores;
-  var ranked=Object.entries(scores).sort(function(a,b){return b[1]-a[1];});
-  var top3=ranked.slice(0,3);
-  var maxS=ranked[0]?ranked[0][1]:1;
-  var freq=buildFreqMap(entries);
-  var rates=buildAppearanceRate(entries);
-  var streaks=buildStreaks(entries);
-  var bias=buildBias(preds);
-  var medals=['🥇','🥈','🥉'],rankCls=['rank1','rank2','rank3'];
+
+  var bcsResult = buildCombinedScore(entries, preds, activeShop);
+  var scores    = bcsResult.scores;
+  var ranked    = Object.entries(scores).sort(function(a,b){return b[1]-a[1];});
+  var top3raw   = ranked.slice(0,5);
+  var maxS      = ranked[0] ? ranked[0][1] : 1;
+
+  // Apply emergent patterns — may promote codes into top-3
+  var patterns  = buildEmergentPatterns(entries, preds);
+  var emergent  = applyEmergentToTop3(top3raw, patterns, scores);
+  var top3      = emergent.top3;
+  var promotions= emergent.promotions;
+
+  var freq    = buildFreqMap(entries);
+  var rates   = buildAppearanceRate(entries);
+  var streaks = buildStreaks(entries);
+  var bias    = buildBias(preds);
+  var medals  = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+  var rankCls = ['rank1','rank2','rank3','rank4','rank5'];
+
+  // Render top-3 cards — mark promoted codes
   document.getElementById('top3-grid').innerHTML=top3.map(function(x,i){
-    var code=x[0],score=x[1];
+    var code=x[0], score=x[1];
+    var promoted=x[2]===true; // emergent promotion flag
     var pct=(score/maxS*100).toFixed(0);
     var sub=[];
-    if(streaks[code]>=2)sub.push(streaks[code]+'-streak');
-    if(rates[code]>0.5)sub.push(Math.round(rates[code]*100)+'% freq');
-    if(bias[code]!==undefined)sub.push('bias '+Math.round(bias[code]*100)+'%');
-    return '<div class="top3-card '+rankCls[i]+'"><div class="top3-rank">'+medals[i]+' RANK '+(i+1)+'</div>'
-      +'<div class="top3-code">'+code+'</div><div class="top3-pct">'+pct+'% score</div>'
+    if(promoted){
+      sub.push('🔬 pattern-promoted');
+    } else {
+      if(streaks[code]>=2) sub.push(streaks[code]+'-streak');
+      if(rates[code]>0.5)  sub.push(Math.round(rates[code]*100)+'% freq');
+      if(bias[code]!==undefined) sub.push('bias '+Math.round(bias[code]*100)+'%');
+    }
+    var border = promoted ? ';border:2px solid var(--green)' : '';
+    return '<div class="top3-card '+rankCls[i]+'" style="position:relative'+border+'">'
+      +(promoted?'<div style="position:absolute;top:4px;right:4px;font-size:9px;background:var(--green);color:#000;padding:1px 5px;border-radius:8px;font-weight:700">PROMOTED</div>':'')
+      +'<div class="top3-rank">'+medals[i]+' RANK '+(i+1)+'</div>'
+      +'<div class="top3-code">'+code+'</div>'
+      +'<div class="top3-pct">'+pct+'% score</div>'
       +'<div class="top3-sub">'+(sub[0]||(freq[code]||0)+' hits')+'</div>'
-      +'<div class="conf-bar" style="width:'+pct+'%"></div></div>';
+      +'<div class="conf-bar" style="width:'+pct+'%"></div>'
+      +'</div>';
   }).join('');
+
+  // Summary reasoning line
   document.getElementById('top3-reasoning').innerHTML=top3.map(function(x){
-    var c=x[0],parts=[];
-    if(streaks[c]>=2)parts.push(streaks[c]+'-entry streak');
-    if(rates[c]>0.5)parts.push(Math.round(rates[c]*100)+'% of refills');
+    var c=x[0],parts=[],promoted=x[2]===true;
+    if(promoted){
+      var promo=promotions.find(function(p){return p.promoted===c;});
+      return '<b>'+c+'</b>: 🔬 <em>'+( promo?promo.reason:'emergent pattern')+'</em>';
+    }
+    if(streaks[c]>=2) parts.push(streaks[c]+'-entry streak');
+    if(rates[c]>0.5)  parts.push(Math.round(rates[c]*100)+'% of refills');
     parts.push((freq[c]||0)+' total hits');
-    if(bias[c]!==undefined)parts.push('pred hit rate '+Math.round(bias[c]*100)+'%');
+    if(bias[c]!==undefined) parts.push('pred hit rate '+Math.round(bias[c]*100)+'%');
     return '<b>'+c+'</b>: '+parts.join(' · ');
   }).join('<br>');
 
   // Driver analysis
-  var driverEl = document.getElementById('driver-analysis');
+  var driverEl=document.getElementById('driver-analysis');
   if(driverEl){
-    driverEl.innerHTML = buildDriverAnalysis(entries, preds, top3, bcsResult.snapshots, bcsResult.weights);
+    driverEl.innerHTML=buildDriverAnalysis(entries, preds, top3, bcsResult.snapshots, bcsResult.weights);
   }
-  // Show auto-save indicator
+
+  // Emergent patterns in Predict tab
+  var predictEmergentEl=document.getElementById('predict-emergent-content');
+  if(predictEmergentEl){
+    if(!patterns.length){
+      predictEmergentEl.innerHTML='<p style="font-size:12px;color:var(--muted)">Emergent patterns appear after several prediction-outcome cycles. Check back after a few more refills.</p>';
+    } else {
+      // Show only triggered + top dormant (max 3)
+      var triggered=patterns.filter(function(p){return p.triggered;});
+      var topDormant=patterns.filter(function(p){return !p.triggered;}).slice(0,3);
+      renderEmergentCard(triggered.concat(topDormant), 'predict-emergent-content');
+      if(promotions.length){
+        var promoNote='<div style="background:rgba(72,199,142,.1);border:1px solid var(--green);border-radius:8px;padding:8px;margin-bottom:8px;font-size:11px;color:var(--green)">'
+          +'🚀 <strong>'+promotions.length+' code'+(promotions.length>1?'s':'')+' promoted</strong> into top-3 by triggered pattern'+(promotions.length>1?'s':'')+':<br>'
+          +promotions.map(function(p){return '&nbsp;· '+p.promoted+' replaced '+p.displaced+' — '+p.reason;}).join('<br>')
+          +'</div>';
+        predictEmergentEl.innerHTML=promoNote+predictEmergentEl.innerHTML;
+      }
+    }
+  }
+
+  // Pending prediction indicator
   var hasPending=preds.some(function(p){return p.status==='pending'&&p.auto;});
   var indic=document.getElementById('pred-saved-indicator');
   if(indic) indic.style.display=hasPending?'block':'none';
+
+  // Full ranking
   document.getElementById('full-ranking').innerHTML=ranked.slice(0,10).map(function(x,i){
     var code=x[0],score=x[1];
     var pct=(score/maxS*100).toFixed(1);
+    var isPromoted=top3.some(function(t){return t[0]===code&&t[2]===true;});
     var color=i<3?'var(--gold)':i<6?'var(--accent)':'var(--muted)';
-    return '<div class="freq-row"><span class="freq-code" style="color:'+color+'">'+code+'</span>'
+    return '<div class="freq-row">'
+      +'<span class="freq-code" style="color:'+color+'">'+code+(isPromoted?' 🔬':'')+'</span>'
       +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+pct+'%;background:'+color+'"></div></div>'
       +'<span class="freq-count" style="color:'+color+'">'+pct+'%</span></div>';
   }).join('');
+
   document.getElementById('last-updated').textContent='Updated '+new Date().toLocaleTimeString();
   document.getElementById('ai-insight-content').innerHTML='<button class="btn btn-primary" onclick="generateAiInsight()">✨ Generate AI Insight</button>';
   renderNextExpectedBanner();
@@ -2516,7 +3882,7 @@ function renderTrack(){
         +'<div style="font-size:11px;margin-bottom:6px">'+interpText+'</div>'
         +'<div style="font-size:10px;color:var(--muted);margin-bottom:5px">'
         +'Trained on '+r.trainCount+' entries · '+r.holdoutCount+' held out · '
-        +'Top-5: <span style="font-family:var(--mono)">'+r.top5.join(' ')+'</span>'
+        +'Top-5: <span style="font-family:var(--mono)">'+(r.top5||r.top3||[]).join(' ')+'</span>'
         +'</div>'
         +holdoutRows
         +'<div style="font-size:10px;color:var(--muted);margin-top:6px">Run on '+abt.triggeredAt+'</div>'
@@ -2542,6 +3908,7 @@ function renderTrack(){
   renderAccuracySummary(resolved);
   renderRecentPerf(activeShop, 'recent-perf-content');
   renderBiasChart(preds);
+  renderEvidenceLedger(activeShop, 'evidence-ledger');
   var pendEl=document.getElementById('pending-list');
   pendEl.innerHTML=pending.length?pending.map(function(p){return predCardHTML(p,true);}).join('')
     :'<p style="color:var(--muted);font-size:12px;padding:6px 0">No pending predictions.</p>';
@@ -2833,9 +4200,11 @@ function renderGuide(){
     buildGuideDriverAnalysis(),
     buildGuideSignals(),
     buildGuideWeightAdaptation(),
+    buildGuideObsWindow(),
     buildGuideOutcome(),
     buildGuideBacktest(),
     buildGuideRecentPerf(),
+    buildGuideEvidenceLedger(),
     buildGuideConfidence(),
     buildGuideWorkflow(),
     buildGuideData()
@@ -2860,14 +4229,14 @@ function renderGuide(){
 // ── SECTION: OVERVIEW ──
 function buildGuideOverview(){
   var tabsHtml = [
-    ['📥 COLLECT',  'Enter refill codes with a date. Codes can repeat. Duplicates blocked per shop and across shops.'],
-    ['🗄 ARCHIVE',  'Full refill history per shop — dates, codes with counts, source. Export as JSON any time.'],
-    ['📊 ANALYZE',  '9 signal charts, co-occurrence pairs, interval regularity, quantity trend, continuity check, backtesting.'],
-    ['🎯 PREDICT',  'Top-3 prediction auto-saved after every refill. Driver Analysis explains why each code is ranked and how reliable the signal is. Full probability ranking + optional AI narrative.'],
-    ['📈 TRACK',    'Prediction vs actual history. Recent performance dots (last 5/10/all), model accuracy, bias, resolved history.'],
-    ['🏅 SCORE',    'All shops ranked A–N by confidence. Recent performance table across all shops with hit/miss dot trail.'],
-    ['📖 GUIDE',    'This page — live data from selected shop in every section.'],
-    ['💾 DATA',     'iCloud backup, import/restore, Rebuild Predictions (for batch historical entry), storage inspector.']
+    ['📥 COLLECT',  'Enter refill codes. After each save: result card shows hit/miss, Why it missed, What the model learned, and 🔮 What\'s Next with updated top-3 and watch list.'],
+    ['🗄 ARCHIVE',  'Full refill history per shop — dates, codes with counts, source. Export as JSON.'],
+    ['📊 ANALYZE',  'Two sections: Raw Analysis (observed facts) and Processed Analysis (signals, emergent patterns, lessons, backtest).'],
+    ['🎯 PREDICT',  'Top-3 with Driver Analysis and reliability badges. Emergent patterns card shows triggered rules that promoted codes. Full ranking + AI narrative.'],
+    ['📈 TRACK',    'Model accuracy, Recent Performance dots, Evidence Ledger (before/after hit rates proving every model decision), Bias chart, prediction history.'],
+    ['🏅 SCORE',    'All shops ranked. Recent performance table with dot trail and hit rate % per shop.'],
+    ['📖 GUIDE',    'This page — 13 sections, each with live data from the selected shop.'],
+    ['💾 DATA',     'iCloud backup, import/restore, Rebuild Predictions (essential after batch historical entry), storage inspector.']
   ].map(function(t){
     return '<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)">'
       +'<span style="font-size:11px;font-weight:700;font-family:var(--mono);color:var(--accent);min-width:80px">'+t[0]+'</span>'
@@ -2897,7 +4266,7 @@ function buildGuidePrediction(){
     var w       = result.weights;
     var ranked  = Object.entries(scores).sort(function(a,b){return b[1]-a[1];});
     var maxS    = ranked[0] ? ranked[0][1] : 1;
-    var top3    = ranked.slice(0,3);
+    var top3    = ranked.slice(0,5);
 
     liveHtml = '<div class="guide-live-box"><div class="guide-live-label">Live — Shop '+guideShop+' current top-3</div>';
     top3.forEach(function(x,i){
@@ -2951,10 +4320,10 @@ function buildGuideDriverAnalysis(){
   if(entries.length >= 3){
     var bcsResult = buildCombinedScore(entries, preds, guideShop);
     var scores    = bcsResult.scores;
-    var top3      = Object.entries(scores).sort(function(a,b){return b[1]-a[1];}).slice(0,3);
+    var top3      = Object.entries(scores).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
 
     if(top3.length){
-      var signalLabels = {freq:'Frequency',recency:'Recency',streak:'Streak',bias:'Pred. accuracy',cooccur:'Co-occurrence',interval:'Interval regularity',dow:'Day-of-week',cycle:'Cycle',overdue:'Overdue'};
+      var signalLabels = {freq:'Frequency',recency:'Recency',streak:'Streak',bias:'Pred. accuracy',cooccur:'Co-occurrence',interval:'Interval regularity',dow:'Day-of-week',cycle:'Cycle',overdue:'Overdue',qtydom:'Qty dominance',qtystreak:'Qty streak'};
       liveHtml = '<div class="guide-live-box"><div class="guide-live-label">Live — Shop '+guideShop+' driver analysis</div>';
       top3.forEach(function(x, i){
         var code = x[0];
@@ -3041,9 +4410,12 @@ function buildGuideSignals(){
     {key:'interval',icon:'⏱', name:'Interval Regularity',weight:'0.08→adapted',
      what:'How consistent the gaps between this code\'s appearances are. A code appearing every 7 days exactly scores 1.0. Random timing scores near 0.',
      when:'Needs 3+ appearances. Most useful for shop-scheduled weekly items.'},
-    {key:'dow',     icon:'📅', name:'Day-of-week',        weight:'0.05→adapted',
-     what:'Learned from data — does this code tend to appear on specific days? If code 12 shows up mostly on Mondays and today is Monday, it gets a boost.',
-     when:'Meaningful after 8+ entries spanning multiple weeks.'},
+    {key:'qtydom',    icon:'🎯', name:'Quantity Dominance', weight:'0.10→adapted',
+     what:'Average slots per refill divided by the pool average. A code averaging 2.5 appearances in an 18-slot refill dominates; one averaging 0.9 is just present. This signal separates codes that matter from codes that merely appear.',
+     when:'Active from first entry. Most powerful for shops like BD where all codes appear but in varying quantities.'},
+    {key:'qtystreak', icon:'📊', name:'Quantity Streak',    weight:'0.07→adapted',
+     what:'Consecutive refills where the code appeared 2+ times. A code on a 4-refill quantity streak (appeared multiple times in each of the last 4 refills) scores 1.0. Catches codes with persistent volume.',
+     when:'Active from 2+ entries. 4+ consecutive multi-slot refills = strong predictor.'},
     {key:'qtytrend',icon:'📈', name:'Quantity Trend',     weight:'×multiplier',
      what:'Compares average quantity per refill in the first half vs second half of history. Growing quantity = ×1.20 max boost. Shrinking = ×0.80 max reduction.',
      when:'Active after 4+ appearances per code. Applied as a multiplier, not an additive term.'},
@@ -3064,7 +4436,7 @@ function buildGuideSignals(){
           var arrow = diff>2?'▲':diff<-2?'▼':'=';
           return '<div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">'
             +'<span style="font-size:11px;min-width:80px;color:var(--muted)">'
-            +({freq:'Frequency',recency:'Recency',streak:'Streak',bias:'Accuracy',cooccur:'Co-occur',interval:'Interval',dow:'Day-of-wk',cycle:'Cycle',overdue:'Overdue'}[k]||k)
+            +({freq:'Frequency',recency:'Recency',streak:'Streak',bias:'Accuracy',cooccur:'Co-occur',interval:'Interval',dow:'Day-of-wk',cycle:'Cycle',overdue:'Overdue',qtydom:'Qty dominance',qtystreak:'Qty streak'}[k]||k)
             +'</span>'
             +'<div class="freq-bar-wrap" style="height:7px"><div class="freq-bar" style="width:'+(val/0.50*100).toFixed(0)+'%;background:'+col+'"></div></div>'
             +'<span style="font-size:11px;font-family:var(--mono);min-width:28px;color:'+col+'">'+pct+'%</span>'
@@ -3086,9 +4458,9 @@ function buildGuideSignals(){
       +'</div>';
   }).join('');
 
-  return guideSection('📊','All 9 Signals — What Each One Measures',
-    '<p class="guide-p">The model combines 7 additive signals (weights sum to 1.0) and 2 multiplicative modifiers. Each signal is normalised 0–1 before weighting. Weights are per-shop and adapt automatically from prediction outcomes.</p>'
-    +'<div class="guide-callout" style="margin-bottom:10px"><strong>Reliability badges in Driver Analysis</strong> are not fixed — they update automatically as the model accumulates resolved predictions for each code. A signal rated STRONG by data volume will drop to WEAK if it keeps being high when the code misses. See the Driver Analysis section for how this works.</div>'
+  return guideSection('📊','All 11 Signals — What Each One Measures',
+    '<p class="guide-p">The model combines 9 additive signals (weights sum to 1.0) and 2 multiplicative modifiers. Each signal is normalised 0–1 before weighting. Weights are per-shop and adapt via adaptive gradient accumulation.</p>'
+    +'<div class="guide-callout" style="margin-bottom:10px"><strong>Reliability badges in Driver Analysis</strong> update automatically from prediction outcomes. See the Observation Windows section for how significance thresholds decide when a badge changes.</div>'
     +sigHtml
     + liveHtml
   );
@@ -3157,8 +4529,9 @@ function buildGuideWeightAdaptation(){
 
     +'<p class="guide-p"><strong>Learning rate is 0.03 per update</strong> — small enough that one outlier refill doesn\'t destabilise the model, but large enough that a consistent pattern shifts the weights meaningfully after 10–15 predictions.</p>'
     +'<p class="guide-p"><strong>What happens over time:</strong> a shop where codes arrive on consistent days will see the day-of-week weight climb. A shop with very regular intervals will see interval regularity dominate. A shop where co-occurrence is the strongest pattern will weight that highest. Each shop develops its own fingerprint.</p>'
-    +'<div class="guide-callout"><strong>No data = default weights.</strong> Until at least one prediction is resolved, all shops use the same starting weights. After 10+ resolved predictions the adapted weights for that shop become meaningfully different from the defaults — this is when the model starts truly outperforming a generic baseline.</div>'
-    +'<div class="guide-callout" style="margin-top:8px"><strong>Driver Analysis goes deeper:</strong> weight adaptation adjusts signal importance globally across all codes. Driver Analysis assesses reliability per-signal per-code — a signal can be globally important (high weight) but unreliable for one specific code if it keeps being high when that code misses.</div>'
+    +'<div class="guide-callout"><strong>No data = default weights.</strong> Until at least one prediction is resolved, all shops use the same starting weights. After 10+ resolved predictions the adapted weights become meaningfully different from the defaults.</div>'
+    +'<div class="guide-callout" style="margin-top:8px"><strong>Adaptive gradient accumulation:</strong> weight updates no longer fire after every prediction. Gradients accumulate per signal until the z-score of the mean gradient crosses ±1.2 — confirming that the direction is statistically consistent, not just a one-refill fluctuation. Mixed signals are suppressed. See Observation Windows section for how the same logic applies to per-code penalties.</div>'
+    +'<div class="guide-callout" style="margin-top:8px"><strong>Driver Analysis goes deeper:</strong> weight adaptation adjusts signal importance globally. Driver Analysis assesses reliability per-signal per-code, outcome-aware.</div>'
     + liveHtml
   );
 }
@@ -3415,16 +4788,19 @@ function buildGuideWorkflow(){
     +'<strong>Prediction auto-saves</strong> — from the 3rd entry onwards, a fresh top-3 is stored after every save. Nothing to tap.'
     +'</div></div>'
     +'<div class="guide-step"><div class="guide-step-num">4</div><div class="guide-step-body">'
-    +'<strong>Next refill arrives → enter it</strong> — a result card appears immediately in Collect showing hit/partial/miss per code. If wrong, the auto-backtest runs inline. A new prediction is saved for the next refill automatically.'
+    +'<strong>Next refill arrives → enter it</strong> — a result card appears in Collect immediately showing hit/miss per code, slot coverage %, why it missed (dominant signal + consecutive miss count), what the model learned (signals that worked/failed), observation window state changes, and adaptive weight updates with z-scores.'
     +'</div></div>'
     +'<div class="guide-step"><div class="guide-step-num">5</div><div class="guide-step-body">'
-    +'<strong>Check performance</strong> — Track tab shows the dot trail and code hit rate for this shop. Score tab shows all shops side by side. Toggle between last 5, 10, or all predictions.'
+    +'<strong>🔮 What\'s Next card appears</strong> — below the result card, immediately after every save. Shows the updated top-3 with reasons (streak, quantity dominance, overdue, emergent pattern), a Watch List of codes outside top-3 worth monitoring, and the Model Status (HIGH/MODERATE/LOW confidence with code hit rate % and slot coverage %).'
     +'</div></div>'
     +'<div class="guide-step"><div class="guide-step-num">6</div><div class="guide-step-body">'
-    +'<strong>Model updates automatically</strong> — weights shift, bias scores update, miss-streak penalties adjust. The next prediction already uses the updated model.'
+    +'<strong>Model updates automatically</strong> — observation windows track per-code miss patterns. Weight gradients accumulate until statistically significant (z ≥ 1.2). The next prediction already uses the updated model.'
     +'</div></div>'
     +'<div class="guide-step"><div class="guide-step-num">7</div><div class="guide-step-body">'
-    +'<strong>Back up</strong> — DATA tab → Save to iCloud after each session. One tap, saves as insight-YYYY-MM-DD.json. Restore any time with Import.'
+    +'<strong>Check Evidence Ledger in Track</strong> — every model decision (penalty, weight change, emergent pattern promotion) shows before/after hit rates with a verdict: PROVEN, MONITOR, or DISPROVEN. This is how you verify the model is actually improving.'
+    +'</div></div>'
+    +'<div class="guide-step"><div class="guide-step-num">8</div><div class="guide-step-body">'
+    +'<strong>Back up</strong> — DATA tab → Save to iCloud after each session.'
     +'</div></div>'
     +'</div>'
     +'<p class="guide-p"><strong>Reliability milestones:</strong></p>'
@@ -3486,6 +4862,140 @@ function buildGuideData(){
   );
 }
 
+// ── SECTION: OBSERVATION WINDOWS ──
+function buildGuideObsWindow(){
+  db=loadDB();
+  var shop    = guideShop && db.shops[guideShop];
+  var obs     = shop ? (shop.obsWindow||{}) : {};
+  var preds   = shop ? (shop.predictions||[]) : [];
+  var baseline= guideShop ? shopBaselineHitRate(guideShop) : 0.5;
+
+  var liveHtml='';
+  var activeObs=Object.keys(obs).filter(function(c){return obs[c].state!=='idle';});
+  if(activeObs.length){
+    liveHtml='<div class="guide-live-box"><div class="guide-live-label">Live observation windows — Shop '+guideShop+'</div>';
+    activeObs.forEach(function(code){
+      var cobs=obs[code];
+      var stCol=cobs.state==='confirmed'?'var(--red)':cobs.state==='watching'?'var(--gold)':'var(--accent)';
+      liveHtml+='<div style="padding:5px 0;border-bottom:1px solid var(--border)">'
+        +'<div style="display:flex;align-items:center;gap:8px">'
+        +'<span style="font-family:var(--mono);font-weight:800;color:'+stCol+'">'+code+'</span>'
+        +'<span style="font-size:11px;color:'+stCol+';font-weight:700">'+cobs.state.toUpperCase()+'</span>'
+        +'<span style="font-size:10px;color:var(--muted)">misses:'+cobs.consecMisses+' hits:'+cobs.consecHits+'</span>'
+        +'</div>'
+        +'<div style="font-size:10px;color:var(--muted);margin-top:2px">'
+        +'Penalty: '+Math.round((1-(cobs.penaltyApplied||1))*100)+'% · '
+        +'Baseline: '+Math.round(baseline*100)+'%'
+        +(cobs.consecMisses>=OBS_MIN_N?' · z≈'+zScore(0,baseline,cobs.windowN||cobs.consecMisses).toFixed(2):'')
+        +'</div>'
+        +'</div>';
+    });
+    liveHtml+='</div>';
+  } else if(guideShop) {
+    liveHtml='<div class="guide-callout">All codes idle — no observation windows currently active for Shop '+guideShop+'.</div>';
+  }
+
+  return guideSection('🔭','Observation Windows — Adaptive Learning from Misses',
+    '<p class="guide-p">When a predicted code misses, the model doesn\'t immediately penalise it. Instead it opens an <strong>observation window</strong> and accumulates evidence until the pattern is statistically significant — preventing single-refill noise from destabilising the model.</p>'
+
+    +'<div class="guide-example"><div class="ex-label">State machine per code</div>'
+    +'<div style="font-size:12px;color:var(--muted);line-height:2">'
+    +'<strong style="color:var(--text)">IDLE</strong> → normal scoring, no penalty<br>'
+    +'<strong style="color:var(--gold)">WATCHING</strong> → 1st miss detected, soft penalty (−15%), z-score accumulating<br>'
+    +'<strong style="color:var(--red)">CONFIRMED</strong> → z ≤ −1.5 reached, hard penalty (−40%), signal flagged<br>'
+    +'<strong style="color:var(--accent)">RECOVERING</strong> → hit after CONFIRMED, penalty halved, watching for recovery<br>'
+    +'<strong style="color:var(--green)">IDLE (reset)</strong> → '+OBS_RECOVER_HITS+' consecutive hits, fully restored<br>'
+    +'<strong style="color:var(--muted)">AMBIGUOUS</strong> → after '+OBS_MAX_N+' predictions no significance reached — pattern unclear, window reset'
+    +'</div></div>'
+
+    +'<p class="guide-p"><strong>Why adaptive thresholds?</strong> A fixed "3 misses = confirmed" rule is wrong for shops with different baseline hit rates. For a shop where the model gets 80% of codes right, 3 consecutive misses is extremely unlikely by chance — it confirms very quickly. For a shop at 40% hit rate, 3 misses might just be normal variance and needs more evidence.</p>'
+
+    +'<div class="guide-example"><div class="ex-label">The z-score formula</div>'
+    +'<div style="font-size:12px;color:var(--muted);line-height:1.8">'
+    +'z = (observed_hit_rate − baseline_hit_rate) ÷ √(baseline × (1−baseline) ÷ n)<br><br>'
+    +'z ≤ −'+OBS_Z_THRESHOLD+' → significantly below baseline → CONFIRMED<br>'
+    +'z ≥ +'+OBS_Z_THRESHOLD+' → significantly above baseline → positive signal<br>'
+    +'|z| &lt; '+OBS_Z_THRESHOLD+' → within normal variance → keep watching<br><br>'
+    +'Minimum '+OBS_MIN_N+' observations · Maximum '+OBS_MAX_N+' before AMBIGUOUS'
+    +'</div></div>'
+
+    +'<div class="guide-callout"><strong>Weight gradients use the same logic:</strong> per-signal weight changes accumulate until the mean gradient\'s z-score crosses ±'+GRAD_Z_THRESHOLD+'. A signal that drove hits in 4 out of 5 predictions gets its weight raised. A signal with mixed evidence (some up, some down) is left unchanged until the picture clears.</div>'
+    + liveHtml
+  );
+}
+
+// ── SECTION: EVIDENCE LEDGER ──
+function buildGuideEvidenceLedger(){
+  db=loadDB();
+  var shop    = guideShop && db.shops[guideShop];
+  var preds   = shop ? (shop.predictions||[]) : [];
+  var resolved= preds.filter(function(p){return p.status!=='pending';});
+  var liveHtml='';
+
+  if(resolved.length>=4 && guideShop){
+    var ledger=buildEvidenceLedger(guideShop);
+    if(ledger.length){
+      var verdictLabels={proven:'✅ PROVEN',improving:'📈 IMPROVING',justified:'✅ JUSTIFIED',
+        neutral:'➡️ NEUTRAL',monitor:'👁 MONITOR',inconclusive:'❓ INCONCLUSIVE',
+        declining:'📉 DECLINING',disproven:'❌ DISPROVEN',ambiguous:'❓ AMBIGUOUS',pending:'⏳ PENDING'};
+      liveHtml='<div class="guide-live-box"><div class="guide-live-label">Live evidence ledger — Shop '+guideShop+' ('+ledger.length+' entries)</div>';
+      ledger.slice(0,4).forEach(function(e){
+        var diff=e.after.rate-e.before.rate;
+        var diffStr=(diff>0?'+':'')+diff+'%';
+        var diffCol=diff>0?'var(--green)':diff<0?'var(--red)':'var(--muted)';
+        liveHtml+='<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">'
+          +'<span style="font-size:14px">'+e.icon+'</span>'
+          +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:11px;font-weight:700;color:var(--text)">'+e.title+'</div>'
+          +'<div style="font-size:10px;color:var(--muted)">'+e.before.rate+'% → '+e.after.rate+'% <span style="color:'+diffCol+'">'+diffStr+'</span></div>'
+          +'</div>'
+          +'<span style="font-size:10px;font-weight:700;color:'+e.verdictCol+'">'+( verdictLabels[e.verdict]||e.verdict)+'</span>'
+          +'</div>';
+      });
+      liveHtml+='</div>';
+    } else {
+      liveHtml='<div class="guide-callout">No significant model decisions recorded yet for Shop '+guideShop+'. Decisions accumulate as predictions resolve.</div>';
+    }
+  } else {
+    liveHtml='<div class="guide-callout">Need 4+ resolved predictions to build the evidence ledger. Run DATA → 🔧 Rebuild after entering historical data.</div>';
+  }
+
+  return guideSection('📋','Evidence Ledger — Proving Decisions by Hit Performance',
+    '<p class="guide-p">Every significant model decision — observation window state changes, weight updates, emergent pattern promotions — is tracked in the Evidence Ledger with before/after hit rates. This answers: <em>did the decision actually improve predictions?</em></p>'
+
+    +'<p class="guide-p"><strong>Three types of decisions tracked:</strong></p>'
+    +'<div style="margin:8px 0">'
+    +'<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">'
+    +'<strong style="color:var(--text)">👁 Observation Window</strong> '
+    +'<span style="color:var(--muted)">— For codes that entered WATCHING or CONFIRMED state, compares hit rate before vs after the penalty. Did penalising the code improve prediction accuracy?</span>'
+    +'</div>'
+    +'<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">'
+    +'<strong style="color:var(--text)">⚖️ Signal Weight</strong> '
+    +'<span style="color:var(--muted)">— For each signal, compares hit rate in early predictions vs recent ones. Is the signal becoming more or less reliable over time?</span>'
+    +'</div>'
+    +'<div style="padding:6px 0;font-size:12px">'
+    +'<strong style="color:var(--text)">🔬 Emergent Pattern</strong> '
+    +'<span style="color:var(--muted)">— For patterns that triggered and promoted codes, compares the pattern\'s stated confidence vs the actual hit rate of promoted codes.</span>'
+    +'</div>'
+    +'</div>'
+
+    +'<div class="guide-example"><div class="ex-label">Verdict meanings</div>'
+    +'<div style="font-size:11px;color:var(--muted);line-height:2">'
+    +'<span style="color:var(--green)">✅ PROVEN</span> — hit rate improved significantly after the decision<br>'
+    +'<span style="color:var(--accent)">📈 IMPROVING</span> — positive trend, not yet conclusive<br>'
+    +'<span style="color:var(--green)">✅ JUSTIFIED</span> — penalty correctly identified an over-predicted code<br>'
+    +'<span style="color:var(--gold)">➡️ NEUTRAL</span> — no significant change either way<br>'
+    +'<span style="color:var(--gold)">👁 MONITOR</span> — borderline, needs more data<br>'
+    +'<span style="color:var(--red)">📉 DECLINING</span> — signal accuracy declining despite weight increase<br>'
+    +'<span style="color:var(--red)">❌ DISPROVEN</span> — decision made things worse, model will self-correct<br>'
+    +'<span style="color:var(--muted)">⏳ PENDING</span> — not enough post-decision predictions yet'
+    +'</div></div>'
+
+    +'<div class="guide-callout">The Evidence Ledger is self-updating. Every time you visit the Track tab it rebuilds from the current prediction history. A DISPROVEN verdict means the model made a wrong call — but the adaptive weight system will correct it automatically over the next few predictions.</div>'
+    + liveHtml
+  );
+}
+
 function guideSection(icon, title, bodyHtml){
   var id = 'gs-'+Math.random().toString(36).slice(2,7);
   return '<div class="guide-section">'
@@ -3523,6 +5033,243 @@ function shopRecentPerf(letter, n){
     misses: misses,
     codeHitRate: totalCodes>0 ? Math.round(hitCodes/totalCodes*100) : null
   };
+}
+
+// ── EVIDENCE LEDGER ───────────────────────
+// Every model decision (observation window state change, weight update,
+// emergent pattern promotion) is measured against actual hit performance.
+// Before/after hit rates prove or disprove each decision.
+
+function buildEvidenceLedger(letter){
+  db=loadDB();
+  var entries  = shopEntries(letter);
+  var preds    = shopPreds(letter);
+  var obs      = shopObs(letter);
+  var resolved = preds.filter(function(p){return p.status!=='pending'&&p.outcome;});
+  var ledger   = [];
+  if(resolved.length<4) return ledger;
+
+  var baseline = shopBaselineHitRate(letter);
+  var sigLabels={freq:'Frequency',recency:'Recency',streak:'Streak',
+    bias:'Pred. accuracy',cooccur:'Co-occurrence',interval:'Interval',
+    dow:'Day-of-week',cycle:'Cycle',overdue:'Overdue',
+    qtydom:'Qty dominance',qtystreak:'Qty streak'};
+
+  // ── Type 1: Observation window decisions ──
+  Object.keys(obs).forEach(function(code){
+    var cobs=obs[code];
+    // Only report codes that have been through a state change
+    if(cobs.state==='idle'&&!cobs.confirmedAt&&!cobs.ambiguous) return;
+
+    var codePreds=resolved.filter(function(p){return p.predictedCodes.indexOf(code)>-1;});
+    if(codePreds.length<3) return;
+
+    var confirmedDate=cobs.confirmedAt||null;
+    var splitN=confirmedDate
+      ?codePreds.findIndex(function(p){return (p.actualDate||p.createdDate)>=confirmedDate;})
+      :Math.floor(codePreds.length/2);
+    if(splitN<=0||splitN>=codePreds.length) splitN=Math.floor(codePreds.length/2);
+
+    var beforePreds=codePreds.slice(0,splitN);
+    var afterPreds =codePreds.slice(splitN);
+    if(!beforePreds.length||!afterPreds.length) return;
+
+    var beforeHits=beforePreds.filter(function(p){return p.outcome[code]==='hit';}).length;
+    var afterHits =afterPreds.filter(function(p){return p.outcome[code]==='hit';}).length;
+    var beforeRate=Math.round(beforeHits/beforePreds.length*100);
+    var afterRate =Math.round(afterHits/afterPreds.length*100);
+
+    // z-score for after period vs baseline
+    var zAfter=zScore(afterHits/afterPreds.length,baseline,afterPreds.length);
+
+    var verdict,verdictCol,detail;
+    if(afterPreds.length<2){
+      verdict='pending'; verdictCol='var(--muted)';
+      detail='Not enough post-decision predictions yet ('+afterPreds.length+' of '+OBS_MIN_N+' needed).';
+    } else if(cobs.state==='idle'&&cobs.confirmedAt){
+      // Was confirmed, now recovered
+      if(afterRate>beforeRate+10){
+        verdict='proven'; verdictCol='var(--green)';
+        detail='Decision was correct. Hit rate improved from '+beforeRate+'% to '+afterRate+'% after penalty (z='+zAfter.toFixed(2)+').';
+      } else if(Math.abs(afterRate-beforeRate)<=10){
+        verdict='neutral'; verdictCol='var(--gold)';
+        detail='Marginal difference ('+beforeRate+'% → '+afterRate+'%). Pattern may have been transitional.';
+      } else {
+        verdict='inconclusive'; verdictCol='var(--gold)';
+        detail='Hit rate changed but not conclusively ('+beforeRate+'% → '+afterRate+'%).';
+      }
+    } else if(cobs.state==='confirmed'){
+      // Still penalised — is the penalty justified?
+      if(afterRate<=Math.round(baseline*100)-15){
+        verdict='justified'; verdictCol='var(--green)';
+        detail='Penalty justified. Hit rate ('+afterRate+'%) well below baseline ('+Math.round(baseline*100)+'%) — code genuinely over-predicted.';
+      } else {
+        verdict='monitor'; verdictCol='var(--gold)';
+        detail='Watching. Hit rate ('+afterRate+'%) not far below baseline ('+Math.round(baseline*100)+'%). May recover without full penalty.';
+      }
+    } else if(cobs.ambiguous){
+      verdict='ambiguous'; verdictCol='var(--muted)';
+      detail='Window expired ('+OBS_MAX_N+' predictions) without significance. Pattern unclear for code '+code+'.';
+    } else {
+      verdict='pending'; verdictCol='var(--muted)';
+      detail='State: '+cobs.state+'. Monitoring.';
+    }
+
+    ledger.push({
+      type:'obs_window', icon:'👁',
+      title:'Code '+code+' — Observation Window',
+      subtitle:cobs.confirmedSignal?'Signal: '+sigLabels[cobs.confirmedSignal]:'State: '+cobs.state,
+      before:{rate:beforeRate,n:beforePreds.length,label:'Before decision'},
+      after: {rate:afterRate, n:afterPreds.length, label:'After decision'},
+      verdict:verdict,verdictCol:verdictCol,detail:detail
+    });
+  });
+
+  // ── Type 2: Signal weight changes (early vs late) ──
+  if(resolved.length>=8){
+    var mid=Math.floor(resolved.length/2);
+    var earlyR=resolved.slice(0,mid), lateR=resolved.slice(mid);
+
+    SIGNAL_KEYS.forEach(function(k){
+      function sigHitRate(predsSet){
+        var vals=[],highHits=0,highTotal=0;
+        predsSet.forEach(function(p){
+          p.predictedCodes.forEach(function(code){
+            if(p.signalSnapshot&&p.signalSnapshot[code]) vals.push(p.signalSnapshot[code][k]||0);
+          });
+        });
+        if(!vals.length) return null;
+        vals.sort(function(a,b){return a-b;});
+        var median=vals[Math.floor(vals.length/2)];
+        predsSet.forEach(function(p){
+          p.predictedCodes.forEach(function(code){
+            if(p.signalSnapshot&&p.signalSnapshot[code]){
+              var v=p.signalSnapshot[code][k]||0;
+              if(v>=median){highTotal++;if(p.outcome[code]==='hit')highHits++;}
+            }
+          });
+        });
+        return highTotal>0?Math.round(highHits/highTotal*100):null;
+      }
+
+      var er=sigHitRate(earlyR), lr=sigHitRate(lateR);
+      if(er===null||lr===null||Math.abs(lr-er)<8) return;
+
+      var diff=lr-er;
+      var currentW=getWeights(letter);
+      var wPct=Math.round((currentW[k]||DEFAULT_WEIGHTS[k])*100);
+      var verdict=diff>=15?'proven':diff>=5?'improving':diff>=-10?'neutral':'declining';
+      var verdictCol=verdict==='proven'?'var(--green)':verdict==='improving'?'var(--accent)':verdict==='neutral'?'var(--gold)':'var(--red)';
+
+      ledger.push({
+        type:'weight', icon:'⚖️',
+        title:sigLabels[k]+' — Signal Performance Over Time',
+        subtitle:'Current weight: '+wPct+'%',
+        before:{rate:er,n:earlyR.length,label:'Early predictions'},
+        after: {rate:lr,n:lateR.length, label:'Recent predictions'},
+        verdict:verdict,verdictCol:verdictCol,
+        detail:diff>0
+          ?'Signal accuracy improved +'+diff+'% — weight adaptation is beneficial.'
+          :'Signal accuracy declined '+diff+'% — may be over-weighted for this shop.'
+      });
+    });
+  }
+
+  // ── Type 3: Emergent pattern promotions ──
+  var patterns=buildEmergentPatterns(entries,preds);
+  patterns.filter(function(p){return p.confidence>=0.60;}).forEach(function(pattern){
+    pattern.impliedCodes.forEach(function(code){
+      var codePreds=resolved.filter(function(p){return p.predictedCodes.indexOf(code)>-1;});
+      if(codePreds.length<2) return;
+      var hits=codePreds.filter(function(p){return p.outcome[code]==='hit';}).length;
+      var hitRate=Math.round(hits/codePreds.length*100);
+      var confPct=Math.round(pattern.confidence*100);
+      var zP=zScore(hits/codePreds.length,baseline,codePreds.length);
+
+      var verdict=codePreds.length<3?'pending'
+        :hitRate>=confPct-10?'proven'
+        :hitRate>=confPct-25?'monitor'
+        :'disproven';
+      var verdictCol={proven:'var(--green)',monitor:'var(--gold)',
+        disproven:'var(--red)',pending:'var(--muted)'}[verdict];
+
+      ledger.push({
+        type:'pattern', icon:'🔬',
+        title:'Emergent Pattern → Code '+code,
+        subtitle:pattern.rule.length>50?pattern.rule.slice(0,50)+'…':pattern.rule,
+        before:{rate:confPct,n:pattern.cases,label:'Pattern confidence'},
+        after: {rate:hitRate,n:codePreds.length,label:'Actual hit rate (z='+zP.toFixed(2)+')'},
+        verdict:verdict,verdictCol:verdictCol,
+        detail:verdict==='proven'
+          ?'Hit rate ('+hitRate+'%) matches confidence ('+confPct+'%). Pattern is reliable.'
+          :verdict==='disproven'
+          ?'Hit rate ('+hitRate+'%) well below confidence ('+confPct+'%). Pattern may be noisy or specific to older refills.'
+          :verdict==='monitor'
+          ?'Hit rate ('+hitRate+'%) below confidence ('+confPct+'%). More predictions needed to confirm.'
+          :'Pending — need '+OBS_MIN_N+'+ resolved predictions for this code.'
+      });
+    });
+  });
+
+  // Sort: disproven/declining first, then monitor, neutral, proven, pending
+  var order={disproven:0,declining:1,monitor:2,ambiguous:3,neutral:4,inconclusive:5,improving:6,justified:7,proven:8,pending:9};
+  ledger.sort(function(a,b){return (order[a.verdict]||5)-(order[b.verdict]||5);});
+  return ledger;
+}
+
+function renderEvidenceLedger(letter, containerId){
+  var el=document.getElementById(containerId);
+  if(!el) return;
+  db=loadDB();
+  var resolved=shopPreds(letter).filter(function(p){return p.status!=='pending';});
+  if(resolved.length<4){
+    el.innerHTML='<p style="font-size:12px;color:var(--muted)">Activates after 4+ resolved predictions. Run DATA → 🔧 Rebuild after entering historical data.</p>';
+    return;
+  }
+
+  var ledger=buildEvidenceLedger(letter);
+  if(!ledger.length){
+    el.innerHTML='<p style="font-size:12px;color:var(--muted)">No significant model decisions recorded yet. Evidence accumulates as predictions resolve.</p>';
+    return;
+  }
+
+  var verdictLabels={proven:'✅ PROVEN',improving:'📈 IMPROVING',justified:'✅ JUSTIFIED',
+    neutral:'➡️ NEUTRAL',monitor:'👁 MONITOR',inconclusive:'❓ INCONCLUSIVE',
+    declining:'📉 DECLINING',disproven:'❌ DISPROVEN',ambiguous:'❓ AMBIGUOUS',pending:'⏳ PENDING'};
+
+  el.innerHTML=ledger.map(function(e){
+    var vLabel=verdictLabels[e.verdict]||e.verdict.toUpperCase();
+    var diff=e.after.rate-e.before.rate;
+    var diffStr=diff>0?'<span style="color:var(--green)">+'+diff+'%</span>':diff<0?'<span style="color:var(--red)">'+diff+'%</span>':'<span style="color:var(--muted)">—</span>';
+    return '<div style="padding:10px 0;border-bottom:1px solid var(--border)">'
+      +'<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px">'
+      +'<span style="font-size:16px;flex-shrink:0">'+e.icon+'</span>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div style="font-size:12px;font-weight:700;color:var(--text)">'+e.title+'</div>'
+      +'<div style="font-size:10px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.subtitle+'</div>'
+      +'</div>'
+      +'<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;white-space:nowrap;'
+      +'background:rgba(0,0,0,.2);color:'+e.verdictCol+';flex-shrink:0">'+vLabel+'</span>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr 40px;gap:8px;margin-bottom:5px;align-items:center">'
+      +['before','after'].map(function(side){
+        var d=e[side];
+        var barCol=d.rate>=60?'var(--green)':d.rate>=30?'var(--gold)':'var(--red)';
+        return '<div>'
+          +'<div style="font-size:10px;color:var(--muted);margin-bottom:3px">'+d.label+' (n='+d.n+')</div>'
+          +'<div style="display:flex;align-items:center;gap:5px">'
+          +'<div style="flex:1;height:5px;background:var(--surface);border-radius:3px;overflow:hidden">'
+          +'<div style="width:'+d.rate+'%;height:100%;background:'+barCol+'"></div>'
+          +'</div>'
+          +'<span style="font-size:11px;font-family:var(--mono);font-weight:700;color:'+barCol+';min-width:30px">'+d.rate+'%</span>'
+          +'</div>'
+          +'</div>';
+      }).join('')
+      +'<div style="text-align:center;font-size:13px;font-weight:700">'+diffStr+'</div>'
+      +'</div>'
+      +'<div style="font-size:11px;color:var(--muted);line-height:1.5">'+e.detail+'</div>'
+      +'</div>';
+  }).join('');
 }
 
 function renderRecentPerf(letter, containerId){
@@ -4341,6 +6088,9 @@ function rebuildPredictions(){
 
     // Clear all auto predictions, keep manually-locked ones
     db.shops[letter].predictions=(s.predictions||[]).filter(function(p){return !p.auto;});
+    // Reset observation windows and gradient accumulator for clean replay
+    db.shops[letter].obsWindow={};
+    db.shops[letter].gradAccum={};
     // Save the cleared state first so loadDB() sees it
     saveDB(db);
 
@@ -4354,7 +6104,7 @@ function rebuildPredictions(){
 
       var currentPreds=shopPreds(letter);
       var result=buildCombinedScore(trainEntries,currentPreds,letter);
-      var top3=Object.entries(result.scores).sort(function(a,b){return b[1]-a[1];}).slice(0,3);
+      var top5=Object.entries(result.scores).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
       if(!top3.length) continue;
 
       var predDate=trainEntries[trainEntries.length-1].date;
@@ -4370,8 +6120,8 @@ function rebuildPredictions(){
         id:i*100000+Date.now()%100000,
         createdDate:predDate,
         targetDate:null,
-        predictedCodes:top3.map(function(x){return x[0];}),
-        scores:top3.reduce(function(o,x){o[x[0]]=x[1];return o;},{}),
+        predictedCodes:top5.map(function(x){return x[0];}),
+        scores:top5.reduce(function(o,x){o[x[0]]=x[1];return o;},{}),
         signalSnapshot:(function(){
           var snap={};
           top3.forEach(function(x){snap[x[0]]=result.snapshots[x[0]]||{};});
@@ -4392,8 +6142,8 @@ function rebuildPredictions(){
       saveDB(db);
       resolvedCount++;
 
-      // Now update weights — loadDB() inside will see the saved prediction
-      updateWeights(letter, pred);
+      // Now update weights via observation window — loadDB() inside will see the saved prediction
+      processObservationWindow(letter, pred);
     }
 
     // Reload and add fresh pending prediction
@@ -4402,15 +6152,15 @@ function rebuildPredictions(){
     if(allEntries.length>=3){
       var allPreds=shopPreds(letter);
       var finalResult=buildCombinedScore(allEntries,allPreds,letter);
-      var finalTop3=Object.entries(finalResult.scores).sort(function(a,b){return b[1]-a[1];}).slice(0,3);
+      var finalTop5=Object.entries(finalResult.scores).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
       if(finalTop3.length){
         db.shops[letter].predictions.push({
           id:Date.now()+shops.indexOf(letter),
           createdDate:allEntries[allEntries.length-1].date,
           targetDate:null,
-          predictedCodes:finalTop3.map(function(x){return x[0];}),
-          scores:finalTop3.reduce(function(o,x){o[x[0]]=x[1];return o;},{}),
-          signalSnapshot:(function(){var snap={};finalTop3.forEach(function(x){snap[x[0]]=finalResult.snapshots[x[0]]||{};});return snap;})(),
+          predictedCodes:finalTop5.map(function(x){return x[0];}),
+          scores:finalTop5.reduce(function(o,x){o[x[0]]=x[1];return o;},{}),
+          signalSnapshot:(function(){var snap={};finalTop5.forEach(function(x){snap[x[0]]=finalResult.snapshots[x[0]]||{};});return snap;})(),
           weightsAtTime:Object.assign({},finalResult.weights),
           status:'pending',outcome:null,actualDate:null,actualCodes:null,auto:true
         });
