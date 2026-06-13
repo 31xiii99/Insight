@@ -3873,13 +3873,13 @@ function renderDashboard(){
 
   // Populate top5-evidence (answer-first card)
   var ms=shopModelStatus(activeShop);
+  var badgeEl=document.getElementById('pred-model-badge');
   var top5EvidEl=document.getElementById('top5-evidence');
   if(badgeEl){
     badgeEl.className='pred-confidence-badge '+verdictCls(ms.level);
     badgeEl.textContent=verdictLabel(ms.level)+(ms.hitRate!==null?' · '+ms.hitRate+'% hit':'');
   }
 
-  var ms=shopModelStatus(activeShop);
   if(top5EvidEl){
     top5EvidEl.innerHTML=top3.map(function(x,i){
       var code=x[0], score=x[1], promoted=x[2]===true;
