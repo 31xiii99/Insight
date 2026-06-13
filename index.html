@@ -3122,7 +3122,7 @@ function renderAnalytics(){
   var intReg  = buildIntervalRegularity(entries);
   var qtrend  = buildQtyTrend(entries);
   var preds   = shopPreds(activeShop);
-  var missPen = buildMissStreakPenalty(preds,letter);
+  var missPen = buildMissStreakPenalty(preds,activeShop);
   var n       = entries.length;
   var sorted  = entries.slice().sort(function(a,b){return a.date.localeCompare(b.date);});
 
