@@ -1253,8 +1253,8 @@ function autoSavePrediction(letter){
   var result=buildCombinedScore(entries,preds,letter);
   var scores=result.scores;
   var snapshots=result.snapshots;
-  var top3=Object.entries(scores).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
-  if(!top3.length) return;
+  var top5=Object.entries(scores).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
+  if(!top5.length) return;
   // Use the latest entry's refill date (not today) so historical batch entry resolves correctly
   var lastEntryDate = entries[entries.length-1].date;
   db.shops[letter].predictions=preds.filter(function(p){return p.status!=='pending';});
@@ -1262,11 +1262,11 @@ function autoSavePrediction(letter){
     id:Date.now(),
     createdDate:lastEntryDate,
     targetDate:null,
-    predictedCodes:top3.map(function(x){return x[0];}),
-    scores:top3.reduce(function(o,x){o[x[0]]=x[1];return o;},{}),
+    predictedCodes:top5.map(function(x){return x[0];}),
+    scores:top5.reduce(function(o,x){o[x[0]]=x[1];return o;},{}),
     signalSnapshot:(function(){
       var snap={};
-      top3.forEach(function(x){snap[x[0]]=snapshots[x[0]]||{};});
+      top5.forEach(function(x){snap[x[0]]=snapshots[x[0]]||{};});
       return snap;
     })(),
     weightsAtTime:Object.assign({},result.weights),
@@ -6105,15 +6105,15 @@ function rebuildPredictions(){
       var currentPreds=shopPreds(letter);
       var result=buildCombinedScore(trainEntries,currentPreds,letter);
       var top5=Object.entries(result.scores).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
-      if(!top3.length) continue;
+      if(!top5.length) continue;
 
       var predDate=trainEntries[trainEntries.length-1].date;
 
       var outcome={};
-      top3.forEach(function(x){
+      top5.forEach(function(x){
         outcome[x[0]]=nextEntry.codes.indexOf(x[0])>-1?'hit':'miss';
       });
-      var slotsCovered=nextEntry.codes.filter(function(c){return top3.map(function(x){return x[0];}).indexOf(c)>-1;}).length;
+      var slotsCovered=nextEntry.codes.filter(function(c){return top5.map(function(x){return x[0];}).indexOf(c)>-1;}).length;
       var status=resolveStatus(outcome);
 
       var pred={
@@ -6124,7 +6124,7 @@ function rebuildPredictions(){
         scores:top5.reduce(function(o,x){o[x[0]]=x[1];return o;},{}),
         signalSnapshot:(function(){
           var snap={};
-          top3.forEach(function(x){snap[x[0]]=result.snapshots[x[0]]||{};});
+          top5.forEach(function(x){snap[x[0]]=result.snapshots[x[0]]||{};});
           return snap;
         })(),
         weightsAtTime:Object.assign({},result.weights),
@@ -6153,7 +6153,7 @@ function rebuildPredictions(){
       var allPreds=shopPreds(letter);
       var finalResult=buildCombinedScore(allEntries,allPreds,letter);
       var finalTop5=Object.entries(finalResult.scores).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
-      if(finalTop3.length){
+      if(finalTop5.length){
         db.shops[letter].predictions.push({
           id:Date.now()+shops.indexOf(letter),
           createdDate:allEntries[allEntries.length-1].date,
