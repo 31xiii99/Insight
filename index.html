@@ -3871,40 +3871,15 @@ function renderDashboard(){
   var medals  = ['🥇','🥈','🥉','4️⃣','5️⃣'];
   var rankCls = ['rank1','rank2','rank3','rank4','rank5'];
 
-  // Render top-3 cards — mark promoted codes
-  document.getElementById('top3-grid').innerHTML=top3.map(function(x,i){
-    var code=x[0], score=x[1];
-    var promoted=x[2]===true; // emergent promotion flag
-    var pct=(score/maxS*100).toFixed(0);
-    var sub=[];
-    if(promoted){
-      sub.push('🔬 pattern-promoted');
-    } else {
-      if(streaks[code]>=2) sub.push(streaks[code]+'-streak');
-      if(rates[code]>0.5)  sub.push(Math.round(rates[code]*100)+'% freq');
-      if(bias[code]!==undefined) sub.push('bias '+Math.round(bias[code]*100)+'%');
-    }
-    var border = promoted ? ';border:2px solid var(--green)' : '';
-    return '<div class="top3-card '+rankCls[i]+'" style="position:relative'+border+'">'
-      +(promoted?'<div style="position:absolute;top:4px;right:4px;font-size:9px;background:var(--green);color:#000;padding:1px 5px;border-radius:8px;font-weight:700">PROMOTED</div>':'')
-      +'<div class="top3-rank">'+medals[i]+' RANK '+(i+1)+'</div>'
-      +'<div class="top3-code">'+code+'</div>'
-      +'<div class="top3-pct">'+pct+'% score</div>'
-      +'<div class="top3-sub">'+(sub[0]||(freq[code]||0)+' hits')+'</div>'
-      +'<div class="conf-bar" style="width:'+pct+'%"></div>'
-      +'</div>';
-  }).join('');
-
   // Populate top5-evidence (answer-first card)
   var ms=shopModelStatus(activeShop);
-  var badgeEl=document.getElementById('pred-model-badge');
+  var top5EvidEl=document.getElementById('top5-evidence');
   if(badgeEl){
     badgeEl.className='pred-confidence-badge '+verdictCls(ms.level);
     badgeEl.textContent=verdictLabel(ms.level)+(ms.hitRate!==null?' · '+ms.hitRate+'% hit':'');
   }
 
-  var medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
-  var top5EvidEl=document.getElementById('top5-evidence');
+  var ms=shopModelStatus(activeShop);
   if(top5EvidEl){
     top5EvidEl.innerHTML=top3.map(function(x,i){
       var code=x[0], score=x[1], promoted=x[2]===true;
@@ -4413,16 +4388,17 @@ function renderGuide(){
 }
 
 // ── SECTION: OVERVIEW ──
+// ── SECTION: OVERVIEW ──
 function buildGuideOverview(){
   var tabsHtml = [
-    ['📥 COLLECT',  'Enter refill codes. After each save: result card shows hit/miss, Why it missed, What the model learned, and 🔮 What\'s Next with updated top-3 and watch list.'],
-    ['🗄 ARCHIVE',  'Full refill history per shop — dates, codes with counts, source. Export as JSON.'],
-    ['📊 ANALYZE',  'Two sections: Raw Analysis (observed facts) and Processed Analysis (signals, emergent patterns, lessons, backtest).'],
-    ['🎯 PREDICT',  'Top-3 with Driver Analysis and reliability badges. Emergent patterns card shows triggered rules that promoted codes. Full ranking + AI narrative.'],
-    ['📈 TRACK',    'Model accuracy, Recent Performance dots, Evidence Ledger (before/after hit rates proving every model decision), Bias chart, prediction history.'],
-    ['🏅 SCORE',    'All shops ranked. Recent performance table with dot trail and hit rate % per shop.'],
-    ['📖 GUIDE',    'This page — 13 sections, each with live data from the selected shop.'],
-    ['💾 DATA',     'iCloud backup, import/restore, Rebuild Predictions (essential after batch historical entry), storage inspector.']
+    ['🏅 SCORE',    'Command centre. Shop league table ranked by hit rate. Tap any shop for signal diagnosis. Prediction evidence table for active shop. Confidence breakdown.'],
+    ['📥 COLLECT',  'Enter refill codes. After each save: result card (hit/miss/why/model learned) + What\'s Next (top-5 with signal colours, watch list, model status). Persists between saves.'],
+    ['🎯 PREDICT',  'Answer-first: top-5 cards with signal colour bars, confidence badges, emergent patterns. Full ranking collapsed. AI narrative.'],
+    ['📊 ANALYZE',  'Raw Analysis (observed facts) and Processed Analysis (emergent patterns, signal effectiveness, lessons, backtest).'],
+    ['📈 TRACK',    'Model accuracy, recent performance dots, Evidence Ledger (before/after hit rates proving every model decision), prediction history.'],
+    ['🗄 ARCHIVE',  'Full refill history — dates, codes with counts. Export as JSON.'],
+    ['📖 GUIDE',    'This page — 14 sections with live data from selected shop.'],
+    ['💾 DATA',     'iCloud backup, Rebuild Predictions (essential after batch entry), storage inspector.']
   ].map(function(t){
     return '<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)">'
       +'<span style="font-size:11px;font-weight:700;font-family:var(--mono);color:var(--accent);min-width:80px">'+t[0]+'</span>'
@@ -4430,10 +4406,59 @@ function buildGuideOverview(){
       +'</div>';
   }).join('');
 
-  return guideSection('🗺','App Overview — All 8 Tabs',
-    '<p class="guide-p">Insight predicts which item codes (00–99) are most likely to appear in the next refill, based on the history of previous refills for each shop. It learns automatically from every resolved prediction.</p>'
+  return guideSection('🗺','App Overview — 8 Tabs, Answer-First Design',
+    '<p class="guide-p">Insight predicts which item codes (00–99) are most likely in the next refill for each shop. It learns from every resolved prediction — adapting signal weights via adaptive gradient accumulation, tracking pattern significance through z-score observation windows, and surfacing emergent conditional rules.</p>'
     +tabsHtml
-    +'<div class="guide-callout" style="margin-top:10px"><strong>Key principle:</strong> predictions are fully automatic. Every time you save a refill, the app generates a new top-3 prediction, stores it, compares it against the next refill when it arrives, updates the model, and repeats. Nothing to tap between refills.</div>'
+    +'<div class="guide-callout" style="margin-top:10px"><strong>How to use it daily:</strong> open Score to see all shops at a glance. Tap a shop to see its signal diagnosis. Check Predict for the top-5 with driver evidence. Enter new refills in Collect and read the result + What\'s Next card immediately.</div>'
+  );
+}
+
+// ── SECTION: SCORE TAB ──
+function buildGuideScoreTab(){
+  db = loadDB();
+  var shops = Object.keys(db.shops).sort();
+  var liveHtml = '';
+
+  if(shops.length){
+    liveHtml = '<div class="guide-live-box"><div class="guide-live-label">Live — Shop league table ('+shops.length+' shop'+(shops.length>1?'s':'')+')</div>';
+    shops.slice(0,4).forEach(function(code){
+      var ms = shopModelStatus(code);
+      var col = ms.level==='high'?'var(--green)':ms.level==='moderate'?'var(--gold)':'var(--red)';
+      var s = db.shops[code];
+      liveHtml += '<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--border)">'
+        +'<span style="font-family:var(--mono);font-weight:800;color:var(--accent);min-width:36px">'+code+'</span>'
+        +(s.name?'<span style="font-size:11px;color:var(--muted);flex:1">'+s.name+'</span>':'<span style="flex:1"></span>')
+        +(ms.hitRate!==null?'<span style="font-family:var(--mono);font-weight:700;color:'+col+'">'+ms.hitRate+'% hit</span>':'<span style="color:var(--muted);font-size:11px">no predictions</span>')
+        +'<span style="font-size:10px;padding:1px 6px;border-radius:8px;font-weight:700;background:rgba(0,0,0,.2);color:'+col+'">'+ms.label+'</span>'
+        +'</div>';
+    });
+    liveHtml += '</div>';
+  } else {
+    liveHtml = '<div class="guide-callout">Add shops and run Rebuild to see the live league table.</div>';
+  }
+
+  return guideSection('🏅','Score Tab — Command Centre',
+    '<p class="guide-p">The Score tab is designed to be the first place you look. It answers three questions in one screen: which shops are performing, what\'s driving each shop\'s accuracy, and what the current prediction says with its evidence.</p>'
+
+    +'<div style="margin:8px 0">'
+    +'<div style="padding:7px 0;border-bottom:1px solid var(--border)">'
+    +'<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px">🏆 Shop League Table</div>'
+    +'<div style="font-size:12px;color:var(--muted);line-height:1.5">All shops ranked by recent hit rate %, then slot coverage %. Columns: shop code, hit rate, slot coverage, confidence grade. Tap any row to expand the Signal Diagnosis.</div>'
+    +'</div>'
+    +'<div style="padding:7px 0;border-bottom:1px solid var(--border)">'
+    +'<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px">📍 Signal Diagnosis (on tap)</div>'
+    +'<div style="font-size:12px;color:var(--muted);line-height:1.5">Shows every signal ranked by outcome correlation lift — how much better that signal predicts hits vs misses for this specific shop. Green = signal reliably drives hits. Red = counter-predictive. Includes current weight % and STRONG/MODERATE/WEAK badge. Tap the same row again to collapse.</div>'
+    +'</div>'
+    +'<div style="padding:7px 0">'
+    +'<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px">📊 Prediction Evidence Table</div>'
+    +'<div style="font-size:12px;color:var(--muted);line-height:1.5">Top-5 prediction for the active shop with: medal rank, code, top driver signal (coloured), confidence badge, score bar. Same information as the Predict tab but at a glance. Updates when you switch active shop.</div>'
+    +'</div>'
+    +'</div>'
+
+    +'<p class="guide-p"><strong>Model status badge</strong> (HIGH / MODERATE / LOW) also appears in every shop banner across all tabs, always showing the current hit rate and slot coverage for the last 5 predictions.</p>'
+
+    +'<div class="guide-callout"><strong>Hit rate vs slot coverage:</strong> hit rate counts each of the 5 predicted codes individually (e.g. 3 of 5 hit = 60%). Slot coverage measures how many actual refill slots were filled by the predicted codes (e.g. predictions covered 9 of 18 slots = 50%). For high-density shops like BD where codes appear multiple times per refill, slot coverage is the more meaningful metric.</div>'
+    + liveHtml
   );
 }
 
@@ -4479,18 +4504,20 @@ function buildGuidePrediction(){
     liveHtml = '<div class="guide-callout">Add 3+ entries to Shop '+(guideShop||'—')+' to see a live prediction breakdown.</div>';
   }
 
-  return guideSection('🎯','Prediction — How Top 3 Are Chosen',
-    '<p class="guide-p">Every code seen in this shop\'s history gets a <strong>combined score</strong> from 9 signals. The top-3 scores become the prediction, shown as a percentage relative to the highest-scoring code.</p>'
+  return guideSection('🎯','Prediction — How Top 5 Are Chosen',
+    '<p class="guide-p">Every code seen in this shop\'s history gets a <strong>combined score</strong> from 11 signals. The top-5 scores become the formal prediction — these are the codes the model tracks hits/misses for. The Predict tab now opens with an answer-first summary card showing all 5 codes with signal colour bars and confidence badges before any other detail.</p>'
     +'<div class="guide-example">'
-    +'<div class="ex-label">Score formula</div>'
+    +'<div class="ex-label">Score formula (11 signals)</div>'
     +'<div style="font-size:12px;color:var(--muted);line-height:1.8">'
     +'score = (freq × w₁) + (recency × w₂) + (streak × w₃) + (bias × w₄)<br>'
     +'      + (co-occur × w₅) + (interval × w₆) + (dow × w₇)<br>'
-    +'      × qty-trend-multiplier × miss-streak-penalty<br><br>'
-    +'<strong style="color:var(--text)">w₁…w₇</strong> are <em>per-shop adapted weights</em> that start at defaults<br>and drift automatically based on which signals prove predictive.'
+    +'      + (cycle × w₈) + (overdue × w₉) + (qtydom × w₁₀) + (qtystreak × w₁₁)<br>'
+    +'      × qty-trend-multiplier × observation-window-penalty<br><br>'
+    +'<strong style="color:var(--text)">w₁…w₁₁</strong> are per-shop weights that adapt via gradient accumulation (z-score confirmed, not per-refill).'
     +'</div></div>'
-    +'<p class="guide-p"><strong>Score % meaning:</strong> code 07 at 100% and code 12 at 74% means code 12\'s combined signal strength is 74% of code 07\'s — not that it will appear 74% of the time. These are relative ranks, not probabilities.</p>'
-    +'<div class="guide-callout"><strong>Automatic:</strong> a fresh prediction is generated and stored every time you save a refill. When the next refill arrives, the app immediately compares and shows the result in Collect — no tab switching needed.</div>'
+    +'<p class="guide-p"><strong>Score % meaning:</strong> code 07 at 100% and code 12 at 74% means code 12\'s combined signal strength is 74% of code 07\'s — not that it will appear 74% of the time. Relative rank, not probability.</p>'
+    +'<p class="guide-p"><strong>Emergent patterns can promote codes</strong> — if a triggered pattern has ≥75% confidence and ≥3 cases, its implied code is promoted into the top-5 (displacing the lowest scorer). Promoted codes show a green PROMOTED badge.</p>'
+    +'<div class="guide-callout"><strong>Automatic:</strong> a fresh top-5 prediction is saved every time you save a refill. The result appears immediately in Collect. The 🔮 What\'s Next card below the result shows the updated prediction and persists until the next save.</div>'
     + liveHtml
   );
 }
@@ -4977,7 +5004,7 @@ function buildGuideWorkflow(){
     +'<strong>Next refill arrives → enter it</strong> — a result card appears in Collect immediately showing hit/miss per code, slot coverage %, why it missed (dominant signal + consecutive miss count), what the model learned (signals that worked/failed), observation window state changes, and adaptive weight updates with z-scores.'
     +'</div></div>'
     +'<div class="guide-step"><div class="guide-step-num">5</div><div class="guide-step-body">'
-    +'<strong>🔮 What\'s Next card appears</strong> — below the result card, immediately after every save. Shows the updated top-3 with reasons (streak, quantity dominance, overdue, emergent pattern), a Watch List of codes outside top-3 worth monitoring, and the Model Status (HIGH/MODERATE/LOW confidence with code hit rate % and slot coverage %).'
+    +'<strong>🔮 What\'s Next card appears and persists</strong> — updates immediately after every save and stays visible in Collect. Shows: updated top-5 with signal colour bars and confidence badges, Watch List (triggered patterns, overdue codes, quantity streaks outside top-5), Model Status (HIGH/MODERATE/LOW with hit rate % and slot coverage %).'
     +'</div></div>'
     +'<div class="guide-step"><div class="guide-step-num">6</div><div class="guide-step-body">'
     +'<strong>Model updates automatically</strong> — observation windows track per-code miss patterns. Weight gradients accumulate until statistically significant (z ≥ 1.2). The next prediction already uses the updated model.'
@@ -4998,7 +5025,7 @@ function buildGuideWorkflow(){
         +'</div>';
     }).join('')
     +'</div>'
-    +'<div class="guide-callout">The <strong>🏅 Score tab</strong> ranks all shops by confidence — use it to see which shops have reliable predictions and which need more data. The Recent Performance table there lets you spot if one shop\'s model is drifting.</div>'
+    +'<div class="guide-callout"><strong>Daily workflow:</strong> open Score → check league table → tap shop for signal diagnosis → check prediction evidence table → enter new refill in Collect → read result card + What\'s Next → repeat. The model improves automatically with each refill.</div>'
   );
 }
 
