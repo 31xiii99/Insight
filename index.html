@@ -4577,6 +4577,9 @@ function renderDashboard(){
   var ms=shopModelStatus(activeShop);
   var badgeEl=document.getElementById('pred-model-badge');
   var top5EvidEl=document.getElementById('top5-evidence');
+  var codeStates=entries.length>=4?classifyCodeStates(entries):{};
+  var regime=bcsResult.regime||{shifting:false};
+
   if(badgeEl){
     badgeEl.className='pred-confidence-badge '+verdictCls(ms.level);
     badgeEl.textContent=verdictLabel(ms.level)+(ms.hitRate!==null?' · '+ms.hitRate+'% hit':'');
@@ -4648,9 +4651,7 @@ function renderDashboard(){
   document.getElementById('last-updated').textContent='Updated '+new Date().toLocaleTimeString();
   document.getElementById('ai-insight-content').innerHTML='<button class="btn btn-primary" onclick="generateAiInsight()">✨ Generate Insight</button>';
 
-  // Code states and regime for badge display
-  var codeStates = entries.length>=4 ? classifyCodeStates(entries) : {};
-  var regime     = bcsResult.regime||{shifting:false};
+  // Code states and regime for badge display — already computed above
 
   // Regime status banner
   var regimeBanner=document.getElementById('next-expected-banner');
