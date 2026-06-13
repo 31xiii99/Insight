@@ -22,7 +22,7 @@
   --sig-freq:#4f8ef7;--sig-recency:#38bdf8;--sig-streak:#f97316;
   --sig-bias:#a78bfa;--sig-cooccur:#34d399;--sig-interval:#fbbf24;
   --sig-dow:#fb7185;--sig-cycle:#22d3ee;--sig-overdue:#f43f5e;
-  --sig-qtydom:#86efac;--sig-qtystreak:#bef264;
+  --sig-qtydom:#86efac;--sig-qtystreak:#bef264;--sig-momentum:#e879f9;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);overflow:hidden}
@@ -545,6 +545,14 @@ label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bot
       </div>
 
       <div class="card">
+        <div class="card-title">⚡ MOMENTUM — Emerging vs fading codes</div>
+        <div id="momentum-content"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔀 REGIME STATUS — Pattern stability</div>
+        <div id="regime-content"></div>
+      </div>
+      <div class="card">
         <div class="card-title">🔬 EMERGENT PATTERNS — Hidden conditional rules</div>
         <p style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5">Rules discovered from prediction-outcome history. ✅ Triggered rules promote codes into the top-3 prediction.</p>
         <div id="emergent-content"></div>
@@ -928,12 +936,14 @@ var SIGNAL_COLORS = {
   freq:'var(--sig-freq)', recency:'var(--sig-recency)', streak:'var(--sig-streak)',
   bias:'var(--sig-bias)', cooccur:'var(--sig-cooccur)', interval:'var(--sig-interval)',
   dow:'var(--sig-dow)', cycle:'var(--sig-cycle)', overdue:'var(--sig-overdue)',
-  qtydom:'var(--sig-qtydom)', qtystreak:'var(--sig-qtystreak)'
+  qtydom:'var(--sig-qtydom)', qtystreak:'var(--sig-qtystreak)',
+  momentum:'var(--sig-momentum)'
 };
 var SIGNAL_NAMES = {
   freq:'Frequency', recency:'Recency', streak:'Streak', bias:'Pred. accuracy',
   cooccur:'Co-occur', interval:'Interval', dow:'Day-of-wk', cycle:'Cycle',
-  overdue:'Overdue', qtydom:'Qty dominance', qtystreak:'Qty streak'
+  overdue:'Overdue', qtydom:'Qty dominance', qtystreak:'Qty streak',
+  momentum:'Momentum'
 };
 
 // Model status for a shop — returns {level, hitRate, slotCov, label, cls}
@@ -1796,6 +1806,14 @@ function showWhatNextCard(actualCodes, date, predStatus){
     var c=x[0];
     if(!top3.some(function(t){return t[0]===c;})&&!watchList.some(function(w){return w.c===c;})){
       watchList.push({c:c,reason:'📈 On quantity streak — appeared 2+ times for '+Math.round(x[1]*4)+' consecutive refills',col:'var(--green)'});
+    }
+  });
+  // Emerging codes not in top-5
+  var codeStateMap=entries.length>=4?classifyCodeStates(entries):{};
+  Object.entries(codeStateMap).filter(function(x){return x[1].state==='emerging';}).forEach(function(x){
+    var c=x[0];
+    if(!top3.some(function(t){return t[0]===c;})&&!watchList.some(function(w){return w.c===c;})){
+      watchList.push({c:c,reason:'↑ Emerging — appearing more frequently in recent refills',col:'var(--sig-momentum)'});
     }
   });
 
@@ -2780,19 +2798,259 @@ function buildBias(predictions){
 
 // ── WEIGHT ADAPTATION ENGINE ──────────────
 var DEFAULT_WEIGHTS = {
-  freq:     0.15,
-  recency:  0.18,
-  streak:   0.10,
-  bias:     0.08,
-  cooccur:  0.08,
-  interval: 0.05,
+  freq:     0.12,
+  recency:  0.16,
+  streak:   0.09,
+  bias:     0.07,
+  cooccur:  0.07,
+  interval: 0.04,
   dow:      0.03,
-  cycle:    0.08,
-  overdue:  0.08,
-  qtydom:   0.10,  // quantity dominance — avg slots per refill above pool average
-  qtystreak:0.07   // consecutive refills with 2+ appearances
+  cycle:    0.07,
+  overdue:  0.07,
+  qtydom:   0.09,
+  qtystreak:0.06,
+  momentum: 0.13   // 12th signal — recent window vs preceding window appearance delta
 };
-var SIGNAL_KEYS = ['freq','recency','streak','bias','cooccur','interval','dow','cycle','overdue','qtydom','qtystreak'];
+var SIGNAL_KEYS = ['freq','recency','streak','bias','cooccur','interval','dow','cycle','overdue','qtydom','qtystreak','momentum'];
+var LEARNING_RATE = 0.03;
+var WEIGHT_MIN    = 0.02;
+var WEIGHT_MAX    = 0.50;
+
+// Momentum window size — number of refills in each half
+var MOMENTUM_WINDOW = 8;
+
+// ── SIGNAL: Momentum ──────────────────────
+// Measures rate of change: recent window vs preceding window appearance rate.
+// Positive = emerging (code appearing more often recently).
+// Negative = fading (code appearing less often recently).
+// Returns {code: momentumScore 0–1} normalised for use as a signal.
+function buildMomentumScore(entries){
+  var n = entries.length;
+  var sorted = entries.slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+  var w = Math.min(MOMENTUM_WINDOW, Math.floor(n/2));
+  if(w < 2) return {};
+
+  var recent   = sorted.slice(n-w);
+  var preceding= sorted.slice(Math.max(0,n-2*w), n-w);
+  var allCodes = Array.from(new Set(entries.reduce(function(a,e){return a.concat(e.codes);},[])));
+
+  var raw={};
+  allCodes.forEach(function(c){
+    var rRate = recent.filter(function(e){return e.codes.indexOf(c)>-1;}).length / recent.length;
+    var pRate = preceding.length>0
+      ? preceding.filter(function(e){return e.codes.indexOf(c)>-1;}).length / preceding.length
+      : 0;
+    raw[c] = rRate - pRate; // delta: −1 to +1
+  });
+
+  // Normalise to 0–1 for signal use (0.5 = stable, >0.5 = emerging, <0.5 = fading)
+  var scores={};
+  allCodes.forEach(function(c){ scores[c] = Math.max(0, Math.min(1, 0.5 + raw[c])); });
+  return {scores:scores, raw:raw};
+}
+
+// ── REGIME DETECTION ──────────────────────
+// Detects whether the shop's dominant code set has shifted recently.
+// Compares top-N codes by frequency in the recent window vs full history.
+// Returns {shifting, overlapScore, recentDominant, historicalDominant, note}
+function detectRegimeShift(entries){
+  var n = entries.length;
+  if(n < 8) return {shifting:false, overlapScore:1, note:'Insufficient data'};
+  var sorted = entries.slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+  var w = Math.min(MOMENTUM_WINDOW, Math.floor(n/2));
+  var recent    = sorted.slice(n-w);
+  var historical= sorted; // full history
+
+  function topCodes(set, topN){
+    var freq={};
+    set.forEach(function(e){e.codes.forEach(function(c){freq[c]=(freq[c]||0)+1;});});
+    return Object.entries(freq).sort(function(a,b){return b[1]-a[1];}).slice(0,topN).map(function(x){return x[0];});
+  }
+
+  var topN = Math.min(8, Math.ceil(n/3));
+  var recentTop = topCodes(recent, topN);
+  var histTop   = topCodes(historical, topN);
+
+  var overlap = recentTop.filter(function(c){return histTop.indexOf(c)>-1;}).length;
+  var overlapScore = overlap / topN;
+  var shifting = overlapScore < 0.6; // less than 60% overlap = regime shift
+
+  var emerging = recentTop.filter(function(c){return histTop.indexOf(c)===-1;});
+  var fading   = histTop.filter(function(c){return recentTop.indexOf(c)===-1;});
+
+  var note = shifting
+    ? 'Pattern shift detected — '+(emerging.length?emerging.join(', ')+' emerging':'new codes rising')
+      +(fading.length?' · '+fading.join(', ')+' fading':'')
+      +'. Recency and momentum prioritised.'
+    : 'Stable — recent pattern consistent with history ('+Math.round(overlapScore*100)+'% overlap).';
+
+  return {shifting:shifting, overlapScore:overlapScore,
+    recentDominant:recentTop, historicalDominant:histTop,
+    emerging:emerging, fading:fading, note:note};
+}
+
+// ── CODE STATE CLASSIFIER ─────────────────
+// Classifies each code as ACTIVE / EMERGING / FADING / DORMANT
+// based on momentum and recent appearance rate.
+function classifyCodeStates(entries){
+  if(entries.length < 4) return {};
+  var sorted = entries.slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+  var n = sorted.length;
+  var momentum = buildMomentumScore(entries);
+  var allCodes = Array.from(new Set(entries.reduce(function(a,e){return a.concat(e.codes);},[])));
+  var states = {};
+
+  allCodes.forEach(function(c){
+    var totalApps  = sorted.filter(function(e){return e.codes.indexOf(c)>-1;}).length;
+    var recentW    = Math.min(MOMENTUM_WINDOW, Math.floor(n/2));
+    var recentApps = sorted.slice(n-recentW).filter(function(e){return e.codes.indexOf(c)>-1;}).length;
+    var recentRate = recentApps / recentW;
+    var raw = momentum.raw ? (momentum.raw[c]||0) : 0;
+
+    var state;
+    if(recentApps === 0 && totalApps > 0) {
+      state = 'dormant';   // was in pool, not seen recently
+    } else if(raw >= 0.30) {
+      state = 'emerging';  // significantly more frequent recently
+    } else if(raw <= -0.30) {
+      state = 'fading';    // significantly less frequent recently
+    } else {
+      state = 'active';    // stable pattern
+    }
+    states[c] = {state:state, raw:raw, recentRate:recentRate, totalApps:totalApps};
+  });
+  return states;
+}
+
+// ── CODE HIT PROFILE ─────────────────────
+// Full signal breakdown for a code: hit vs miss signal values,
+// lift per signal, confidence threshold, current score vs threshold.
+function buildCodeHitProfile(code, entries, predictions, letter){
+  var resolved = predictions.filter(function(p){
+    return p.status!=='pending' && p.outcome && p.predictedCodes.indexOf(code)>-1;
+  });
+  if(resolved.length < 2) return null;
+
+  var hits   = resolved.filter(function(p){return p.outcome[code]==='hit';});
+  var misses = resolved.filter(function(p){return p.outcome[code]==='miss';});
+  var partials=resolved.filter(function(p){return p.outcome[code]==='partial';});
+
+  var hitRate = Math.round(hits.length / resolved.length * 100);
+
+  // Per-signal mean value at prediction time for hits vs misses
+  var sigMeans = {};
+  SIGNAL_KEYS.forEach(function(k){
+    var hitVals  = hits.map(function(p){return p.signalSnapshot&&p.signalSnapshot[code]?p.signalSnapshot[code][k]||0:0;});
+    var missVals = misses.map(function(p){return p.signalSnapshot&&p.signalSnapshot[code]?p.signalSnapshot[code][k]||0:0;});
+    var hitMean  = hitVals.length  ? hitVals.reduce(function(a,b){return a+b;},0)/hitVals.length   : null;
+    var missMean = missVals.length ? missVals.reduce(function(a,b){return a+b;},0)/missVals.length : null;
+    var lift = (hitMean!==null && missMean!==null) ? hitMean - missMean : null;
+    sigMeans[k] = {hitMean:hitMean, missMean:missMean, lift:lift};
+  });
+
+  // Compute a lift-weighted hit confidence score for each resolved prediction
+  var liftWeights = {};
+  var totalLift = 0;
+  SIGNAL_KEYS.forEach(function(k){
+    var lift = sigMeans[k].lift;
+    if(lift !== null && lift > 0){ liftWeights[k] = lift; totalLift += lift; }
+    else liftWeights[k] = 0;
+  });
+
+  function computeHitScore(pred){
+    if(!pred.signalSnapshot||!pred.signalSnapshot[code]) return 0;
+    var snap = pred.signalSnapshot[code];
+    var score = 0;
+    SIGNAL_KEYS.forEach(function(k){
+      if(totalLift > 0) score += (snap[k]||0) * (liftWeights[k]/totalLift);
+    });
+    return score;
+  }
+
+  var hitScores  = hits.map(computeHitScore);
+  var missScores = misses.map(computeHitScore);
+
+  // Threshold: minimum hit score at which hits occur ≥70%
+  // Find the score percentile that maximises precision
+  var allScores = resolved.map(function(p){
+    return {score:computeHitScore(p), isHit:p.outcome[code]==='hit'};
+  }).sort(function(a,b){return a.score-b.score;});
+
+  var threshold = 0;
+  if(allScores.length >= 3){
+    // Walk up from the median score and find where hit rate crosses 70%
+    for(var i=Math.floor(allScores.length/2); i<allScores.length; i++){
+      var above = allScores.slice(i);
+      var aboveHits = above.filter(function(x){return x.isHit;}).length;
+      if(aboveHits/above.length >= 0.70){ threshold = allScores[i].score; break; }
+    }
+  }
+
+  // Current score (from latest buildCombinedScore)
+  var currentResult = buildCombinedScore(entries, predictions, letter);
+  var currentRaw = currentResult.scores[code]||0;
+  var maxScore   = Math.max.apply(null, Object.values(currentResult.scores).concat([0.001]));
+  var currentPct = Math.round(currentRaw/maxScore*100);
+
+  // Hit confidence level vs threshold
+  var thresholdPct = maxScore>0 ? Math.round(threshold/maxScore*100) : 50;
+  var confGap = currentPct - thresholdPct;
+  var confLevel = confGap >= 20 ? 'high'
+    : confGap >= 0  ? 'moderate'
+    : confGap >= -20? 'watch'
+    : 'low';
+
+  // Quantity profile
+  var avgQty = 0, maxQty = 0, qtyDist = {};
+  var qtyEntries = entries.filter(function(e){return e.codes.indexOf(code)>-1;});
+  qtyEntries.forEach(function(e){
+    var cnt = e.codes.filter(function(c){return c===code;}).length;
+    avgQty += cnt;
+    if(cnt > maxQty) maxQty = cnt;
+    qtyDist[cnt] = (qtyDist[cnt]||0)+1;
+  });
+  avgQty = qtyEntries.length > 0 ? (avgQty/qtyEntries.length) : 0;
+  var poolAvgQty = entries.reduce(function(a,e){return a+e.codes.length;},0) /
+                   Array.from(new Set(entries.reduce(function(a,e){return a.concat(e.codes);},[] ))).length /
+                   entries.length;
+
+  // Temporal pattern
+  var gaps = [];
+  var lastIdx = -1;
+  entries.forEach(function(e,i){
+    if(e.codes.indexOf(code)>-1){
+      if(lastIdx>=0) gaps.push(i-lastIdx);
+      lastIdx = i;
+    }
+  });
+  var avgGap = gaps.length ? gaps.reduce(function(a,b){return a+b;},0)/gaps.length : null;
+  var recentW = Math.min(MOMENTUM_WINDOW, entries.length);
+  var recentApps = entries.slice(-recentW).filter(function(e){return e.codes.indexOf(code)>-1;}).length;
+
+  // Co-occurrence on hit
+  var coHits = {};
+  entries.filter(function(e){return e.codes.indexOf(code)>-1;}).forEach(function(e){
+    Array.from(new Set(e.codes)).forEach(function(c2){
+      if(c2!==code) coHits[c2] = (coHits[c2]||0)+1;
+    });
+  });
+  var topCoHits = Object.entries(coHits)
+    .sort(function(a,b){return b[1]-a[1];})
+    .slice(0,4)
+    .map(function(x){return {c:x[0], pct:Math.round(x[1]/qtyEntries.length*100)};});
+
+  return {
+    code:code, resolved:resolved.length, hitRate:hitRate,
+    hits:hits.length, misses:misses.length, partials:partials.length,
+    sigMeans:sigMeans,
+    confLevel:confLevel, confGap:confGap,
+    currentPct:currentPct, thresholdPct:thresholdPct,
+    avgQty:avgQty.toFixed(2), maxQty:maxQty, qtyDist:qtyDist, poolAvgQty:poolAvgQty.toFixed(2),
+    avgGap:avgGap?avgGap.toFixed(1):null, recentApps:recentApps, recentWindow:recentW,
+    topCoHits:topCoHits,
+    appRate: Math.round(qtyEntries.length/entries.length*100)
+  };
+}
 var LEARNING_RATE = 0.03;
 var WEIGHT_MIN    = 0.02;
 var WEIGHT_MAX    = 0.50;
@@ -2880,8 +3138,26 @@ function buildCombinedScore(entries, predictions, letter){
   var overdue   = buildOverdueScore(entries);
   var qtydom    = buildQtyDominance(entries);
   var qtystreak = buildQtyStreak(entries);
+  var momResult = entries.length>=4 ? buildMomentumScore(entries) : {scores:{},raw:{}};
+  var momentum  = momResult.scores||{};
 
+  // Regime detection — adjusts weights dynamically if pattern is shifting
+  var regime    = entries.length>=8 ? detectRegimeShift(entries) : {shifting:false,overlapScore:1};
   var w = letter ? getWeights(letter) : Object.assign({},DEFAULT_WEIGHTS);
+
+  // If regime is shifting: boost recency and momentum, reduce freq weight
+  // This is a scoring-time adjustment — does not permanently change stored weights
+  var effectiveW = Object.assign({},w);
+  if(regime.shifting){
+    var freqBoost  = Math.max(0, 1-regime.overlapScore); // 0 to 0.4
+    effectiveW.freq     = Math.max(WEIGHT_MIN, w.freq     * (1 - freqBoost));
+    effectiveW.recency  = Math.min(WEIGHT_MAX, w.recency  * (1 + freqBoost*0.5));
+    effectiveW.momentum = Math.min(WEIGHT_MAX, (w.momentum||DEFAULT_WEIGHTS.momentum) * (1 + freqBoost));
+    // Renormalise
+    var total = SIGNAL_KEYS.reduce(function(s,k){return s+(effectiveW[k]||0);},0);
+    if(total>0) SIGNAL_KEYS.forEach(function(k){ effectiveW[k]=(effectiveW[k]||0)/total; });
+  }
+
   var all=Array.from(new Set(entries.reduce(function(a,e){return a.concat(e.codes);},[])));
 
   var mF  = Math.max.apply(null,Object.values(freq).concat([1]));
@@ -2907,21 +3183,23 @@ function buildCombinedScore(entries, predictions, letter){
       cycle:     (cycle[c]||0),
       overdue:   (overdue[c]||0),
       qtydom:    (qtydom[c]||0),
-      qtystreak: (qtystreak[c]||0)
+      qtystreak: (qtystreak[c]||0),
+      momentum:  (momentum[c]||0.5) // 0.5 = neutral, >0.5 = emerging, <0.5 = fading
     };
 
     var base =
-      sig.freq      * w.freq      +
-      sig.recency   * w.recency   +
-      sig.streak    * w.streak    +
-      sig.bias      * w.bias      +
-      sig.cooccur   * w.cooccur   +
-      sig.interval  * w.interval  +
-      sig.dow       * w.dow       +
-      sig.cycle     * w.cycle     +
-      sig.overdue   * w.overdue   +
-      sig.qtydom    * w.qtydom    +
-      sig.qtystreak * w.qtystreak;
+      sig.freq      * effectiveW.freq      +
+      sig.recency   * effectiveW.recency   +
+      sig.streak    * effectiveW.streak    +
+      sig.bias      * effectiveW.bias      +
+      sig.cooccur   * effectiveW.cooccur   +
+      sig.interval  * effectiveW.interval  +
+      sig.dow       * effectiveW.dow       +
+      sig.cycle     * effectiveW.cycle     +
+      sig.overdue   * effectiveW.overdue   +
+      sig.qtydom    * effectiveW.qtydom    +
+      sig.qtystreak * effectiveW.qtystreak +
+      sig.momentum  * (effectiveW.momentum||DEFAULT_WEIGHTS.momentum);
 
     var qt = qtrend[c]||1.0;
     var mp = missPen[c]!==undefined ? missPen[c] : 1.0;
@@ -2929,7 +3207,8 @@ function buildCombinedScore(entries, predictions, letter){
     scores[c]    = base * qt * mp;
     snapshots[c] = sig;
   });
-  return {scores:scores, snapshots:snapshots, weights:w};
+  return {scores:scores, snapshots:snapshots, weights:effectiveW, regime:regime,
+          momentum:momResult.raw||{}};
 }
 
 // ── EMERGENT PATTERN ENGINE ───────────────
@@ -3404,6 +3683,57 @@ function renderAnalytics(){
       }).join('')
     :'<p style="font-size:12px;color:var(--muted)">No quantity streaks yet.</p>';
 
+  // ── PROCESSED: Momentum ──
+  var momResult2 = entries.length>=4 ? buildMomentumScore(entries) : {raw:{}};
+  var momRaw2    = momResult2.raw||{};
+  var codeStates2= entries.length>=4 ? classifyCodeStates(entries) : {};
+  var emerging2  = Object.entries(codeStates2).filter(function(x){return x[1].state==='emerging';}).sort(function(a,b){return b[1].raw-a[1].raw;});
+  var fading2    = Object.entries(codeStates2).filter(function(x){return x[1].state==='fading';}).sort(function(a,b){return a[1].raw-b[1].raw;});
+  var dormant2   = Object.entries(codeStates2).filter(function(x){return x[1].state==='dormant';});
+  var momHtml='<p style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5">Compares last '+MOMENTUM_WINDOW+' refills vs preceding '+MOMENTUM_WINDOW+'. Positive = code appearing more often recently. Negative = fading. Model boosts emerging codes and reduces fading ones automatically.</p>';
+  if(emerging2.length){
+    momHtml+='<div style="font-size:11px;font-weight:700;color:var(--sig-momentum);margin-bottom:4px">↑ EMERGING ('+emerging2.length+')</div>';
+    momHtml+=emerging2.slice(0,6).map(function(x){
+      var pct=Math.round(x[1].raw*100);
+      return '<div class="freq-row"><span class="freq-code" style="color:var(--sig-momentum)">'+x[0]+'</span>'
+        +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+Math.min(100,pct*2)+'%;background:var(--sig-momentum)"></div></div>'
+        +'<span class="freq-count" style="color:var(--sig-momentum)">+'+pct+'%</span></div>';
+    }).join('');
+  }
+  if(fading2.length){
+    momHtml+='<div style="font-size:11px;font-weight:700;color:var(--red);margin:'+(emerging2.length?'8':'0')+'px 0 4px">↓ FADING ('+fading2.length+')</div>';
+    momHtml+=fading2.slice(0,6).map(function(x){
+      var pct=Math.round(Math.abs(x[1].raw)*100);
+      return '<div class="freq-row"><span class="freq-code" style="color:var(--red)">'+x[0]+'</span>'
+        +'<div class="freq-bar-wrap"><div class="freq-bar" style="width:'+Math.min(100,pct*2)+'%;background:var(--red)"></div></div>'
+        +'<span class="freq-count" style="color:var(--red)">−'+pct+'%</span></div>';
+    }).join('');
+  }
+  if(dormant2.length){
+    momHtml+='<div style="font-size:11px;color:var(--muted);margin-top:6px">Dormant (absent from last '+MOMENTUM_WINDOW+' refills): '
+      +dormant2.map(function(x){return '<span style="font-family:var(--mono);font-weight:700">'+x[0]+'</span>';}).join(' ')+'</div>';
+  }
+  if(!emerging2.length&&!fading2.length) momHtml+='<p style="font-size:12px;color:var(--muted)">All codes stable — no significant momentum detected.</p>';
+  document.getElementById('momentum-content').innerHTML=momHtml;
+
+  // ── PROCESSED: Regime Status ──
+  var regimeResult=entries.length>=8?detectRegimeShift(entries):{shifting:false,note:'Need 8+ entries.'};
+  var regCol=regimeResult.shifting?'var(--gold)':'var(--green)';
+  var regHtml='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+    +'<span style="font-size:16px">'+(regimeResult.shifting?'⚡':'✅')+'</span>'
+    +'<div><div style="font-size:12px;font-weight:700;color:'+regCol+'">'+(regimeResult.shifting?'Pattern shift detected':'Stable pattern')+'</div>'
+    +'<div style="font-size:11px;color:var(--muted)">'+(regimeResult.overlapScore!==undefined?Math.round(regimeResult.overlapScore*100)+'% overlap between recent and historical dominant codes':'')+'</div>'
+    +'</div></div>'
+    +'<div style="font-size:11px;color:var(--muted);line-height:1.5">'+regimeResult.note+'</div>';
+  if(regimeResult.shifting&&regimeResult.emerging&&regimeResult.emerging.length){
+    regHtml+='<div style="margin-top:6px;font-size:11px"><span style="color:var(--sig-momentum)">↑ Rising: <strong>'+regimeResult.emerging.join(' ')+'</strong></span></div>';
+  }
+  if(regimeResult.shifting&&regimeResult.fading&&regimeResult.fading.length){
+    regHtml+='<div style="font-size:11px"><span style="color:var(--red)">↓ Declining: <strong>'+regimeResult.fading.join(' ')+'</strong></span></div>';
+  }
+  regHtml+='<div style="font-size:11px;color:var(--muted);margin-top:6px">Note: overdue status is shown for reference only — no action required.</div>';
+  document.getElementById('regime-content').innerHTML=regHtml;
+
   // ── PROCESSED: Emergent Patterns ──
   var emergentPatterns=buildEmergentPatterns(entries,preds);
   renderEmergentCard(emergentPatterns,'emergent-content');
@@ -3839,6 +4169,378 @@ function renderEmergentCard(patterns, containerId){
   el.innerHTML=html;
 }
 
+// ── CODE HIT PROFILE RENDERER ─────────────
+var _expandedCodeProfile = null;
+
+function toggleCodeProfile(code){
+  var el=document.getElementById('code-profile-'+code);
+  if(!el) return;
+  if(_expandedCodeProfile&&_expandedCodeProfile!==code){
+    var old=document.getElementById('code-profile-'+_expandedCodeProfile);
+    if(old){ old.style.display='none'; old.innerHTML=''; }
+  }
+  if(el.style.display==='none'||!el.style.display){
+    el.style.display='block';
+    renderCodeHitProfile(code, el);
+    _expandedCodeProfile=code;
+  } else {
+    el.style.display='none';
+    el.innerHTML='';
+    _expandedCodeProfile=null;
+  }
+}
+
+// ── LIVE SCORING TRACE ────────────────────
+// Captures exactly how the current score for a code was assembled,
+// step by step, in the current scoring pass. Shows competing forces
+// (observation window penalty vs high momentum, regime adjustment vs
+// historical frequency, emergent pattern promotion) and their magnitudes.
+
+function buildLiveScoringTrace(code, entries, predictions, letter){
+  var sorted   = entries.slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+  var w        = getWeights(letter);
+  var regime   = sorted.length>=8 ? detectRegimeShift(sorted) : {shifting:false,overlapScore:1};
+  var obs      = shopObs(letter)[code]||{state:'idle',penaltyApplied:1.0};
+  var qtrend   = buildQtyTrend(sorted);
+  var momResult= buildMomentumScore(sorted);
+  var baseline = shopBaselineHitRate(letter);
+
+  // Build the same signal values buildCombinedScore uses
+  var freq      = buildFreqMap(sorted);
+  var rec       = buildWeightedScore(sorted);
+  var str       = buildStreaks(sorted);
+  var bias      = buildBias(predictions||[]);
+  var cooc      = buildCooccurrence(sorted);
+  var tightCooc = buildTightCooccurrence(sorted);
+  var intReg    = buildIntervalRegularity(sorted);
+  var dow       = buildDowPattern(sorted);
+  var cycle     = buildCycleScore(sorted);
+  var overdue   = buildOverdueScore(sorted);
+  var qtydom    = buildQtyDominance(sorted);
+  var qtystr    = buildQtyStreak(sorted);
+
+  var mF  = Math.max.apply(null,Object.values(freq).concat([1]));
+  var mR  = Math.max.apply(null,Object.values(rec).concat([1]));
+  var mS  = Math.max.apply(null,Object.values(str).concat([1]));
+  var mC  = Math.max.apply(null,Object.values(cooc).concat([1]));
+  var mTC = Math.max.apply(null,Object.values(tightCooc).concat([1]));
+
+  var bVal  = bias[code]!==undefined ? bias[code] : 0.5;
+  var coocNorm = ((cooc[code]||0)/mC + (tightCooc[code]||0)/mTC*2)/3;
+
+  var sigVals = {
+    freq:      (freq[code]||0)/mF,
+    recency:   (rec[code]||0)/mR,
+    streak:    (str[code]||0)/mS,
+    bias:      Math.max(0,(bVal-0.5)*2),
+    cooccur:   coocNorm,
+    interval:  (intReg[code]||0),
+    dow:       (dow[code]||0),
+    cycle:     (cycle[code]||0),
+    overdue:   (overdue[code]||0),
+    qtydom:    (qtydom[code]||0),
+    qtystreak: (qtystr[code]||0),
+    momentum:  (momResult.scores[code]||0.5)
+  };
+
+  // Effective weights (regime-adjusted)
+  var effectiveW = Object.assign({},w);
+  var regimeAdj  = null;
+  if(regime.shifting){
+    var freqBoost = Math.max(0,1-regime.overlapScore);
+    var wFreqBefore = w.freq;
+    var wRecBefore  = w.recency;
+    var wMomBefore  = w.momentum||DEFAULT_WEIGHTS.momentum;
+    effectiveW.freq     = Math.max(WEIGHT_MIN, w.freq    *(1-freqBoost));
+    effectiveW.recency  = Math.min(WEIGHT_MAX, w.recency *(1+freqBoost*0.5));
+    effectiveW.momentum = Math.min(WEIGHT_MAX,(w.momentum||DEFAULT_WEIGHTS.momentum)*(1+freqBoost));
+    var total=SIGNAL_KEYS.reduce(function(s,k){return s+(effectiveW[k]||0);},0);
+    if(total>0) SIGNAL_KEYS.forEach(function(k){effectiveW[k]=(effectiveW[k]||0)/total;});
+    regimeAdj = {
+      freqDelta:  Math.round((effectiveW.freq    - wFreqBefore)*100),
+      recDelta:   Math.round((effectiveW.recency - wRecBefore)*100),
+      momDelta:   Math.round((effectiveW.momentum- wMomBefore)*100),
+      overlapPct: Math.round(regime.overlapScore*100)
+    };
+  }
+
+  // Per-signal contributions
+  var steps = SIGNAL_KEYS.map(function(k){
+    var val  = sigVals[k]||0;
+    var wt   = effectiveW[k]||0;
+    var wOrig= w[k]||DEFAULT_WEIGHTS[k]||0;
+    var contrib = val*wt;
+    return {
+      key:k, val:val, weight:wt, weightOrig:wOrig,
+      contrib:contrib,
+      regimeAdjusted: regime.shifting && Math.abs(wt-wOrig)>0.001
+    };
+  }).sort(function(a,b){return b.contrib-a.contrib;});
+
+  // Base score (sum of weighted signals)
+  var baseScore = steps.reduce(function(a,s){return a+s.contrib;},0);
+
+  // Multipliers
+  var qtMul   = qtrend[code]||1.0;
+  var obsPen  = obs.penaltyApplied!==undefined ? obs.penaltyApplied : 1.0;
+  var afterQt = baseScore*qtMul;
+  var final   = afterQt*obsPen;
+
+  // Observation window detail
+  var obsDetail = null;
+  if(obs.state!=='idle'){
+    var windowN  = obs.windowN||obs.consecMisses||0;
+    var obsRate  = windowN>0 ? 0/windowN : 0; // approximation
+    var z        = windowN>=OBS_MIN_N ? zScore(obsRate,baseline,windowN) : null;
+    obsDetail = {
+      state:     obs.state,
+      consecMisses:obs.consecMisses||0,
+      penalty:   Math.round((1-obsPen)*100),
+      windowN:   windowN,
+      z:         z!==null?z.toFixed(2):null,
+      threshold: OBS_Z_THRESHOLD
+    };
+  }
+
+  // Momentum context
+  var momRaw   = momResult.raw[code]||0;
+  var codeState= classifyCodeStates(sorted)[code]||{state:'active'};
+
+  // Competing forces — detect conflicts
+  var forces = [];
+  // High historical frequency but fading
+  if(sigVals.freq>=0.6 && codeState.state==='fading'){
+    forces.push({
+      type:'conflict',
+      text:'High historical frequency ('+Math.round(sigVals.freq*100)+'%) but momentum is declining ('+Math.round(momRaw*100)+'% drop). Regime adjustment reduced freq weight by '+Math.abs(regimeAdj?regimeAdj.freqDelta:0)+'%.'
+    });
+  }
+  // Observation window penalty fighting high base score
+  if(obsPen<0.85 && baseScore>=0.5){
+    forces.push({
+      type:'conflict',
+      text:'Strong signal base ('+(Math.round(baseScore*100))+'%) but observation window applying '+(Math.round((1-obsPen)*100))+'% penalty (state: '+obs.state.toUpperCase()+'). Net effect: base×'+(obsPen.toFixed(2))+'.'
+    });
+  }
+  // Emerging code with low historical frequency
+  if(codeState.state==='emerging' && sigVals.freq<0.3){
+    forces.push({
+      type:'boost',
+      text:'Code is emerging (momentum +'+Math.round(momRaw*100)+'%) despite low historical frequency. Momentum signal ('+Math.round(effectiveW.momentum*100)+'% weight) is promoting this code.'
+    });
+  }
+  // Qty trend boosting or reducing
+  if(qtMul>1.05){
+    forces.push({type:'boost',text:'Quantity trend ×'+qtMul.toFixed(2)+' — code has appeared in growing quantities in recent refills.'});
+  } else if(qtMul<0.95){
+    forces.push({type:'drag',text:'Quantity trend ×'+qtMul.toFixed(2)+' — code quantity shrinking, slightly reducing final score.'});
+  }
+
+  return {
+    steps:steps, baseScore:baseScore, qtMul:qtMul, obsPen:obsPen,
+    afterQt:afterQt, final:final,
+    regime:regime, regimeAdj:regimeAdj,
+    obsDetail:obsDetail,
+    momRaw:momRaw, codeState:codeState,
+    forces:forces, sigVals:sigVals, effectiveW:effectiveW
+  };
+}
+
+function renderCodeHitProfile(code, container){
+  if(!activeShop){ container.innerHTML='<p style="font-size:11px;color:var(--muted)">No active shop.</p>'; return; }
+  db=loadDB();
+  var entries=shopEntries(activeShop);
+  var preds=shopPreds(activeShop);
+  var profile=buildCodeHitProfile(code,entries,preds,activeShop);
+
+  if(!profile){
+    container.innerHTML='<div style="padding:8px;background:var(--surface2);border-radius:8px;margin:4px 0;font-size:11px;color:var(--muted)">Not enough predictions yet. Need 2+ resolved predictions for this code.</div>';
+    return;
+  }
+
+  var confCol={high:'var(--green)',moderate:'var(--gold)',watch:'var(--gold)',low:'var(--red)'}[profile.confLevel]||'var(--muted)';
+  var confIcon={high:'🎯',moderate:'📈',watch:'👁',low:'⚠️'}[profile.confLevel]||'';
+  var confLabel={high:'HIGH CONFIDENCE',moderate:'MODERATE',watch:'WATCH',low:'LOW CONFIDENCE'}[profile.confLevel]||'';
+
+  var html='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;margin:4px 0 8px">';
+
+  // Header
+  html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
+    +'<span style="font-family:var(--mono);font-weight:900;font-size:18px;color:var(--accent)">'+code+'</span>'
+    +'<div style="flex:1">'
+    +'<div style="font-size:12px;font-weight:700;color:var(--text)">Hit Profile — '+profile.hits+'/'+profile.resolved+' predictions hit ('+profile.hitRate+'%)</div>'
+    +'<div style="font-size:10px;color:var(--muted)">appears in '+profile.appRate+'% of refills'+(profile.avgGap?' · avg gap '+profile.avgGap+' refills':'')+'</div>'
+    +'</div>'
+    +'<span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:10px;background:rgba(0,0,0,.2);color:'+confCol+'">'+confIcon+' '+confLabel+'</span>'
+    +'</div>';
+
+  // Hit confidence meter
+  var meterPct=Math.min(100,Math.max(0,profile.currentPct));
+  var threshPct=Math.min(100,Math.max(0,profile.thresholdPct));
+  html+='<div style="margin-bottom:10px">'
+    +'<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px">'
+    +'<span>Hit confidence score</span>'
+    +'<span style="color:'+confCol+'">'+profile.currentPct+'% vs threshold '+profile.thresholdPct+'% ('+(profile.confGap>=0?'+':'')+profile.confGap+'%)</span>'
+    +'</div>'
+    +'<div style="position:relative;height:8px;background:var(--surface);border-radius:4px;overflow:hidden">'
+    +'<div style="width:'+meterPct+'%;height:100%;background:'+confCol+';border-radius:4px;transition:width .3s"></div>'
+    +'</div>'
+    +'<div style="position:relative;height:0">'
+    +'<div style="position:absolute;left:'+threshPct+'%;top:-11px;width:2px;height:11px;background:var(--gold)"></div>'
+    +'</div>'
+    +'<div style="font-size:9px;color:var(--muted);margin-top:2px;text-align:right">▲ threshold at '+threshPct+'%</div>'
+    +'</div>';
+
+  // Signal breakdown — hits vs misses
+  html+='<div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">Signal performance (hit vs miss)</div>';
+  var sigRows=SIGNAL_KEYS.map(function(k){
+    var sm=profile.sigMeans[k];
+    if(!sm||sm.hitMean===null&&sm.missMean===null) return null;
+    var lift=sm.lift||0;
+    return {k:k,lift:lift,hitMean:sm.hitMean,missMean:sm.missMean};
+  }).filter(Boolean).sort(function(a,b){return Math.abs(b.lift)-Math.abs(a.lift);}).slice(0,8);
+
+  var maxAbsLift=Math.max.apply(null,sigRows.map(function(s){return Math.abs(s.lift||0);}).concat([0.01]));
+  html+=sigRows.map(function(s){
+    var col=s.lift>=0.15?'var(--green)':s.lift>=-0.05?'var(--gold)':'var(--red)';
+    var barW=Math.round(Math.abs(s.lift)/maxAbsLift*60);
+    var liftStr=(s.lift>=0?'+':'')+Math.round(s.lift*100)+'%';
+    var verdict=s.lift>=0.25?'✅':s.lift>=0.05?'📈':s.lift>=-0.05?'➡️':'⚠️';
+    return '<div style="display:flex;align-items:center;gap:5px;padding:3px 0;border-bottom:1px solid var(--border)">'
+      +'<div style="width:8px;height:8px;border-radius:50%;background:'+getSignalColor(s.k)+';flex-shrink:0"></div>'
+      +'<span style="font-size:10px;color:var(--muted);min-width:80px">'+getSignalName(s.k)+'</span>'
+      +'<span style="font-size:9px;color:var(--muted);min-width:28px">'+(s.hitMean!==null?s.hitMean.toFixed(2):'—')+'</span>'
+      +'<span style="font-size:9px;color:var(--muted);min-width:28px">'+(s.missMean!==null?s.missMean.toFixed(2):'—')+'</span>'
+      +'<div style="flex:1;height:4px;background:var(--surface);border-radius:2px;overflow:hidden">'
+      +'<div style="width:'+barW+'%;height:100%;background:'+col+'"></div></div>'
+      +'<span style="font-size:10px;font-family:var(--mono);font-weight:700;color:'+col+';min-width:32px;text-align:right">'+liftStr+'</span>'
+      +'<span>'+verdict+'</span>'
+      +'</div>';
+  }).join('');
+
+  // Quantity profile
+  html+='<div style="margin-top:8px;padding-top:6px;border-top:1px solid var(--border)">'
+    +'<div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px">Quantity profile</div>'
+    +'<div style="font-size:11px;color:var(--muted);line-height:1.6">'
+    +'Avg per refill: <strong style="color:var(--text)">'+profile.avgQty+'×</strong>'
+    +' · Pool avg: <strong>'+profile.poolAvgQty+'×</strong>'
+    +' · Max: <strong>'+profile.maxQty+'×</strong>'
+    +(profile.avgQty>profile.poolAvgQty?' → <span style="color:var(--green)">above-average slots</span>':' → at or below average')
+    +'</div>'
+    +'</div>';
+
+  // Temporal pattern
+  html+='<div style="margin-top:6px;font-size:11px;color:var(--muted);line-height:1.6">'
+    +'Recent: '+profile.recentApps+'/'+profile.recentWindow+' last refills'
+    +(profile.avgGap?' · avg gap '+profile.avgGap+' refills':'')
+    +'</div>';
+
+  // Co-hits
+  if(profile.topCoHits.length){
+    html+='<div style="margin-top:6px">'
+      +'<div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px">Often arrives with</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:4px">'
+      +profile.topCoHits.map(function(ch){
+        return '<span style="font-size:11px;font-family:var(--mono);font-weight:700;padding:2px 7px;background:var(--surface);border-radius:8px;color:var(--accent)">'+ch.c+' <span style="color:var(--muted)">'+ch.pct+'%</span></span>';
+      }).join('')
+      +'</div></div>';
+  }
+
+  // ── LIVE SCORING TRACE ──
+  var trace = buildLiveScoringTrace(code, entries, preds, activeShop);
+
+  html += '<div style="margin-top:10px;padding-top:10px;border-top:2px solid var(--accent)">';
+  html += '<div style="font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">⚡ LIVE SCORING TRACE — current pass</div>';
+
+  // Competing forces banner (if any)
+  if(trace.forces.length){
+    html+='<div style="margin-bottom:8px">';
+    trace.forces.forEach(function(f){
+      var col=f.type==='conflict'?'var(--gold)':f.type==='boost'?'var(--green)':'var(--muted)';
+      var icon=f.type==='conflict'?'⚡':f.type==='boost'?'↑':'↓';
+      html+='<div style="font-size:11px;color:'+col+';padding:4px 8px;background:rgba(0,0,0,.2);border-radius:6px;margin-bottom:4px;border-left:2px solid '+col+'">'+icon+' '+f.text+'</div>';
+    });
+    html+='</div>';
+  }
+
+  // Regime adjustment note
+  if(trace.regimeAdj){
+    html+='<div style="font-size:11px;color:var(--gold);margin-bottom:8px;padding:5px 8px;background:rgba(232,169,74,.08);border-radius:6px">'
+      +'⚡ Regime shift active ('+trace.regime.note+') — weights adjusted this pass: '
+      +'freq '+(trace.regimeAdj.freqDelta>0?'+':'')+trace.regimeAdj.freqDelta+'% · '
+      +'recency '+(trace.regimeAdj.recDelta>0?'+':'')+trace.regimeAdj.recDelta+'% · '
+      +'momentum '+(trace.regimeAdj.momDelta>0?'+':'')+trace.regimeAdj.momDelta+'%'
+      +'</div>';
+  }
+
+  // Step-by-step signal contributions
+  html+='<div style="font-size:10px;color:var(--muted);display:grid;grid-template-columns:8px 78px 36px 32px 50px 1fr 36px;gap:3px;padding:2px 0;border-bottom:1px solid var(--border);margin-bottom:3px">'
+    +'<span></span><span>Signal</span><span>Raw</span><span>Wt%</span><span style="color:var(--muted)">Adj%</span><span style="padding-left:2px">Bar</span><span style="text-align:right">Contrib</span>'
+    +'</div>';
+
+  var maxContrib=Math.max.apply(null,trace.steps.map(function(s){return s.contrib;}).concat([0.001]));
+  html+=trace.steps.map(function(s){
+    var pct=maxContrib>0?Math.round(s.contrib/maxContrib*100):0;
+    var sigCol=getSignalColor(s.k);
+    var wOrig=Math.round(s.weightOrig*100);
+    var wAdj=Math.round(s.weight*100);
+    var adjStr=s.regimeAdjusted?'<span style="color:var(--gold)">'+wAdj+'</span>':'<span style="color:var(--muted)">'+wAdj+'</span>';
+    var contribStr=(s.contrib*100).toFixed(1)+'%';
+    var contribCol=s.contrib>=maxContrib*0.5?sigCol:s.contrib>=maxContrib*0.2?'var(--gold)':'var(--muted)';
+    return '<div style="display:grid;grid-template-columns:8px 78px 36px 32px 50px 1fr 36px;gap:3px;align-items:center;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)">'
+      +'<div style="width:6px;height:6px;border-radius:50%;background:'+sigCol+'"></div>'
+      +'<span style="font-size:10px;color:var(--muted)">'+getSignalName(s.k)+'</span>'
+      +'<span style="font-size:10px;font-family:var(--mono);color:var(--text)">'+s.val.toFixed(2)+'</span>'
+      +'<span style="font-size:10px;font-family:var(--mono);color:var(--muted)">'+wOrig+'%</span>'
+      +'<span style="font-size:10px;font-family:var(--mono)">'+adjStr+'</span>'
+      +'<div style="height:4px;background:var(--surface);border-radius:2px;overflow:hidden">'
+        +'<div style="width:'+pct+'%;height:100%;background:'+sigCol+'"></div>'
+      +'</div>'
+      +'<span style="font-size:10px;font-family:var(--mono);font-weight:700;color:'+contribCol+';text-align:right">'+contribStr+'</span>'
+      +'</div>';
+  }).join('');
+
+  // Score assembly
+  html+='<div style="margin-top:8px;padding-top:6px;border-top:1px solid var(--border)">';
+  html+='<div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px">Score assembly</div>';
+
+  function scoreRow(label, value, note, col, isResult){
+    var pct=Math.round(value*100);
+    var c=col||'var(--muted)';
+    return '<div style="display:flex;align-items:center;gap:8px;padding:3px 0;'+(isResult?'border-top:1px solid var(--border);margin-top:3px;':'')+';">'
+      +'<span style="font-size:10px;color:'+c+';min-width:90px;font-weight:'+(isResult?700:400)+'">'+label+'</span>'
+      +'<div style="flex:1;height:'+(isResult?6:4)+'px;background:var(--surface);border-radius:3px;overflow:hidden">'
+        +'<div style="width:'+Math.min(100,pct)+'%;height:100%;background:'+c+'"></div>'
+      +'</div>'
+      +'<span style="font-size:10px;font-family:var(--mono);font-weight:700;color:'+c+';min-width:34px;text-align:right">'+pct+'%</span>'
+      +(note?'<span style="font-size:9px;color:var(--muted)">'+note+'</span>':'')
+      +'</div>';
+  }
+
+  html += scoreRow('Base (signals)', trace.baseScore, '', 'var(--accent)');
+
+  if(Math.abs(trace.qtMul-1.0)>0.01){
+    var qtCol=trace.qtMul>1?'var(--green)':'var(--red)';
+    html += scoreRow('×Qty trend', trace.afterQt, '×'+trace.qtMul.toFixed(2), qtCol);
+  }
+
+  if(trace.obsDetail){
+    var penCol=trace.obsPen<0.70?'var(--red)':trace.obsPen<0.90?'var(--gold)':'var(--muted)';
+    var stateLabel=trace.obsDetail.state.toUpperCase();
+    var penNote=stateLabel+'−'+trace.obsDetail.penalty+'%'+(trace.obsDetail.z?' z='+trace.obsDetail.z:'');
+    html += scoreRow('×Obs penalty', trace.final, penNote, penCol);
+    html += scoreRow('FINAL SCORE', trace.final, '', 'var(--gold)', true);
+  } else {
+    html += scoreRow('FINAL SCORE', trace.final, '(no obs penalty)', 'var(--gold)', true);
+  }
+
+  html += '</div>'; // score assembly
+  html += '</div>'; // trace section
+
+  html += '</div>'; // outer card
+  container.innerHTML = html;
+}
+
 function renderDashboard(){
   if(!activeShop) return;
   db=loadDB();
@@ -3896,20 +4598,29 @@ function renderDashboard(){
 
       var promo=promoted&&promotions.find(function(p){return p.promoted===code;});
       var driverLine=promoted
-        ?'<span style="color:var(--green)">🔬 '+( promo?promo.pattern.rule.slice(0,40)+'…':'Pattern promoted')+'</span>'
+        ?'<span style="color:var(--green)">🔬 '+(promo?promo.pattern.rule.slice(0,40)+'…':'Pattern promoted')+'</span>'
         :(topSig?'<span style="color:'+sigCol+'">'+getSignalName(topSig.k)+'</span>':'—');
 
-      return '<div class="pred-code-row">'
+      var stateInfo=codeStates[code]||{state:'active'};
+      var stateBadge={
+        emerging:'<span style="font-size:9px;background:rgba(232,121,249,.2);color:var(--sig-momentum);padding:1px 5px;border-radius:6px;font-weight:700">↑ EMERGING</span>',
+        fading:  '<span style="font-size:9px;background:rgba(247,95,95,.15);color:var(--red);padding:1px 5px;border-radius:6px;font-weight:700">↓ FADING</span>',
+        dormant: '<span style="font-size:9px;background:var(--surface);color:var(--muted);padding:1px 5px;border-radius:6px;font-weight:700">DORMANT</span>',
+        active:  ''
+      }[stateInfo.state]||'';
+
+      return '<div class="pred-code-row" style="cursor:pointer" onclick="toggleCodeProfile(\''+code+'\')">'
         +'<span class="pred-code-medal">'+medals[i]+'</span>'
         +'<span class="pred-code-val" style="color:'+(i===0?'var(--gold)':i===1?'var(--accent)':i===2?'var(--accent2)':i===3?'var(--green)':'var(--muted)')+'">'+code+'</span>'
-        +'<div class="pred-code-driver">'+driverLine
+        +'<div class="pred-code-driver">'+driverLine+' '+stateBadge
         +(promoted?'<span style="font-size:9px;background:var(--green);color:#000;padding:1px 4px;border-radius:6px;margin-left:4px">PROMOTED</span>':'')
         +'<div style="margin-top:2px;height:4px;background:var(--surface);border-radius:2px;overflow:hidden">'
         +'<div style="width:'+pct+'%;height:100%;background:'+sigCol+';border-radius:2px"></div></div>'
         +'</div>'
         +'<span class="pred-code-score" style="color:'+sigCol+'">'+pct+'%</span>'
         +'<span class="pred-code-conf '+relCls+'">'+rel.level.toUpperCase()+'</span>'
-        +'</div>';
+        +'</div>'
+        +'<div id="code-profile-'+code+'" style="display:none"></div>';
     }).join('');
   }
 
@@ -3936,6 +4647,22 @@ function renderDashboard(){
 
   document.getElementById('last-updated').textContent='Updated '+new Date().toLocaleTimeString();
   document.getElementById('ai-insight-content').innerHTML='<button class="btn btn-primary" onclick="generateAiInsight()">✨ Generate Insight</button>';
+
+  // Code states and regime for badge display
+  var codeStates = entries.length>=4 ? classifyCodeStates(entries) : {};
+  var regime     = bcsResult.regime||{shifting:false};
+
+  // Regime status banner
+  var regimeBanner=document.getElementById('next-expected-banner');
+  if(regimeBanner){
+    if(regime.shifting){
+      regimeBanner.style.display='block';
+      regimeBanner.innerHTML='<div style="background:rgba(232,169,74,.12);border:1px solid var(--gold);border-radius:10px;padding:8px 12px;font-size:11px;color:var(--gold);margin-bottom:10px">'
+        +'⚡ <strong>Pattern shift detected</strong> — '+regime.note+'</div>';
+    } else {
+      regimeBanner.style.display='none';
+    }
+  }
   renderNextExpectedBanner();
   var predictEmergentEl=document.getElementById('predict-emergent-content');
   if(predictEmergentEl){
@@ -4366,6 +5093,7 @@ function renderGuide(){
     buildGuideBacktest(),
     buildGuideRecentPerf(),
     buildGuideEvidenceLedger(),
+    buildGuideCodeProfile(),
     buildGuideConfidence(),
     buildGuideWorkflow(),
     buildGuideData()
@@ -4626,15 +5354,18 @@ function buildGuideSignals(){
     {key:'qtydom',    icon:'🎯', name:'Quantity Dominance', weight:'0.10→adapted',
      what:'Average slots per refill divided by the pool average. A code averaging 2.5 appearances in an 18-slot refill dominates; one averaging 0.9 is just present. This signal separates codes that matter from codes that merely appear.',
      when:'Active from first entry. Most powerful for shops like BD where all codes appear but in varying quantities.'},
-    {key:'qtystreak', icon:'📊', name:'Quantity Streak',    weight:'0.07→adapted',
-     what:'Consecutive refills where the code appeared 2+ times. A code on a 4-refill quantity streak (appeared multiple times in each of the last 4 refills) scores 1.0. Catches codes with persistent volume.',
+    {key:'qtystreak', icon:'📊', name:'Quantity Streak',    weight:'0.06→adapted',
+     what:'Consecutive refills where the code appeared 2+ times. A code on a 4-refill quantity streak scores 1.0. Catches codes with persistent volume.',
      when:'Active from 2+ entries. 4+ consecutive multi-slot refills = strong predictor.'},
+    {key:'momentum',  icon:'⚡', name:'Momentum',           weight:'0.13→adapted',
+     what:'Compares appearance rate in the last '+MOMENTUM_WINDOW+' refills vs the preceding '+MOMENTUM_WINDOW+'. Positive = code appearing more frequently recently (emerging). Negative = fading. Score 0.5 = stable. This is the 12th signal and the most responsive to recent pattern shifts.',
+     when:'Active after 4+ entries. When a regime shift is detected, Momentum weight is dynamically boosted for that scoring pass.'},
     {key:'qtytrend',icon:'📈', name:'Quantity Trend',     weight:'×multiplier',
-     what:'Compares average quantity per refill in the first half vs second half of history. Growing quantity = ×1.20 max boost. Shrinking = ×0.80 max reduction.',
-     when:'Active after 4+ appearances per code. Applied as a multiplier, not an additive term.'},
-    {key:'misspenty',icon:'⚠️',name:'Miss-streak Penalty',weight:'×multiplier',
-     what:'Exponentially penalises codes that keep getting predicted but not arriving. 1 consecutive miss = −15%, 2 = −30%, 3+ = −50%. Resets on any hit.',
-     when:'Active as soon as predictions are resolved. Applied last, after all other signals.'}
+     what:'Compares average quantity per refill in the first half vs second half of history. Growing = ×1.20 max boost. Shrinking = ×0.80 max reduction.',
+     when:'Active after 4+ appearances per code. Applied as a multiplier.'},
+    {key:'misspenty',icon:'⚠️',name:'Obs Window Penalty', weight:'×multiplier',
+     what:'Adaptive penalty applied when a code\'s miss rate is statistically significant (z ≤ −1.5). WATCHING = −15%. CONFIRMED = −40%. RECOVERING = −22%. Resets when z-score recovers.',
+     when:'Active as soon as 3+ resolved predictions exist for the code. Applied last, after all other signals.'}
   ];
 
   var liveHtml = '';
@@ -4671,9 +5402,9 @@ function buildGuideSignals(){
       +'</div>';
   }).join('');
 
-  return guideSection('📊','All 11 Signals — What Each One Measures',
-    '<p class="guide-p">The model combines 9 additive signals (weights sum to 1.0) and 2 multiplicative modifiers. Each signal is normalised 0–1 before weighting. Weights are per-shop and adapt via adaptive gradient accumulation.</p>'
-    +'<div class="guide-callout" style="margin-bottom:10px"><strong>Reliability badges in Driver Analysis</strong> update automatically from prediction outcomes. See the Observation Windows section for how significance thresholds decide when a badge changes.</div>'
+  return guideSection('📊','All 12 Signals — What Each One Measures',
+    '<p class="guide-p">The model combines 11 additive signals (weights sum to 1.0) plus 1 dynamic multiplier pair. Each signal is normalised 0–1 before weighting. Weights are per-shop and adapt via adaptive gradient accumulation. Signal colours are consistent across all tabs.</p>'
+    +'<div class="guide-callout" style="margin-bottom:10px"><strong>Regime shift:</strong> when the dominant code set changes (overlap &lt;60%), Insight dynamically reduces Frequency weight and boosts Recency and Momentum for that scoring pass — without permanently changing stored weights.</div>'
     +sigHtml
     + liveHtml
   );
@@ -4744,7 +5475,7 @@ function buildGuideWeightAdaptation(){
     +'<p class="guide-p"><strong>What happens over time:</strong> a shop where codes arrive on consistent days will see the day-of-week weight climb. A shop with very regular intervals will see interval regularity dominate. A shop where co-occurrence is the strongest pattern will weight that highest. Each shop develops its own fingerprint.</p>'
     +'<div class="guide-callout"><strong>No data = default weights.</strong> Until at least one prediction is resolved, all shops use the same starting weights. After 10+ resolved predictions the adapted weights become meaningfully different from the defaults.</div>'
     +'<div class="guide-callout" style="margin-top:8px"><strong>Adaptive gradient accumulation:</strong> weight updates no longer fire after every prediction. Gradients accumulate per signal until the z-score of the mean gradient crosses ±1.2 — confirming that the direction is statistically consistent, not just a one-refill fluctuation. Mixed signals are suppressed. See Observation Windows section for how the same logic applies to per-code penalties.</div>'
-    +'<div class="guide-callout" style="margin-top:8px"><strong>Driver Analysis goes deeper:</strong> weight adaptation adjusts signal importance globally. Driver Analysis assesses reliability per-signal per-code, outcome-aware.</div>'
+    +'<div class="guide-callout" style="margin-top:8px"><strong>Regime-aware dynamic adjustment:</strong> when the model detects a pattern shift (recent dominant codes differ from historical by &gt;40%), it temporarily boosts Recency and Momentum weights and reduces Frequency for that scoring pass. This is separate from stored weight adaptation — stored weights are only updated after z-score confirmation.</div>'
     + liveHtml
   );
 }
@@ -5209,6 +5940,78 @@ function buildGuideEvidenceLedger(){
   );
 }
 
+// ── SECTION: CODE HIT PROFILE & LIVE TRACE ──
+function buildGuideCodeProfile(){
+  db=loadDB();
+  var entries = guideShop ? shopEntries(guideShop) : [];
+  var preds   = guideShop ? shopPreds(guideShop)   : [];
+  var resolved= preds.filter(function(p){return p.status!=='pending'&&p.outcome;});
+
+  // Pick a code with the most prediction history for a live example
+  var allCodes=Array.from(new Set(entries.reduce(function(a,e){return a.concat(e.codes);},[]) ));
+  var bestCode=null;
+  var bestN=0;
+  allCodes.forEach(function(c){
+    var n=resolved.filter(function(p){return p.predictedCodes.indexOf(c)>-1;}).length;
+    if(n>bestN){bestN=n;bestCode=c;}
+  });
+
+  var liveHtml='';
+  if(bestCode&&bestN>=2&&guideShop){
+    var profile=buildCodeHitProfile(bestCode,entries,preds,guideShop);
+    var trace=buildLiveScoringTrace(bestCode,entries,preds,guideShop);
+    if(profile&&trace){
+      var confCol={high:'var(--green)',moderate:'var(--gold)',watch:'var(--gold)',low:'var(--red)'}[profile.confLevel]||'var(--muted)';
+      liveHtml='<div class="guide-live-box"><div class="guide-live-label">Live example — Code '+bestCode+' in Shop '+guideShop+' ('+bestN+' predictions)</div>'
+        +'<div style="font-size:11px;color:var(--muted);padding:5px 0">Hit rate: <strong style="color:'+confCol+'">'+profile.hitRate+'%</strong>'
+        +' · Confidence level: <strong style="color:'+confCol+'">'+(profile.confLevel.toUpperCase())+'</strong>'
+        +' · Current score vs threshold: '+profile.currentPct+'% vs '+profile.thresholdPct+'%'
+        +(trace.forces.length?' · '+trace.forces.length+' competing force'+(trace.forces.length>1?'s':'')+' detected':'')
+        +'</div>'
+        +'<div style="font-size:11px;color:var(--muted)">Top signal by contribution: '
+        +(trace.steps[0]?'<strong style="color:'+getSignalColor(trace.steps[0].key)+'">'+getSignalName(trace.steps[0].key)+'</strong> ('+trace.steps[0].val.toFixed(2)+' × '+Math.round(trace.steps[0].weight*100)+'% = '+(trace.steps[0].contrib*100).toFixed(1)+'%)':'—')
+        +'</div>'
+        +(trace.obsDetail?'<div style="font-size:11px;color:var(--gold);margin-top:3px">Obs window: '+trace.obsDetail.state.toUpperCase()+' — '+trace.obsDetail.penalty+'% penalty applied'+(trace.obsDetail.z?' (z='+trace.obsDetail.z+')':'')+'</div>':'')
+        +'</div>';
+    }
+  } else if(guideShop) {
+    liveHtml='<div class="guide-callout">Tap any code in the 🎯 Predict top-5 to see its full profile and live trace. Need 2+ resolved predictions per code.</div>';
+  }
+
+  return guideSection('🔍','Code Hit Profile & Live Scoring Trace',
+    '<p class="guide-p">Tap any code in the Predict top-5 to expand two diagnostic panels that answer: <em>why has this code hit/missed historically?</em> and <em>exactly how was its current score assembled?</em></p>'
+
+    +'<div style="margin:8px 0">'
+    +'<div style="padding:7px 0;border-bottom:1px solid var(--border)">'
+    +'<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px">📊 Hit Profile (historical)</div>'
+    +'<div style="font-size:12px;color:var(--muted);line-height:1.6">'
+    +'Hit rate across all resolved predictions · Hit confidence score vs threshold · Per-signal breakdown: what each signal averaged on hits vs misses, with lift % and verdict · Quantity profile (avg slots vs pool average) · Temporal pattern (recent appearance rate, avg gap) · Most common co-arriving codes'
+    +'</div></div>'
+    +'<div style="padding:7px 0">'
+    +'<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px">⚡ Live Scoring Trace (current pass)</div>'
+    +'<div style="font-size:12px;color:var(--muted);line-height:1.6">'
+    +'Shows exactly how the current score was built, step by step:'
+    +'</div>'
+    +'<div style="font-size:11px;color:var(--muted);line-height:2;padding-left:8px;margin-top:4px">'
+    +'<strong style="color:var(--text)">Competing forces</strong> — plain-English conflicts flagged at top (e.g. strong historical frequency fighting declining momentum)<br>'
+    +'<strong style="color:var(--text)">Regime adjustment note</strong> — shows which weights were moved and by how much if a shift is active<br>'
+    +'<strong style="color:var(--text)">Signal table</strong> — every signal: raw value · stored weight · adjusted weight (amber if regime-modified) · contribution bar · contribution %<br>'
+    +'<strong style="color:var(--text)">Score assembly</strong> — base score → ×qty trend → ×obs window penalty → final score, each step visible'
+    +'</div>'
+    +'</div></div>'
+
+    +'<div class="guide-example"><div class="ex-label">Why the trace matters</div>'
+    +'<div style="font-size:12px;color:var(--muted);line-height:1.7">'
+    +'Code 43 scoring 100% with 4 consecutive misses looks like a broken model. The trace reveals:<br>'
+    +'Base score: 71% (high historical frequency) → ×Qty trend 1.05 = 74% → ×Obs window 0.60 (CONFIRMED, z=−1.7) = <strong style="color:var(--gold)">45% final</strong><br>'
+    +'The model is already applying a 40% penalty. The final score is 45%, not 100%. It appears top-5 only because other codes are scored lower. One more miss will deepen the penalty further.'
+    +'</div></div>'
+
+    +'<div class="guide-callout"><strong>Hit confidence threshold:</strong> computed empirically — the score level at which this code has hit ≥70% of the time. A code currently above its threshold is in HIGH confidence territory. Below threshold = WATCH. The threshold is code-specific, not a global setting.</div>'
+    + liveHtml
+  );
+}
+
 function guideSection(icon, title, bodyHtml){
   var id = 'gs-'+Math.random().toString(36).slice(2,7);
   return '<div class="guide-section">'
@@ -5399,12 +6202,21 @@ function buildEvidenceLedger(letter){
       var confPct=Math.round(pattern.confidence*100);
       var zP=zScore(hits/codePreds.length,baseline,codePreds.length);
 
-      var verdict=codePreds.length<3?'pending'
-        :hitRate>=confPct-10?'proven'
-        :hitRate>=confPct-25?'monitor'
-        :'disproven';
-      var verdictCol={proven:'var(--green)',monitor:'var(--gold)',
-        disproven:'var(--red)',pending:'var(--muted)'}[verdict];
+      // Verdict based on z-score vs baseline — not vs pattern confidence
+      // Pattern is meaningful if the code hits at above-baseline rate
+      var verdict, verdictCol;
+      if(codePreds.length<OBS_MIN_N){
+        verdict='pending'; verdictCol='var(--muted)';
+      } else if(zP>=1.0){
+        verdict='proven'; verdictCol='var(--green)';
+      } else if(zP>=-0.5){
+        verdict='monitor'; verdictCol='var(--gold)';
+      } else {
+        // Only DISPROVEN if hit rate is significantly BELOW baseline
+        verdict='monitor'; verdictCol='var(--gold)';
+      }
+      // Reserve DISPROVEN only for strong negative z (z ≤ -1.5)
+      if(codePreds.length>=5 && zP<=-1.5) verdict='disproven', verdictCol='var(--red)';
 
       ledger.push({
         type:'pattern', icon:'🔬',
@@ -5414,11 +6226,11 @@ function buildEvidenceLedger(letter){
         after: {rate:hitRate,n:codePreds.length,label:'Actual hit rate (z='+zP.toFixed(2)+')'},
         verdict:verdict,verdictCol:verdictCol,
         detail:verdict==='proven'
-          ?'Hit rate ('+hitRate+'%) matches confidence ('+confPct+'%). Pattern is reliable.'
+          ?'Hit rate ('+hitRate+'%) significantly above baseline ('+Math.round(baseline*100)+'%). Pattern is adding real predictive value.'
           :verdict==='disproven'
-          ?'Hit rate ('+hitRate+'%) well below confidence ('+confPct+'%). Pattern may be noisy or specific to older refills.'
+          ?'Hit rate ('+hitRate+'%) significantly below baseline ('+Math.round(baseline*100)+'%) — z='+zP.toFixed(2)+'. Pattern may be spurious.'
           :verdict==='monitor'
-          ?'Hit rate ('+hitRate+'%) below confidence ('+confPct+'%). More predictions needed to confirm.'
+          ?'Hit rate ('+hitRate+'%) vs baseline ('+Math.round(baseline*100)+'%) — z='+zP.toFixed(2)+'. More predictions needed to confirm.'
           :'Pending — need '+OBS_MIN_N+'+ resolved predictions for this code.'
       });
     });
